@@ -17,6 +17,7 @@ type Config struct {
 	Password string `json:"password,omitempty"`
 }
 
+// New 创建zookeeper客户端
 func New(config Config) (service *ZKService, err error) {
 	service = &ZKService{
 		Config: config,
