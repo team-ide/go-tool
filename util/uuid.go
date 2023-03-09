@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-// UUID 生成UUID
-func UUID() (res string) {
+// GetUUID 生成UUID
+func GetUUID() (res string) {
 	res = uuid.NewString()
 	res = strings.ReplaceAll(res, "-", "")
 	return

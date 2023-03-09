@@ -10,8 +10,8 @@ import (
 	"strings"
 )
 
-// GZipBytes 压缩
-func GZipBytes(data []byte) ([]byte, error) {
+// GzipBytes 压缩
+func GzipBytes(data []byte) ([]byte, error) {
 
 	var b bytes.Buffer
 	gz := gzip.NewWriter(&b)
@@ -27,8 +27,8 @@ func GZipBytes(data []byte) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-// UGZipBytes 解压
-func UGZipBytes(data []byte) ([]byte, error) {
+// UnGzipBytes 解压
+func UnGzipBytes(data []byte) ([]byte, error) {
 	var in bytes.Buffer
 	in.Write(data)
 	r, err := gzip.NewReader(&in)
@@ -89,8 +89,8 @@ func Zip(srcFile string, destZip string) error {
 	return err
 }
 
-// Unzip zip解压 zipFile 压缩包地址 destDir 解压保存文件夹
-func Unzip(zipFile string, destDir string) error {
+// UnZip zip解压 zipFile 压缩包地址 destDir 解压保存文件夹
+func UnZip(zipFile string, destDir string) error {
 	reader, err := zip.OpenReader(zipFile)
 	if err != nil {
 		return err

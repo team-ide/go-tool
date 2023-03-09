@@ -113,8 +113,8 @@ func TestUtil(t *testing.T) {
 	fmt.Println("GetFormatByTime", GetFormatByTime(GetNow()))
 	fmt.Println("GetFormatByTime", GetFormatByTime(time.Time{}))
 
-	fmt.Println("UUID", UUID())
+	fmt.Println("GetUUID", GetUUID())
 
-	fmt.Println("MD5", MD5("xxx"))
+	fmt.Println("GetMD5", GetMD5("xxx"))
 
 }

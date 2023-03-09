@@ -14,9 +14,9 @@ import (
 // 公钥: 根据私钥生成
 //openssl rsa -in rsa_private_key.pem -pubout -out rsa_public_key.pem
 
-// RSAEncryptByKey RSA加密
-func RSAEncryptByKey(origData string, publicKey string) (res string, err error) {
-	bs, err := RSAEncrypt([]byte(origData), []byte(publicKey))
+// RsaEncryptByKey RSA加密
+func RsaEncryptByKey(origData string, publicKey string) (res string, err error) {
+	bs, err := RsaEncrypt([]byte(origData), []byte(publicKey))
 	if err != nil {
 		return
 	}
@@ -25,14 +25,14 @@ func RSAEncryptByKey(origData string, publicKey string) (res string, err error) 
 	return
 }
 
-// RSADecryptByKey RSA解密
-func RSADecryptByKey(crypted string, privateKey string) (res string, err error) {
+// RsaDecryptByKey RSA解密
+func RsaDecryptByKey(crypted string, privateKey string) (res string, err error) {
 	// 经过一次base64 否则 直接转字符串乱码
 	bs, err := base64.StdEncoding.DecodeString(crypted)
 	if err != nil {
 		return
 	}
-	bs, err = RSADecrypt(bs, []byte(privateKey))
+	bs, err = RsaDecrypt(bs, []byte(privateKey))
 	if err != nil {
 		return
 	}
@@ -40,8 +40,8 @@ func RSADecryptByKey(crypted string, privateKey string) (res string, err error) 
 	return
 }
 
-// RSAEncrypt 加密
-func RSAEncrypt(origData []byte, publicKey []byte) ([]byte, error) {
+// RsaEncrypt 加密
+func RsaEncrypt(origData []byte, publicKey []byte) ([]byte, error) {
 	//解密pem格式的公钥
 	block, _ := pem.Decode(publicKey)
 	if block == nil {
@@ -58,8 +58,8 @@ func RSAEncrypt(origData []byte, publicKey []byte) ([]byte, error) {
 	return rsa.EncryptPKCS1v15(rand.Reader, pub, origData)
 }
 
-// RSADecrypt 解密
-func RSADecrypt(ciphertext []byte, privateKey []byte) ([]byte, error) {
+// RsaDecrypt 解密
+func RsaDecrypt(ciphertext []byte, privateKey []byte) ([]byte, error) {
 	//解密
 	block, _ := pem.Decode(privateKey)
 	if block == nil {

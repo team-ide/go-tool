@@ -143,9 +143,9 @@ func init() {
 	})
 
 	AddFunc(&FuncInfo{
-		Name:    "MD5",
+		Name:    "getMD5",
 		Comment: "获取MD5字符串",
-		Func:    util.MD5,
+		Func:    util.GetMD5,
 	})
 
 	AddFunc(&FuncInfo{
@@ -161,27 +161,27 @@ func init() {
 	})
 
 	AddFunc(&FuncInfo{
-		Name:    "RSAEncryptByKey",
+		Name:    "rsaEncryptByKey",
 		Comment: "RSA加密",
-		Func:    util.RSAEncryptByKey,
+		Func:    util.RsaEncryptByKey,
 	})
 
 	AddFunc(&FuncInfo{
-		Name:    "RSADecryptByKey",
+		Name:    "rsaDecryptByKey",
 		Comment: "RSA解密",
-		Func:    util.RSADecryptByKey,
+		Func:    util.RsaDecryptByKey,
 	})
 
 	AddFunc(&FuncInfo{
-		Name:    "RSAEncrypt",
+		Name:    "rsaEncrypt",
 		Comment: "加密",
-		Func:    util.RSAEncrypt,
+		Func:    util.RsaEncrypt,
 	})
 
 	AddFunc(&FuncInfo{
-		Name:    "RSADecrypt",
+		Name:    "rsaDecrypt",
 		Comment: "解密",
-		Func:    util.RSADecrypt,
+		Func:    util.RsaDecrypt,
 	})
 
 	AddFunc(&FuncInfo{
@@ -269,21 +269,21 @@ func init() {
 	})
 
 	AddFunc(&FuncInfo{
-		Name:    "UUID",
+		Name:    "getUUID",
 		Comment: "生成UUID",
-		Func:    util.UUID,
+		Func:    util.GetUUID,
 	})
 
 	AddFunc(&FuncInfo{
-		Name:    "GZipBytes",
+		Name:    "gzipBytes",
 		Comment: "压缩",
-		Func:    util.GZipBytes,
+		Func:    util.GzipBytes,
 	})
 
 	AddFunc(&FuncInfo{
-		Name:    "UGZipBytes",
+		Name:    "unGzipBytes",
 		Comment: "解压",
-		Func:    util.UGZipBytes,
+		Func:    util.UnGzipBytes,
 	})
 
 	AddFunc(&FuncInfo{
@@ -293,9 +293,9 @@ func init() {
 	})
 
 	AddFunc(&FuncInfo{
-		Name:    "unzip",
+		Name:    "unZip",
 		Comment: "zip解压 zipFile 压缩包地址 destDir 解压保存文件夹",
-		Func:    util.Unzip,
+		Func:    util.UnZip,
 	})
 
 }
