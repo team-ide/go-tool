@@ -6,8 +6,8 @@ import (
 )
 
 func TestScript(t *testing.T) {
-	script := "1 + util.UUID()"
-	context := GetContext()
+	script := "1 + UUID()"
+	context := NewContext()
 
 	res, err := Run(script, context)
 	if err != nil {

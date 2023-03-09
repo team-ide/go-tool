@@ -6,10 +6,10 @@ import (
 	"go.uber.org/zap"
 )
 
-func GetContext() map[string]interface{} {
+func NewContext() map[string]interface{} {
 	baseContext := map[string]interface{}{}
 
-	for _, funcInfo := range *FuncList {
+	for _, funcInfo := range FuncList {
 		baseContext[funcInfo.Name] = funcInfo.Func
 	}
 
@@ -62,7 +62,7 @@ func NewScriptByParent(parent *Script) (script *Script, err error) {
 	script = &Script{}
 	script.vm = goja.New()
 	script.dataContext = make(map[string]interface{})
-	scriptContext := GetContext()
+	scriptContext := NewContext()
 	for key, value := range scriptContext {
 		err = script.vm.Set(key, value)
 		if err != nil {

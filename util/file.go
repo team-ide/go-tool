@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bufio"
 	"io"
 	"os"
 	"path/filepath"
@@ -8,6 +9,20 @@ import (
 	"strings"
 )
 
+var (
+	rootDir string
+)
+
+func init() {
+	rootDir, _ = os.Getwd()
+}
+
+// GetRootDir 获取当前程序根路径
+func GetRootDir() string {
+	return rootDir
+}
+
+// FormatPath 格式化路径
 func FormatPath(path string) string {
 
 	var abs string
@@ -19,6 +34,7 @@ func FormatPath(path string) string {
 	return res
 }
 
+// GetAbsolutePath 获取路径觉得路径
 func GetAbsolutePath(path string) (absolutePath string) {
 	var abs string
 	abs, _ = filepath.Abs(path)
@@ -27,6 +43,7 @@ func GetAbsolutePath(path string) (absolutePath string) {
 	return
 }
 
+// PathExists 路径文件是否存在
 func PathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
@@ -38,7 +55,9 @@ func PathExists(path string) (bool, error) {
 	return false, err
 }
 
-func LoadDirFiles(fileMap map[string][]byte, dir string) (err error) {
+// LoadDirFiles 加载目录下文件 读取文件内容
+func LoadDirFiles(dir string) (fileMap map[string][]byte, err error) {
+	fileMap = map[string][]byte{}
 	var exist bool
 	exist, err = PathExists(dir)
 	if err != nil {
@@ -81,7 +100,8 @@ func LoadDirFiles(fileMap map[string][]byte, dir string) (err error) {
 	return
 }
 
-func LoadDirFilenames(filenames *[]string, dir string) (err error) {
+// LoadDirFilenames 加载目录下文件
+func LoadDirFilenames(dir string) (filenames []string, err error) {
 	var exist bool
 	exist, err = PathExists(dir)
 	if err != nil {
@@ -106,14 +126,15 @@ func LoadDirFilenames(filenames *[]string, dir string) (err error) {
 			fileAbsolutePath := filepath.ToSlash(abs)
 			name := strings.TrimPrefix(fileAbsolutePath, dir)
 			name = strings.TrimPrefix(name, "/")
-			*filenames = append(*filenames, name)
+			filenames = append(filenames, name)
 		}
 		return nil
 	})
-	sort.Strings(*filenames)
+	sort.Strings(filenames)
 	return
 }
 
+// ReadFile 读取文件内容
 func ReadFile(filename string) (bs []byte, err error) {
 	var f *os.File
 	var exists bool
@@ -137,26 +158,38 @@ func ReadFile(filename string) (bs []byte, err error) {
 	return
 }
 
+// WriteFile 写入文件内容
 func WriteFile(filename string, bs []byte) (err error) {
-	var f *os.File
-	var exists bool
-	exists, err = PathExists(filename)
+	f, err := os.Create(filename)
 	if err != nil {
 		return
 	}
-	if !exists {
-		f, err = os.Create(filename)
-	} else {
-		f, err = os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0777)
-	}
-	if err != nil {
-		return
-	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	_, err = f.Write(bs)
-
 	if err != nil {
 		return
+	}
+	return
+}
+
+// ReadLine 逐行读取文件
+func ReadLine(filename string) (lines []string, err error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return
+	}
+	buf := bufio.NewReader(f)
+	var line string
+	for {
+		line, err = buf.ReadString('\n')
+		line = strings.TrimSpace(line)
+		if err != nil {
+			if err == io.EOF { //读取结束，会报EOF
+				return
+			}
+			return nil, err
+		}
+		lines = append(lines, line)
 	}
 	return
 }

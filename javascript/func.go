@@ -16,9 +16,9 @@ type FuncVarInfo struct {
 }
 
 var (
-	FuncList = &[]*FuncInfo{}
+	FuncList []*FuncInfo
 )
 
 func AddFunc(funcInfo *FuncInfo) {
-
+	FuncList = append(FuncList, funcInfo)
 }
