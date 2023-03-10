@@ -2,10 +2,30 @@ package util
 
 import (
 	"fmt"
+	"math"
 	"testing"
 	"time"
 )
 
+func TestGetStringValue(t *testing.T) {
+	fmt.Println("GetStringValue 11111", GetStringValue(11111))
+	fmt.Println("GetStringValue 111", GetStringValue(int8(111)))
+	fmt.Println("GetStringValue 9999", GetStringValue(int16(9999)))
+	fmt.Println("GetStringValue 2147483647", GetStringValue(int32(2147483647)))
+	fmt.Println("GetStringValue 9999999999999999", GetStringValue(9999999999999999))
+	fmt.Println("GetStringValue 2147482000", GetStringValue(float32(2147482000)))
+	fmt.Println("GetStringValue 2147420.99", GetStringValue(float32(2147420.99)))
+	fmt.Println("GetStringValue 99999999999999", GetStringValue(float64(99999999999999)))
+	fmt.Println("GetStringValue 999999999999.9999", GetStringValue(999999999999.9999))
+	fmt.Println("GetStringValue math.MaxInt", GetStringValue(math.MaxInt))
+	fmt.Println("GetStringValue math.MaxInt8", GetStringValue(math.MaxInt8))
+	fmt.Println("GetStringValue math.MaxInt16", GetStringValue(math.MaxInt16))
+	fmt.Println("GetStringValue math.MaxInt32", GetStringValue(math.MaxInt32))
+	fmt.Println("GetStringValue math.MaxInt64", GetStringValue(math.MaxInt64))
+	fmt.Println("GetStringValue math.MaxFloat32", GetStringValue(math.MaxFloat32))
+	fmt.Println("GetStringValue math.MaxFloat64", GetStringValue(math.MaxFloat64))
+
+}
 func TestBase(t *testing.T) {
 	fmt.Println("IsEmpty", IsEmpty(""))
 	fmt.Println("IsEmpty", IsEmpty("1"))

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Chain-Zhang/pinyin"
-	"strconv"
+	"github.com/shopspring/decimal"
 	"strings"
 	"time"
 )
@@ -42,42 +42,17 @@ func GetStringValue(value interface{}) (valueString string) {
 	}
 
 	switch v := value.(type) {
-	case int:
-		valueString = strconv.FormatInt(int64(v), 10)
+	case string:
+		valueString = v
 		break
-	case uint:
-		valueString = strconv.FormatInt(int64(v), 10)
-		break
-	case int8:
-		valueString = strconv.FormatInt(int64(v), 10)
-		break
-	case uint8:
-		valueString = strconv.FormatInt(int64(v), 10)
-		break
-	case int16:
-		valueString = strconv.FormatInt(int64(v), 10)
-		break
-	case uint16:
-		valueString = strconv.FormatInt(int64(v), 10)
-		break
-	case int32:
-		valueString = strconv.FormatInt(int64(v), 10)
-		break
-	case uint32:
-		valueString = strconv.FormatInt(int64(v), 10)
-		break
-	case int64:
-		valueString = strconv.FormatInt(v, 10)
-		break
-	case uint64:
-		valueString = strconv.FormatInt(int64(v), 10)
+	case int, uint, int8, uint8, int16, uint16, int32, uint32, int64, uint64:
+		valueString = fmt.Sprintf("%d", v)
 		break
 	case float32:
-		valueString = strconv.FormatFloat(float64(v), 'f', -1, 64)
+		valueString = decimal.NewFromFloat32(v).String()
 		break
 	case float64:
-		valueString = strconv.FormatFloat(v, 'f', -1, 64)
-		break
+		valueString = decimal.NewFromFloat(v).String()
 	case bool:
 		if v {
 			valueString = "1"
@@ -91,9 +66,6 @@ func GetStringValue(value interface{}) (valueString string) {
 		} else {
 			valueString = GetFormatByTime(v)
 		}
-		break
-	case string:
-		valueString = v
 		break
 	case []byte:
 		valueString = string(v)

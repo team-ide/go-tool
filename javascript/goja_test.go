@@ -6,6 +6,8 @@ import (
 )
 
 func TestScript(t *testing.T) {
+	var num = 9999999999999999
+	fmt.Println(num)
 	script := "1 + getUUID()"
 	context := NewContext()
 
@@ -16,6 +18,9 @@ func TestScript(t *testing.T) {
 	fmt.Println(res)
 
 	script = `
+let num = 9999999999999999
+console.log(getStringValue(num))
+
 let dir = getRootDir()
 console.log(dir)
 let paths = loadDirFilenames(dir)
