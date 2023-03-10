@@ -13,7 +13,8 @@ func TestGen(t *testing.T) {
 	var err error
 
 	rootDir := util.GetRootDir()
-	filenames, err := util.LoadDirFilenames(rootDir + "/util")
+	utilDir := rootDir + "/util/"
+	filenames, err := util.LoadDirFilenames(utilDir)
 	if err != nil {
 		panic("LoadDirFilenames error:" + err.Error())
 	}
@@ -23,7 +24,7 @@ func TestGen(t *testing.T) {
 			continue
 		}
 		var lines []string
-		lines, err = util.ReadLine(filename)
+		lines, err = util.ReadLine(utilDir + filename)
 		fmt.Println("---------------", filename, "---------------")
 		for row, line := range lines {
 			if !strings.HasPrefix(line, "func ") {

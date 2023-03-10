@@ -9,6 +9,9 @@ import (
 func NewContext() map[string]interface{} {
 	baseContext := map[string]interface{}{}
 
+	baseContext["console"] = map[string]interface{}{
+		"log": util.Logger.Info,
+	}
 	for _, funcInfo := range FuncList {
 		baseContext[funcInfo.Name] = funcInfo.Func
 	}

@@ -78,26 +78,38 @@ func init() {
 
 	AddFunc(&FuncInfo{
 		Name:    "loadDirFiles",
-		Comment: "加载目录下文件 读取文件内容",
+		Comment: "加载目录下文件 读取文件内容（key为文件名为相对路径）",
 		Func:    util.LoadDirFiles,
 	})
 
 	AddFunc(&FuncInfo{
 		Name:    "loadDirFilenames",
-		Comment: "加载目录下文件",
+		Comment: "加载目录下文件（文件名为相对路径）",
 		Func:    util.LoadDirFilenames,
 	})
 
 	AddFunc(&FuncInfo{
 		Name:    "readFile",
-		Comment: "读取文件内容",
+		Comment: "读取文件内容 返回 []byte",
 		Func:    util.ReadFile,
+	})
+
+	AddFunc(&FuncInfo{
+		Name:    "readFileString",
+		Comment: "读取文件内容 返回字符串",
+		Func:    util.ReadFileString,
 	})
 
 	AddFunc(&FuncInfo{
 		Name:    "writeFile",
 		Comment: "写入文件内容",
 		Func:    util.WriteFile,
+	})
+
+	AddFunc(&FuncInfo{
+		Name:    "writeFileString",
+		Comment: "写入文件内容",
+		Func:    util.WriteFileString,
 	})
 
 	AddFunc(&FuncInfo{

@@ -15,6 +15,7 @@ var (
 
 func init() {
 	rootDir, _ = os.Getwd()
+	rootDir = FormatPath(rootDir)
 }
 
 // GetRootDir 获取当前程序根路径
@@ -55,7 +56,7 @@ func PathExists(path string) (bool, error) {
 	return false, err
 }
 
-// LoadDirFiles 加载目录下文件 读取文件内容
+// LoadDirFiles 加载目录下文件 读取文件内容（key为文件名为相对路径）
 func LoadDirFiles(dir string) (fileMap map[string][]byte, err error) {
 	fileMap = map[string][]byte{}
 	var exist bool
@@ -66,21 +67,18 @@ func LoadDirFiles(dir string) (fileMap map[string][]byte, err error) {
 	if !exist {
 		return
 	}
+
+	formatDir := FormatPath(dir)
 	//获取当前目录下的所有文件或目录信息
-	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(formatDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		if info.IsDir() {
 
 		} else {
-			var abs string
-			abs, err = filepath.Abs(path)
-			if err != nil {
-				return err
-			}
-			fileAbsolutePath := filepath.ToSlash(abs)
-			name := strings.TrimPrefix(fileAbsolutePath, dir)
+			var abs = FormatPath(path)
+			name := strings.TrimPrefix(abs, formatDir)
 			name = strings.TrimPrefix(name, "/")
 			var f *os.File
 			f, err = os.Open(path)
@@ -100,7 +98,7 @@ func LoadDirFiles(dir string) (fileMap map[string][]byte, err error) {
 	return
 }
 
-// LoadDirFilenames 加载目录下文件
+// LoadDirFilenames 加载目录下文件（文件名为相对路径）
 func LoadDirFilenames(dir string) (filenames []string, err error) {
 	var exist bool
 	exist, err = PathExists(dir)
@@ -110,21 +108,16 @@ func LoadDirFilenames(dir string) (filenames []string, err error) {
 	if !exist {
 		return
 	}
-	//获取当前目录下的所有文件或目录信息
-	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+	formatDir := FormatPath(dir)
+	err = filepath.Walk(formatDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		if info.IsDir() {
 
 		} else {
-			var abs string
-			abs, err = filepath.Abs(path)
-			if err != nil {
-				return err
-			}
-			fileAbsolutePath := filepath.ToSlash(abs)
-			name := strings.TrimPrefix(fileAbsolutePath, dir)
+			var abs = FormatPath(path)
+			name := strings.TrimPrefix(abs, formatDir)
 			name = strings.TrimPrefix(name, "/")
 			filenames = append(filenames, name)
 		}
@@ -134,7 +127,7 @@ func LoadDirFilenames(dir string) (filenames []string, err error) {
 	return
 }
 
-// ReadFile 读取文件内容
+// ReadFile 读取文件内容 返回 []byte
 func ReadFile(filename string) (bs []byte, err error) {
 	var f *os.File
 	var exists bool
@@ -158,6 +151,16 @@ func ReadFile(filename string) (bs []byte, err error) {
 	return
 }
 
+// ReadFileString 读取文件内容 返回字符串
+func ReadFileString(filename string) (str string, err error) {
+	bs, err := ReadFile(filename)
+	if err != nil {
+		return
+	}
+	str = string(bs)
+	return
+}
+
 // WriteFile 写入文件内容
 func WriteFile(filename string, bs []byte) (err error) {
 	f, err := os.Create(filename)
@@ -170,6 +173,11 @@ func WriteFile(filename string, bs []byte) (err error) {
 		return
 	}
 	return
+}
+
+// WriteFileString 写入文件内容
+func WriteFileString(filename string, str string) (err error) {
+	return WriteFile(filename, []byte(str))
 }
 
 // ReadLine 逐行读取文件
