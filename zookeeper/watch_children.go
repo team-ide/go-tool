@@ -23,7 +23,7 @@ func newNodeEvent(str string) *NodeEvent {
 }
 
 // WatchChildren 监听子节点  子节点 新增 删除
-func (this_ *ZKService) WatchChildren(path string, listen func(data *WatchChildrenListenData) (finish bool)) (err error) {
+func (this_ *Service) WatchChildren(path string, listen func(data *WatchChildrenListenData) (finish bool)) (err error) {
 	if listen == nil {
 		err = errors.New("listen is null")
 		return
@@ -37,7 +37,7 @@ func (this_ *ZKService) WatchChildren(path string, listen func(data *WatchChildr
 		return
 	}
 	cache := &watchChildrenCache{
-		ZKService:     this_,
+		Service:       this_,
 		Path:          path,
 		listen:        listen,
 		childrenLock:  &sync.Mutex{},
@@ -58,7 +58,7 @@ type watchChildrenCache struct {
 	Path     string
 	Children []string
 	listen   func(data *WatchChildrenListenData) (finish bool)
-	*ZKService
+	*Service
 	childrenLock  sync.Locker
 	childrenCache map[string]bool
 }

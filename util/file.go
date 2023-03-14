@@ -193,6 +193,7 @@ func ReadLine(filename string) (lines []string, err error) {
 		line = strings.TrimSpace(line)
 		if err != nil {
 			if err == io.EOF { //读取结束，会报EOF
+				err = nil
 				return
 			}
 			return nil, err

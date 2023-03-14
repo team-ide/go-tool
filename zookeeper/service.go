@@ -18,16 +18,19 @@ type Config struct {
 }
 
 // New 创建zookeeper客户端
-func New(config Config) (service *ZKService, err error) {
-	service = &ZKService{
+func New(config Config) (IService, error) {
+	service := &Service{
 		Config: config,
 	}
-	err = service.init()
-	return
+	err := service.init()
+	if err != nil {
+		return nil, err
+	}
+	return service, nil
 }
 
-// ZKService 注册处理器在线信息等
-type ZKService struct {
+// Service 注册处理器在线信息等
+type Service struct {
 	Config
 	zkConn  *zk.Conn        //zk连接
 	zkEvent <-chan zk.Event // zk事件通知管道
@@ -42,7 +45,7 @@ func (*defaultLogger) Printf(format string, args ...interface{}) {
 	util.Logger.Info(fmt.Sprintf("zookeeper "+format, args...))
 }
 
-func (this_ *ZKService) init() (err error) {
+func (this_ *Service) init() (err error) {
 	this_.zkConn, this_.zkEvent, err = zk.Connect(this_.GetServers(), time.Second*10, func(c *zk.Conn) {
 		c.SetLogger(ZKLogger)
 	})
@@ -64,7 +67,7 @@ func (this_ *ZKService) init() (err error) {
 	return
 }
 
-func (this_ *ZKService) GetServers() []string {
+func (this_ *Service) GetServers() []string {
 	var servers []string
 	if this_.Address == "" {
 		return servers
@@ -79,17 +82,17 @@ func (this_ *ZKService) GetServers() []string {
 	return servers
 }
 
-func (this_ *ZKService) Stop() {
+func (this_ *Service) Stop() {
 	this_.isStop = true
 	this_.GetConn().Close()
 }
 
-func (this_ *ZKService) GetConn() *zk.Conn {
+func (this_ *Service) GetConn() *zk.Conn {
 	return this_.zkConn
 }
 
 // Create 创建节点
-func (this_ *ZKService) Create(path string, data []byte, mode int32) (err error) {
+func (this_ *Service) Create(path string, data []byte, mode int32) (err error) {
 	isExist, err := this_.Exists(path)
 	if err != nil {
 		return
@@ -122,7 +125,7 @@ type Info struct {
 }
 
 // Info ZK信息
-func (this_ *ZKService) Info() (info *Info, err error) {
+func (this_ *Service) Info() (info *Info, err error) {
 	info = &Info{}
 	info.SessionID = this_.GetConn().SessionID()
 	info.Server = this_.GetConn().Server()
@@ -131,7 +134,7 @@ func (this_ *ZKService) Info() (info *Info, err error) {
 }
 
 // Set 修改节点数据
-func (this_ *ZKService) Set(path string, data []byte) (err error) {
+func (this_ *Service) Set(path string, data []byte) (err error) {
 	isExist, state, err := this_.GetConn().Exists(path)
 	if err != nil {
 		return
@@ -147,7 +150,7 @@ func (this_ *ZKService) Set(path string, data []byte) (err error) {
 }
 
 // CreateIfNotExists 一层层检查，如果不存在则创建
-func (this_ *ZKService) CreateIfNotExists(path string, data []byte) (err error) {
+func (this_ *Service) CreateIfNotExists(path string, data []byte) (err error) {
 	isExist, err := this_.Exists(path)
 	if err != nil {
 		return
@@ -175,7 +178,7 @@ func (this_ *ZKService) CreateIfNotExists(path string, data []byte) (err error) 
 }
 
 // Exists 判断节点是否存在
-func (this_ *ZKService) Exists(path string) (isExist bool, err error) {
+func (this_ *Service) Exists(path string) (isExist bool, err error) {
 	isExist, _, err = this_.GetConn().Exists(path)
 	return
 }
@@ -201,7 +204,7 @@ type NodeInfo struct {
 }
 
 // Get 获取节点信息
-func (this_ *ZKService) Get(path string) (info *NodeInfo, err error) {
+func (this_ *Service) Get(path string) (info *NodeInfo, err error) {
 
 	data, stat, err := this_.GetConn().Get(path)
 	if err != nil {
@@ -234,7 +237,7 @@ func StatToInfo(stat *zk.Stat) (info *StatInfo) {
 }
 
 // Stat 获取节点状态
-func (this_ *ZKService) Stat(path string) (info *StatInfo, err error) {
+func (this_ *Service) Stat(path string) (info *StatInfo, err error) {
 	_, stat, err := this_.GetConn().Exists(path)
 	if err != nil {
 		return
@@ -246,14 +249,14 @@ func (this_ *ZKService) Stat(path string) (info *StatInfo, err error) {
 }
 
 // GetChildren 查询子节点
-func (this_ *ZKService) GetChildren(path string) (children []string, err error) {
+func (this_ *Service) GetChildren(path string) (children []string, err error) {
 	children, _, err = this_.GetConn().Children(path)
 	sort.Strings(children)
 	return
 }
 
 // Delete 删除节点 如果有子节点，则子节点一同删除
-func (this_ *ZKService) Delete(path string) (err error) {
+func (this_ *Service) Delete(path string) (err error) {
 	var isExist bool
 	var stat *zk.Stat
 	isExist, stat, err = this_.GetConn().Exists(path)

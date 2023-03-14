@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"github.com/Shopify/sarama"
 	"github.com/team-ide/go-tool/util"
-	"io/ioutil"
 	"sort"
 	"strconv"
 	"strings"
@@ -25,28 +24,31 @@ type Config struct {
 }
 
 // New 创建kafka服务
-func New(config Config) (*KafkaService, error) {
-	service := &KafkaService{
+func New(config Config) (IService, error) {
+	service := &Service{
 		Config: config,
 	}
 	err := service.init()
-	return service, err
+	if err != nil {
+		return nil, err
+	}
+	return service, nil
 }
 
-// KafkaService 注册处理器在线信息等
-type KafkaService struct {
+// Service 注册处理器在线信息等
+type Service struct {
 	Config
 }
 
-func (this_ *KafkaService) init() (err error) {
+func (this_ *Service) init() (err error) {
 	return
 }
 
-func (this_ *KafkaService) Stop() {
+func (this_ *Service) Stop() {
 
 }
 
-func (this_ *KafkaService) GetServers() []string {
+func (this_ *Service) GetServers() []string {
 	var servers []string
 	if this_.Address == "" {
 		return servers
@@ -61,7 +63,7 @@ func (this_ *KafkaService) GetServers() []string {
 	return servers
 }
 
-func (this_ *KafkaService) getClient() (saramaClient sarama.Client, err error) {
+func (this_ *Service) getClient() (saramaClient sarama.Client, err error) {
 	config := sarama.NewConfig()
 	config.Consumer.Return.Errors = true
 	config.Consumer.Offsets.Initial = sarama.OffsetOldest
@@ -77,7 +79,7 @@ func (this_ *KafkaService) getClient() (saramaClient sarama.Client, err error) {
 	if this_.CertPath != "" {
 		certPool := x509.NewCertPool()
 		var pemCerts []byte
-		pemCerts, err = ioutil.ReadFile(this_.CertPath)
+		pemCerts, err = util.ReadFile(this_.CertPath)
 		if err != nil {
 			return
 		}
@@ -102,7 +104,7 @@ func (this_ *KafkaService) getClient() (saramaClient sarama.Client, err error) {
 	return
 }
 
-func (this_ *KafkaService) Info() (res interface{}, err error) {
+func (this_ *Service) Info() (res interface{}, err error) {
 
 	return
 }
@@ -118,7 +120,7 @@ type TopicInfo struct {
 	Topic string `json:"topic"`
 }
 
-func (this_ *KafkaService) GetTopics() (res []*TopicInfo, err error) {
+func (this_ *Service) GetTopics() (res []*TopicInfo, err error) {
 	var saramaClient sarama.Client
 	saramaClient, err = this_.getClient()
 	if err != nil {
@@ -142,7 +144,7 @@ func (this_ *KafkaService) GetTopics() (res []*TopicInfo, err error) {
 	return
 }
 
-func (this_ *KafkaService) Pull(groupId string, topics []string, PullSize int, PullTimeout int, keyType, valueType string) (msgList []*Message, err error) {
+func (this_ *Service) Pull(groupId string, topics []string, PullSize int, PullTimeout int, keyType, valueType string) (msgList []*Message, err error) {
 	if PullSize <= 0 {
 		PullSize = 10
 	}
@@ -217,7 +219,7 @@ func (handler *consumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSessi
 	return nil
 }
 
-func (this_ *KafkaService) MarkOffset(groupId string, topic string, partition int32, offset int64) (err error) {
+func (this_ *Service) MarkOffset(groupId string, topic string, partition int32, offset int64) (err error) {
 	var saramaClient sarama.Client
 	saramaClient, err = this_.getClient()
 	if err != nil {
@@ -237,7 +239,7 @@ func (this_ *KafkaService) MarkOffset(groupId string, topic string, partition in
 	return
 }
 
-func (this_ *KafkaService) ResetOffset(groupId string, topic string, partition int32, offset int64) (err error) {
+func (this_ *Service) ResetOffset(groupId string, topic string, partition int32, offset int64) (err error) {
 	var saramaClient sarama.Client
 	saramaClient, err = this_.getClient()
 	if err != nil {
@@ -259,7 +261,7 @@ func (this_ *KafkaService) ResetOffset(groupId string, topic string, partition i
 	return
 }
 
-func (this_ *KafkaService) CreatePartitions(topic string, count int32) (err error) {
+func (this_ *Service) CreatePartitions(topic string, count int32) (err error) {
 	var saramaClient sarama.Client
 	saramaClient, err = this_.getClient()
 	if err != nil {
@@ -278,7 +280,7 @@ func (this_ *KafkaService) CreatePartitions(topic string, count int32) (err erro
 	return
 }
 
-func (this_ *KafkaService) CreateTopic(topic string, numPartitions int32, replicationFactor int16) (err error) {
+func (this_ *Service) CreateTopic(topic string, numPartitions int32, replicationFactor int16) (err error) {
 	var saramaClient sarama.Client
 	saramaClient, err = this_.getClient()
 	if err != nil {
@@ -306,7 +308,7 @@ func (this_ *KafkaService) CreateTopic(topic string, numPartitions int32, replic
 	return
 }
 
-func (this_ *KafkaService) DeleteTopic(topic string) (err error) {
+func (this_ *Service) DeleteTopic(topic string) (err error) {
 	var saramaClient sarama.Client
 	saramaClient, err = this_.getClient()
 	if err != nil {
@@ -325,7 +327,7 @@ func (this_ *KafkaService) DeleteTopic(topic string) (err error) {
 	return
 }
 
-func (this_ *KafkaService) DeleteConsumerGroup(groupId string) (err error) {
+func (this_ *Service) DeleteConsumerGroup(groupId string) (err error) {
 	var saramaClient sarama.Client
 	saramaClient, err = this_.getClient()
 	if err != nil {
@@ -344,7 +346,7 @@ func (this_ *KafkaService) DeleteConsumerGroup(groupId string) (err error) {
 	return
 }
 
-func (this_ *KafkaService) DeleteRecords(topic string, partitionOffsets map[int32]int64) (err error) {
+func (this_ *Service) DeleteRecords(topic string, partitionOffsets map[int32]int64) (err error) {
 	var saramaClient sarama.Client
 	saramaClient, err = this_.getClient()
 	if err != nil {
@@ -364,7 +366,7 @@ func (this_ *KafkaService) DeleteRecords(topic string, partitionOffsets map[int3
 }
 
 // NewSyncProducer 创建生产者
-func (this_ *KafkaService) NewSyncProducer() (syncProducer sarama.SyncProducer, err error) {
+func (this_ *Service) NewSyncProducer() (syncProducer sarama.SyncProducer, err error) {
 
 	config := sarama.NewConfig()
 	config.Producer.Return.Successes = true
@@ -380,7 +382,7 @@ func (this_ *KafkaService) NewSyncProducer() (syncProducer sarama.SyncProducer, 
 	if this_.CertPath != "" {
 		certPool := x509.NewCertPool()
 		var pemCerts []byte
-		pemCerts, err = ioutil.ReadFile(this_.CertPath)
+		pemCerts, err = util.ReadFile(this_.CertPath)
 		if err != nil {
 			return
 		}
@@ -410,7 +412,7 @@ type ProducerMessage struct {
 }
 
 // Push 推送消息到kafka
-func (this_ *KafkaService) Push(msg *Message) (err error) {
+func (this_ *Service) Push(msg *Message) (err error) {
 	producerMessage, err := MessageToProducerMessage(msg)
 	if err != nil {
 		return
