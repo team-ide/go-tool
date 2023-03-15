@@ -76,13 +76,13 @@ type Task struct {
 	ErrorContinue bool  `json:"errorContinue"`
 	UseTime       int64 `json:"useTime"`
 
-	IsEnd     bool       `json:"isEnd"`
-	StartTime time.Time  `json:"startTime,omitempty"`
-	NowTime   time.Time  `json:"nowTime,omitempty"`
-	EndTime   time.Time  `json:"endTime,omitempty"`
-	Error     string     `json:"error,omitempty"`
-	IsStop    bool       `json:"isStop"`
-	Service   *V7Service `json:"-"`
+	IsEnd     bool      `json:"isEnd"`
+	StartTime time.Time `json:"startTime,omitempty"`
+	NowTime   time.Time `json:"nowTime,omitempty"`
+	EndTime   time.Time `json:"endTime,omitempty"`
+	Error     string    `json:"error,omitempty"`
+	IsStop    bool      `json:"isStop"`
+	Service   IService  `json:"-"`
 	taskList  []*data_engine.StrategyTask
 
 	ReadyDataStatisticsList []*data_engine.DataStatistics `json:"readyDataStatisticsList"`

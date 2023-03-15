@@ -104,7 +104,33 @@ func (this_ *Service) getClient() (saramaClient sarama.Client, err error) {
 	return
 }
 
-func (this_ *Service) Info() (res interface{}, err error) {
+type Info struct {
+	Brokers []*BrokerInfo `json:"brokers"`
+}
+type BrokerInfo struct {
+	Id        int32  `json:"id"`
+	Addr      string `json:"addr"`
+	Rack      string `json:"rack"`
+	Connected bool   `json:"connected"`
+}
+
+func (this_ *Service) Info() (res *Info, err error) {
+	var saramaClient sarama.Client
+	saramaClient, err = this_.getClient()
+	if err != nil {
+		return
+	}
+	defer closeSaramaClient(saramaClient)
+	brokers := saramaClient.Brokers()
+
+	res = &Info{}
+	for _, broker := range brokers {
+		brokerInfo := &BrokerInfo{}
+		brokerInfo.Id = broker.ID()
+		brokerInfo.Addr = broker.Addr()
+		brokerInfo.Rack = broker.Rack()
+		brokerInfo.Connected, _ = broker.Connected()
+	}
 
 	return
 }

@@ -4,6 +4,7 @@ import "github.com/Shopify/sarama"
 
 type IService interface {
 	Stop()
+	Info() (res *Info, err error)
 	GetTopics() (res []*TopicInfo, err error)
 	Pull(groupId string, topics []string, PullSize int, PullTimeout int, keyType, valueType string) (msgList []*Message, err error)
 	MarkOffset(groupId string, topic string, partition int32, offset int64) (err error)
