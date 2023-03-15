@@ -7,41 +7,30 @@ import (
 	"errors"
 	"github.com/go-redis/redis/v8"
 	"github.com/team-ide/go-tool/util"
-	"io/ioutil"
 	"time"
 )
 
-func CreateRedisService(address string, username string, auth string, certPath string) (service *V8Service, err error) {
-	service = &V8Service{
+// NewRedisService 创建客户端
+func NewRedisService(address string, username string, auth string, certPath string) (IService, error) {
+	service := &V8Service{
 		address:  address,
 		username: username,
 		auth:     auth,
 		certPath: certPath,
 	}
-	err = service.init()
-	return
-}
-
-type ValueInfo struct {
-	Database    int         `json:"database"`
-	Key         string      `json:"key"`
-	ValueType   string      `json:"valueType"`
-	Value       interface{} `json:"value"`
-	ValueCount  int64       `json:"valueCount"`
-	ValueStart  int64       `json:"valueStart"`
-	ValueEnd    int64       `json:"valueEnd"`
-	Cursor      uint64      `json:"cursor"`
-	MemoryUsage int64       `json:"memoryUsage"`
-	TTL         int64       `json:"ttl"`
+	err := service.init()
+	if err != nil {
+		return nil, err
+	}
+	return service, nil
 }
 
 type V8Service struct {
-	address     string
-	auth        string
-	username    string
-	client      *redis.Client
-	lastUseTime int64
-	certPath    string
+	address  string
+	auth     string
+	username string
+	client   *redis.Client
+	certPath string
 }
 
 func (this_ *V8Service) init() (err error) {
@@ -56,7 +45,7 @@ func (this_ *V8Service) init() (err error) {
 	if this_.certPath != "" {
 		certPool := x509.NewCertPool()
 		var pemCerts []byte
-		pemCerts, err = ioutil.ReadFile(this_.certPath)
+		pemCerts, err = util.ReadFile(this_.certPath)
 		if err != nil {
 			return
 		}
@@ -77,26 +66,22 @@ func (this_ *V8Service) init() (err error) {
 	return
 }
 
-func (this_ *V8Service) GetWaitTime() int64 {
-	return 10 * 60 * 1000
-}
-
-func (this_ *V8Service) GetLastUseTime() int64 {
-	return this_.lastUseTime
-}
-
-func (this_ *V8Service) SetLastUseTime() {
-	this_.lastUseTime = util.GetNowTime()
-}
 func (this_ *V8Service) Stop() {
 	_ = this_.client.Close()
 }
 
-func (this_ *V8Service) GetClient(ctx context.Context, database int) (client redis.Cmdable, err error) {
-	defer func() {
-		this_.lastUseTime = util.GetNowTime()
-	}()
-	cmd := this_.client.Do(ctx, "select", database)
+func formatParam(param *Param) *Param {
+	if param == nil {
+		param = &Param{}
+	}
+	if param.Ctx == nil {
+		param.Ctx = context.Background()
+	}
+	return param
+}
+func (this_ *V8Service) GetClient(param *Param) (client redis.Cmdable, err error) {
+	param = formatParam(param)
+	cmd := this_.client.Do(param.Ctx, "select", param.Database)
 	_, err = cmd.Result()
 	if err != nil {
 		return
@@ -105,182 +90,223 @@ func (this_ *V8Service) GetClient(ctx context.Context, database int) (client red
 	return
 }
 
-func (this_ *V8Service) Info(ctx context.Context) (res string, err error) {
+func (this_ *V8Service) Info(param *Param) (res string, err error) {
+	param = formatParam(param)
 
-	client, err := this_.GetClient(ctx, 0)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return Info(ctx, client)
+	return Info(param.Ctx, client)
 }
 
-func (this_ *V8Service) Keys(ctx context.Context, database int, pattern string, size int64) (keysResult *KeysResult, err error) {
+func (this_ *V8Service) Keys(param *Param, pattern string, size int64) (keysResult *KeysResult, err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return Keys(ctx, client, database, pattern, size)
+	return Keys(param.Ctx, client, param.Database, pattern, size)
 }
 
-func (this_ *V8Service) Expire(ctx context.Context, database int, key string, expire int64) (res bool, err error) {
+func (this_ *V8Service) Expire(param *Param, key string, expire int64) (res bool, err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return Expire(ctx, client, key, expire)
+	return Expire(param.Ctx, client, key, expire)
 }
 
-func (this_ *V8Service) TTL(ctx context.Context, database int, key string) (res int64, err error) {
+func (this_ *V8Service) TTL(param *Param, key string) (res int64, err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return TTL(ctx, client, key)
+	return TTL(param.Ctx, client, key)
 }
 
-func (this_ *V8Service) Persist(ctx context.Context, database int, key string) (res bool, err error) {
+func (this_ *V8Service) Persist(param *Param, key string) (res bool, err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return Persist(ctx, client, key)
+	return Persist(param.Ctx, client, key)
 }
 
-func (this_ *V8Service) Exists(ctx context.Context, database int, key string) (res int64, err error) {
+func (this_ *V8Service) Exists(param *Param, key string) (res int64, err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return Exists(ctx, client, key)
+	return Exists(param.Ctx, client, key)
 }
 
-func (this_ *V8Service) Get(ctx context.Context, database int, key string, valueStart, valueSize int64) (valueInfo *ValueInfo, err error) {
+func (this_ *V8Service) GetValueInfo(param *Param, key string, valueStart, valueSize int64) (valueInfo *ValueInfo, err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return Get(ctx, client, database, key, valueStart, valueSize)
+	return GetValueInfo(param.Ctx, client, param.Database, key, valueStart, valueSize)
 }
 
-func (this_ *V8Service) Set(ctx context.Context, database int, key string, value string) (err error) {
+func (this_ *V8Service) Set(param *Param, key string, value string) (err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return Set(ctx, client, key, value)
+	return Set(param.Ctx, client, key, value)
 }
 
-func (this_ *V8Service) SAdd(ctx context.Context, database int, key string, value string) (err error) {
+func (this_ *V8Service) SAdd(param *Param, key string, value string) (err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return SAdd(ctx, client, key, value)
+	return SAdd(param.Ctx, client, key, value)
 }
 
-func (this_ *V8Service) SRem(ctx context.Context, database int, key string, value string) (err error) {
+func (this_ *V8Service) SRem(param *Param, key string, value string) (err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return SRem(ctx, client, key, value)
+	return SRem(param.Ctx, client, key, value)
 }
 
-func (this_ *V8Service) LPush(ctx context.Context, database int, key string, value string) (err error) {
+func (this_ *V8Service) LPush(param *Param, key string, value string) (err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return LPush(ctx, client, key, value)
+	return LPush(param.Ctx, client, key, value)
 }
 
-func (this_ *V8Service) RPush(ctx context.Context, database int, key string, value string) (err error) {
+func (this_ *V8Service) RPush(param *Param, key string, value string) (err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return RPush(ctx, client, key, value)
+	return RPush(param.Ctx, client, key, value)
 }
 
-func (this_ *V8Service) LSet(ctx context.Context, database int, key string, index int64, value string) (err error) {
+func (this_ *V8Service) LSet(param *Param, key string, index int64, value string) (err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return LSet(ctx, client, key, index, value)
+	return LSet(param.Ctx, client, key, index, value)
 }
 
-func (this_ *V8Service) LRem(ctx context.Context, database int, key string, count int64, value string) (err error) {
+func (this_ *V8Service) LRem(param *Param, key string, count int64, value string) (err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return LRem(ctx, client, key, count, value)
+	return LRem(param.Ctx, client, key, count, value)
 }
 
-func (this_ *V8Service) HSet(ctx context.Context, database int, key string, field string, value string) (err error) {
+func (this_ *V8Service) HSet(param *Param, key string, field string, value string) (err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return HSet(ctx, client, key, field, value)
+	return HSet(param.Ctx, client, key, field, value)
 }
 
-func (this_ *V8Service) HDel(ctx context.Context, database int, key string, field string) (err error) {
+func (this_ *V8Service) HGet(param *Param, key string, field string) (value string, err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return HDel(ctx, client, key, field)
+	return HGet(param.Ctx, client, key, field)
 }
 
-func (this_ *V8Service) Del(ctx context.Context, database int, key string) (count int, err error) {
+func (this_ *V8Service) Get(param *Param, key string) (value string, err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return Del(ctx, client, key)
+	return Get(param.Ctx, client, key)
 }
 
-func (this_ *V8Service) DelPattern(ctx context.Context, database int, pattern string) (count int, err error) {
+func (this_ *V8Service) SetBit(param *Param, key string, offset int64, value int) (err error) {
 
-	client, err := this_.GetClient(ctx, database)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return DelPattern(ctx, client, database, pattern)
+	return SetBit(param.Ctx, client, key, offset, value)
+}
+
+func (this_ *V8Service) BitCount(param *Param, key string) (count int64, err error) {
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	return BitCount(param.Ctx, client, key)
+}
+
+func (this_ *V8Service) HDel(param *Param, key string, field string) (err error) {
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	return HDel(param.Ctx, client, key, field)
+}
+
+func (this_ *V8Service) Del(param *Param, key string) (count int, err error) {
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	return Del(param.Ctx, client, key)
+}
+
+func (this_ *V8Service) DelPattern(param *Param, pattern string) (count int, err error) {
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	return DelPattern(param.Ctx, client, param.Database, pattern)
 }

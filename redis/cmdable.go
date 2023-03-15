@@ -95,7 +95,7 @@ func TTL(ctx context.Context, client redis.Cmdable, key string) (res int64, err 
 	return
 }
 
-func Get(ctx context.Context, client redis.Cmdable, database int, key string, valueStart, valueSize int64) (valueInfo *ValueInfo, err error) {
+func GetValueInfo(ctx context.Context, client redis.Cmdable, database int, key string, valueStart, valueSize int64) (valueInfo *ValueInfo, err error) {
 	var valueType string
 	valueType, err = ValueType(ctx, client, key)
 	if err != nil {
@@ -210,6 +210,13 @@ func Get(ctx context.Context, client redis.Cmdable, database int, key string, va
 	valueInfo.ValueType = valueType
 	valueInfo.Value = value
 
+	return
+}
+
+func Get(ctx context.Context, client redis.Cmdable, key string) (value string, err error) {
+
+	cmd := client.Get(ctx, key)
+	value, err = cmd.Result()
 	return
 }
 
