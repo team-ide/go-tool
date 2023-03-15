@@ -3,6 +3,7 @@ package redis
 import "context"
 
 type IService interface {
+	Stop()
 	Info(param *Param) (res string, err error)
 	Keys(param *Param, pattern string, size int64) (keysResult *KeysResult, err error)
 	Expire(param *Param, key string, expire int64) (res bool, err error)

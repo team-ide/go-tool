@@ -3,6 +3,7 @@ package elasticsearch
 import "github.com/olivere/elastic/v7"
 
 type IService interface {
+	Stop()
 	Info() (res *elastic.NodesInfoResponse, err error)
 	DeleteIndex(indexName string) (err error)
 	CreateIndex(indexName string, bodyJSON map[string]interface{}) (err error)
