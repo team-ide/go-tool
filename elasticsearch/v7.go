@@ -30,42 +30,26 @@ func New(config Config) (IService, error) {
 		password: config.Password,
 		certPath: config.CertPath,
 	}
-	err := service.Init()
+	err := service.init()
 	return service, err
 }
 
 // V7Service 注册处理器在线信息等
 type V7Service struct {
-	url         string
-	username    string
-	password    string
-	certPath    string
-	lastUseTime int64
-	client      *elastic.Client
-	clientLock  sync.Mutex
+	url        string
+	username   string
+	password   string
+	certPath   string
+	client     *elastic.Client
+	clientLock sync.Mutex
 }
 
-func (this_ *V7Service) Init() error {
+func (this_ *V7Service) init() error {
 	var err error
 	return err
 }
 
-func (this_ *V7Service) GetWaitTime() int64 {
-	return 10 * 60 * 1000
-}
-
-func (this_ *V7Service) GetLastUseTime() int64 {
-	return this_.lastUseTime
-}
-
-func (this_ *V7Service) SetLastUseTime() {
-	this_.lastUseTime = util.GetNowTime()
-}
-
 func (this_ *V7Service) GetClient() (client *elastic.Client, err error) {
-	defer func() {
-		this_.lastUseTime = util.GetNowTime()
-	}()
 	this_.clientLock.Lock()
 	defer this_.clientLock.Unlock()
 	if this_.client != nil && this_.client.IsRunning() {

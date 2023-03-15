@@ -1,6 +1,8 @@
 package util
 
 import (
+	"errors"
+	"os"
 	"reflect"
 )
 
@@ -96,5 +98,40 @@ func ArrayIndexOf(array interface{}, v interface{}) (index int) {
 			}
 		}
 	}
+	return
+}
+
+var (
+	tempDir = ""
+)
+
+// SetTempDir 设置临时目录
+func SetTempDir(dir string) {
+	tempDir = dir
+}
+
+// GetTempDir 获取临时目录
+func GetTempDir() (dir string, err error) {
+	if tempDir != "" {
+		dir = tempDir
+		return
+	}
+	tempDir = os.TempDir()
+	tempDir = tempDir + "/go-tool-temp"
+	tempDir = FormatPath(tempDir)
+
+	exists, err := PathExists(tempDir)
+	if err != nil {
+		err = errors.New("PathExists error,path:" + tempDir + ",error:" + err.Error())
+		return
+	}
+	if !exists {
+		err = os.MkdirAll(tempDir, os.ModePerm)
+		if err != nil {
+			err = errors.New("MkdirAll error,path:" + tempDir + ",error:" + err.Error())
+			return
+		}
+	}
+	dir = tempDir
 	return
 }

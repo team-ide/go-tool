@@ -67,6 +67,12 @@ func TestFile(t *testing.T) {
 		panic("LoadDirFilenames error:" + err.Error())
 	}
 	fmt.Println("LoadDirFilenames", len(filenames))
+
+	dir, err := GetTempDir()
+	if err != nil {
+		panic("GetTempDir error:" + err.Error())
+	}
+	fmt.Println("GetTempDir", dir)
 }
 
 func TestAes(t *testing.T) {

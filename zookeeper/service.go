@@ -11,6 +11,14 @@ import (
 	"time"
 )
 
+var ZKLogger zk.Logger = &defaultLogger{}
+
+type defaultLogger struct{}
+
+func (*defaultLogger) Printf(format string, args ...interface{}) {
+	util.Logger.Info(fmt.Sprintf("zookeeper log:"+format, args...))
+}
+
 type Config struct {
 	Address  string `json:"address"`
 	Username string `json:"username,omitempty"`
@@ -37,14 +45,6 @@ type Service struct {
 	isStop  bool
 }
 
-var ZKLogger zk.Logger = &defaultLogger{}
-
-type defaultLogger struct{}
-
-func (*defaultLogger) Printf(format string, args ...interface{}) {
-	util.Logger.Info(fmt.Sprintf("zookeeper "+format, args...))
-}
-
 func (this_ *Service) init() (err error) {
 	this_.zkConn, this_.zkEvent, err = zk.Connect(this_.GetServers(), time.Second*10, func(c *zk.Conn) {
 		c.SetLogger(ZKLogger)
@@ -64,6 +64,7 @@ func (this_ *Service) init() (err error) {
 			return
 		}
 	}
+	this_.isStop = false
 	return
 }
 
