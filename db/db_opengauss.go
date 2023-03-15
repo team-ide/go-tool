@@ -18,7 +18,7 @@ func init() {
 		matches:     []string{"opengauss"},
 	})
 	if err != nil {
-		util.Logger.Error("init opengauss db error", zap.Error(err))
-		panic("init opengauss db error:" + err.Error())
+		util.Logger.Error("init OpenGauss db error", zap.Error(err))
+		panic("init OpenGauss db error:" + err.Error())
 	}
 }

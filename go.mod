@@ -11,6 +11,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/shopspring/decimal v1.3.1
+	github.com/tealeg/xlsx v1.0.5
 	github.com/team-ide/go-dialect v1.9.0
 	github.com/team-ide/go-driver v1.2.1
 	go.uber.org/zap v1.24.0
@@ -50,7 +51,6 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
-	github.com/tealeg/xlsx v1.0.5 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
