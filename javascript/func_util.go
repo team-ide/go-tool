@@ -53,6 +53,18 @@ func init() {
 	})
 
 	AddFunc(&FuncInfo{
+		Name:    "setTempDir",
+		Comment: "设置临时目录",
+		Func:    util.SetTempDir,
+	})
+
+	AddFunc(&FuncInfo{
+		Name:    "getTempDir",
+		Comment: "获取临时目录",
+		Func:    util.GetTempDir,
+	})
+
+	AddFunc(&FuncInfo{
 		Name:    "getRootDir",
 		Comment: "获取当前程序根路径",
 		Func:    util.GetRootDir,
@@ -206,6 +218,12 @@ func init() {
 		Name:    "firstToLower",
 		Comment: "字符首字母小写",
 		Func:    util.FirstToLower,
+	})
+
+	AddFunc(&FuncInfo{
+		Name:    "marshal",
+		Comment: "转换为大驼峰命名法则 首字母大写，“_” 忽略后大写",
+		Func:    util.Marshal,
 	})
 
 	AddFunc(&FuncInfo{
