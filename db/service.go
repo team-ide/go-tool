@@ -106,8 +106,8 @@ func (this_ *Service) Open() (err error) {
 	return
 }
 
-func (this_ *Service) Stop() (err error) {
-	err = this_.db.Close()
+func (this_ *Service) Stop() {
+	_ = this_.db.Close()
 	return
 }
 
@@ -286,6 +286,11 @@ func (this_ *Service) TablesSelect(param *Param, ownerName string) (tables []*di
 
 func (this_ *Service) TableDetail(param *Param, ownerName string, tableName string) (tableDetail *dialect.TableModel, err error) {
 	tableDetail, err = worker.TableDetail(this_.db, this_.Dialect, param.ParamModel, ownerName, tableName, true)
+	return
+}
+
+func (this_ *Service) OwnerCreateSql(param *Param, owner *dialect.OwnerModel) (sqlList []string, err error) {
+	sqlList, err = this_.Dialect.OwnerCreateSql(param.ParamModel, owner)
 	return
 }
 

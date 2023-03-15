@@ -6,6 +6,7 @@ import (
 )
 
 type IService interface {
+	Stop()
 	GetDialectName() string
 	Exec(sql string, args []interface{}) (rowsAffected int64, err error)
 	Execs(sqlList []string, argsList [][]interface{}) (rowsAffected int64, err error)
@@ -16,6 +17,7 @@ type IService interface {
 	QueryPage(sql string, args []interface{}, list interface{}, page *worker.Page) (err error)
 	QueryMapPage(sql string, args []interface{}, page *worker.Page) (list []map[string]interface{}, err error)
 	Info() (res interface{}, err error)
+	OwnerCreateSql(param *Param, owner *dialect.OwnerModel) (sqlList []string, err error)
 	OwnersSelect(param *Param) (owners []*dialect.OwnerModel, err error)
 	TablesSelect(param *Param, ownerName string) (tables []*dialect.TableModel, err error)
 	TableDetail(param *Param, ownerName string, tableName string) (tableDetail *dialect.TableModel, err error)
