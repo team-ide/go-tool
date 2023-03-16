@@ -19,13 +19,13 @@ type IService interface {
 	LSet(param *Param, key string, index int64, value string) (err error)
 	LRem(param *Param, key string, count int64, value string) (err error)
 	HSet(param *Param, key string, field string, value string) (err error)
-	HGet(param *Param, key string, field string) (value string, err error)
+	HGet(param *Param, key string, field string) (value string, notFound bool, err error)
 	HDel(param *Param, key string, field string) (err error)
 	Del(param *Param, key string) (count int, err error)
 	DelPattern(param *Param, pattern string) (count int, err error)
 	SetBit(param *Param, key string, offset int64, value int) (err error)
 	BitCount(param *Param, key string) (count int64, err error)
-	Get(param *Param, key string) (value string, err error)
+	Get(param *Param, key string) (value string, notFound bool, err error)
 }
 
 type ValueInfo struct {

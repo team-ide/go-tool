@@ -102,6 +102,7 @@ func (this_ *V8Service) Info(param *Param) (res string, err error) {
 }
 
 func (this_ *V8Service) Keys(param *Param, pattern string, size int64) (keysResult *KeysResult, err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -112,6 +113,7 @@ func (this_ *V8Service) Keys(param *Param, pattern string, size int64) (keysResu
 }
 
 func (this_ *V8Service) Expire(param *Param, key string, expire int64) (res bool, err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -122,6 +124,7 @@ func (this_ *V8Service) Expire(param *Param, key string, expire int64) (res bool
 }
 
 func (this_ *V8Service) TTL(param *Param, key string) (res int64, err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -132,6 +135,7 @@ func (this_ *V8Service) TTL(param *Param, key string) (res int64, err error) {
 }
 
 func (this_ *V8Service) Persist(param *Param, key string) (res bool, err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -142,6 +146,7 @@ func (this_ *V8Service) Persist(param *Param, key string) (res bool, err error) 
 }
 
 func (this_ *V8Service) Exists(param *Param, key string) (res int64, err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -152,6 +157,7 @@ func (this_ *V8Service) Exists(param *Param, key string) (res int64, err error) 
 }
 
 func (this_ *V8Service) GetValueInfo(param *Param, key string, valueStart, valueSize int64) (valueInfo *ValueInfo, err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -162,6 +168,7 @@ func (this_ *V8Service) GetValueInfo(param *Param, key string, valueStart, value
 }
 
 func (this_ *V8Service) Set(param *Param, key string, value string) (err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -172,6 +179,7 @@ func (this_ *V8Service) Set(param *Param, key string, value string) (err error) 
 }
 
 func (this_ *V8Service) SAdd(param *Param, key string, value string) (err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -182,6 +190,7 @@ func (this_ *V8Service) SAdd(param *Param, key string, value string) (err error)
 }
 
 func (this_ *V8Service) SRem(param *Param, key string, value string) (err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -192,6 +201,7 @@ func (this_ *V8Service) SRem(param *Param, key string, value string) (err error)
 }
 
 func (this_ *V8Service) LPush(param *Param, key string, value string) (err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -202,6 +212,7 @@ func (this_ *V8Service) LPush(param *Param, key string, value string) (err error
 }
 
 func (this_ *V8Service) RPush(param *Param, key string, value string) (err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -212,6 +223,7 @@ func (this_ *V8Service) RPush(param *Param, key string, value string) (err error
 }
 
 func (this_ *V8Service) LSet(param *Param, key string, index int64, value string) (err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -222,6 +234,7 @@ func (this_ *V8Service) LSet(param *Param, key string, index int64, value string
 }
 
 func (this_ *V8Service) LRem(param *Param, key string, count int64, value string) (err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -232,6 +245,7 @@ func (this_ *V8Service) LRem(param *Param, key string, count int64, value string
 }
 
 func (this_ *V8Service) HSet(param *Param, key string, field string, value string) (err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -241,7 +255,8 @@ func (this_ *V8Service) HSet(param *Param, key string, field string, value strin
 	return HSet(param.Ctx, client, key, field, value)
 }
 
-func (this_ *V8Service) HGet(param *Param, key string, field string) (value string, err error) {
+func (this_ *V8Service) HGet(param *Param, key string, field string) (value string, notFound bool, err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -251,7 +266,8 @@ func (this_ *V8Service) HGet(param *Param, key string, field string) (value stri
 	return HGet(param.Ctx, client, key, field)
 }
 
-func (this_ *V8Service) Get(param *Param, key string) (value string, err error) {
+func (this_ *V8Service) Get(param *Param, key string) (value string, notFound bool, err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -262,6 +278,7 @@ func (this_ *V8Service) Get(param *Param, key string) (value string, err error) 
 }
 
 func (this_ *V8Service) SetBit(param *Param, key string, offset int64, value int) (err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -272,6 +289,7 @@ func (this_ *V8Service) SetBit(param *Param, key string, offset int64, value int
 }
 
 func (this_ *V8Service) BitCount(param *Param, key string) (count int64, err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -282,6 +300,7 @@ func (this_ *V8Service) BitCount(param *Param, key string) (count int64, err err
 }
 
 func (this_ *V8Service) HDel(param *Param, key string, field string) (err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -292,6 +311,7 @@ func (this_ *V8Service) HDel(param *Param, key string, field string) (err error)
 }
 
 func (this_ *V8Service) Del(param *Param, key string) (count int, err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -302,6 +322,7 @@ func (this_ *V8Service) Del(param *Param, key string) (count int, err error) {
 }
 
 func (this_ *V8Service) DelPattern(param *Param, pattern string) (count int, err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {

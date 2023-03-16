@@ -245,7 +245,8 @@ func (this_ *ClusterService) HSet(param *Param, key string, field string, value 
 	return HSet(param.Ctx, client, key, field, value)
 }
 
-func (this_ *ClusterService) HGet(param *Param, key string, field string) (value string, err error) {
+func (this_ *ClusterService) HGet(param *Param, key string, field string) (value string, notFound bool, err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -255,7 +256,8 @@ func (this_ *ClusterService) HGet(param *Param, key string, field string) (value
 	return HGet(param.Ctx, client, key, field)
 }
 
-func (this_ *ClusterService) Get(param *Param, key string) (value string, err error) {
+func (this_ *ClusterService) Get(param *Param, key string) (value string, notFound bool, err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -266,6 +268,7 @@ func (this_ *ClusterService) Get(param *Param, key string) (value string, err er
 }
 
 func (this_ *ClusterService) SetBit(param *Param, key string, offset int64, value int) (err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -276,6 +279,7 @@ func (this_ *ClusterService) SetBit(param *Param, key string, offset int64, valu
 }
 
 func (this_ *ClusterService) BitCount(param *Param, key string) (count int64, err error) {
+	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
