@@ -7,7 +7,8 @@ import (
 
 type IService interface {
 	Stop()
-	GetDialectName() string
+	GetConfig() Config
+	GetDialect() dialect.Dialect
 	Exec(sql string, args []interface{}) (rowsAffected int64, err error)
 	Execs(sqlList []string, argsList [][]interface{}) (rowsAffected int64, err error)
 	Count(sql string, args []interface{}) (count int64, err error)

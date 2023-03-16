@@ -55,8 +55,12 @@ type Service struct {
 	dialect.Dialect
 }
 
-func (this_ *Service) GetDialectName() string {
-	return this_.databaseType.DialectName
+func (this_ *Service) GetConfig() Config {
+	return *this_.config
+}
+
+func (this_ *Service) GetDialect() dialect.Dialect {
+	return this_.Dialect
 }
 
 func (this_ *Service) init() (err error) {
@@ -93,11 +97,6 @@ func (this_ *Service) init() (err error) {
 	if err != nil {
 		return
 	}
-	return
-}
-
-func (this_ *Service) GetConfig() (config *Config) {
-	config = this_.config
 	return
 }
 
