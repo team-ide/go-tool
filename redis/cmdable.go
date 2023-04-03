@@ -300,6 +300,18 @@ func HGet(ctx context.Context, client redis.Cmdable, key string, field string) (
 	return
 }
 
+func HGetAll(ctx context.Context, client redis.Cmdable, key string) (value map[string]string, notFound bool, err error) {
+
+	cmd := client.HGetAll(ctx, key)
+	value, err = cmd.Result()
+	if err == redis.Nil {
+		err = nil
+		notFound = true
+		return
+	}
+	return
+}
+
 func SetBit(ctx context.Context, client redis.Cmdable, key string, offset int64, value int) (err error) {
 
 	cmd := client.SetBit(ctx, key, offset, value)

@@ -20,6 +20,7 @@ type IService interface {
 	LRem(param *Param, key string, count int64, value string) (err error)
 	HSet(param *Param, key string, field string, value string) (err error)
 	HGet(param *Param, key string, field string) (value string, notFound bool, err error)
+	HGetAll(param *Param, key string) (value map[string]string, notFound bool, err error)
 	HDel(param *Param, key string, field string) (err error)
 	Del(param *Param, key string) (count int, err error)
 	DelPattern(param *Param, pattern string) (count int, err error)

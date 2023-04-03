@@ -256,6 +256,17 @@ func (this_ *ClusterService) HGet(param *Param, key string, field string) (value
 	return HGet(param.Ctx, client, key, field)
 }
 
+func (this_ *ClusterService) HGetAll(param *Param, key string) (value map[string]string, notFound bool, err error) {
+	param = formatParam(param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	return HGetAll(param.Ctx, client, key)
+}
+
 func (this_ *ClusterService) Get(param *Param, key string) (value string, notFound bool, err error) {
 	param = formatParam(param)
 
