@@ -100,13 +100,10 @@ func (this_ *Service) init() (err error) {
 	return
 }
 
-func (this_ *Service) Open() (err error) {
-	err = this_.db.Ping()
-	return
-}
-
 func (this_ *Service) Stop() {
-	_ = this_.db.Close()
+	if this_.db != nil {
+		_ = this_.db.Close()
+	}
 	return
 }
 
