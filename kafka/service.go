@@ -98,7 +98,9 @@ func (this_ *Service) getClient() (saramaClient sarama.Client, err error) {
 
 	saramaClient, err = sarama.NewClient(this_.GetServers(), config)
 	if err != nil {
-		_ = saramaClient.Close()
+		if saramaClient != nil {
+			_ = saramaClient.Close()
+		}
 		return
 	}
 	return
@@ -136,14 +138,24 @@ func (this_ *Service) Info() (res *Info, err error) {
 }
 
 func closeSaramaClient(saramaClient sarama.Client) {
-	_ = saramaClient.Close()
+	if saramaClient != nil {
+		_ = saramaClient.Close()
+	}
 }
 func closeClusterAdmin(clusterAdmin sarama.ClusterAdmin) {
-	_ = clusterAdmin.Close()
+	if clusterAdmin != nil {
+		_ = clusterAdmin.Close()
+	}
 }
 
 type TopicInfo struct {
-	Topic string `json:"topic"`
+	Topic      string            `json:"topic"`
+	Partitions []*TopicPartition `json:"partitions"`
+}
+
+type TopicPartition struct {
+	Partition int32 `json:"partition"`
+	Offset    int64 `json:"offset"`
 }
 
 func (this_ *Service) GetTopics() (res []*TopicInfo, err error) {
@@ -164,6 +176,15 @@ func (this_ *Service) GetTopics() (res []*TopicInfo, err error) {
 		info := &TopicInfo{
 			Topic: topic,
 		}
+		ps, _ := saramaClient.Partitions(topic)
+		for _, p := range ps {
+			partition := &TopicPartition{
+				Partition: p,
+			}
+			partition.Offset, _ = saramaClient.GetOffset(topic, p, 0)
+			info.Partitions = append(info.Partitions, partition)
+		}
+
 		res = append(res, info)
 	}
 
@@ -391,6 +412,36 @@ func (this_ *Service) DeleteRecords(topic string, partitionOffsets map[int32]int
 	return
 }
 
+// GetOffset 查询集群以获取
+// 主题/分区组合上的给定时间（以毫秒为单位）。
+// 对于最早的可用偏移，时间应该是OffsetOldest，
+// OffsetNewest是下一次或某一时间将生成的消息的偏移量。
+func (this_ *Service) GetOffset(topic string, partitionID int32, time int64) (offset int64, err error) {
+	var saramaClient sarama.Client
+	saramaClient, err = this_.getClient()
+	if err != nil {
+		return
+	}
+	defer closeSaramaClient(saramaClient)
+
+	offset, err = saramaClient.GetOffset(topic, partitionID, time)
+
+	return
+}
+
+func (this_ *Service) Partitions(topic string) (partitions []int32, err error) {
+	var saramaClient sarama.Client
+	saramaClient, err = this_.getClient()
+	if err != nil {
+		return
+	}
+	defer closeSaramaClient(saramaClient)
+
+	partitions, err = saramaClient.Partitions(topic)
+
+	return
+}
+
 // NewSyncProducer 创建生产者
 func (this_ *Service) NewSyncProducer() (syncProducer sarama.SyncProducer, err error) {
 
@@ -427,7 +478,9 @@ func (this_ *Service) NewSyncProducer() (syncProducer sarama.SyncProducer, err e
 
 	syncProducer, err = sarama.NewSyncProducer(this_.GetServers(), config)
 	if err != nil {
-		_ = syncProducer.Close()
+		if syncProducer != nil {
+			_ = syncProducer.Close()
+		}
 		return
 	}
 	return

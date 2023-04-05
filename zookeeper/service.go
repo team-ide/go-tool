@@ -60,7 +60,9 @@ func (this_ *Service) init() (err error) {
 		err = this_.zkConn.AddAuth(this_.Username, []byte(this_.Password))
 		if err != nil {
 			util.Logger.Error("zk.Connect AddAuth error", zap.Any("servers", this_.GetServers()), zap.Error(err))
-			this_.zkConn.Close()
+			if this_.zkConn != nil {
+				this_.zkConn.Close()
+			}
 			return
 		}
 	}
@@ -85,7 +87,10 @@ func (this_ *Service) GetServers() []string {
 
 func (this_ *Service) Stop() {
 	this_.isStop = true
-	this_.GetConn().Close()
+	conn := this_.GetConn()
+	if conn != nil {
+		conn.Close()
+	}
 }
 
 func (this_ *Service) GetConn() *zk.Conn {

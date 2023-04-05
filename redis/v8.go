@@ -67,7 +67,9 @@ func (this_ *V8Service) init() (err error) {
 }
 
 func (this_ *V8Service) Stop() {
-	_ = this_.client.Close()
+	if this_.client != nil {
+		_ = this_.client.Close()
+	}
 }
 
 func formatParam(param *Param) *Param {

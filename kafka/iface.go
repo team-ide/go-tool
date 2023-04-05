@@ -16,4 +16,6 @@ type IService interface {
 	DeleteRecords(topic string, partitionOffsets map[int32]int64) (err error)
 	NewSyncProducer() (syncProducer sarama.SyncProducer, err error)
 	Push(msg *Message) (err error)
+	GetOffset(topic string, partitionID int32, time int64) (offset int64, err error)
+	Partitions(topic string) (partitions []int32, err error)
 }

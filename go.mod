@@ -6,6 +6,7 @@ require (
 	github.com/Chain-Zhang/pinyin v0.1.3
 	github.com/Shopify/sarama v1.38.1
 	github.com/dop251/goja v0.0.0-20230304130813-e2f543bf4b4c
+	github.com/gin-gonic/gin v1.9.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-zookeeper/zk v1.0.3
 	github.com/google/uuid v1.3.0
@@ -30,7 +31,6 @@ require (
 	github.com/eapache/go-xerial-snappy v0.0.0-20230111030713-bf00bc1b83b6 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.9.0 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect

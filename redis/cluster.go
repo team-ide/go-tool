@@ -68,7 +68,9 @@ func (this_ *ClusterService) init() (err error) {
 }
 
 func (this_ *ClusterService) Stop() {
-	_ = this_.redisCluster.Close()
+	if this_.redisCluster != nil {
+		_ = this_.redisCluster.Close()
+	}
 }
 
 func (this_ *ClusterService) GetClient(param *Param) (client redis.Cmdable, err error) {
