@@ -154,8 +154,9 @@ type TopicInfo struct {
 }
 
 type TopicPartition struct {
-	Partition int32 `json:"partition"`
-	Offset    int64 `json:"offset"`
+	Partition int32   `json:"partition"`
+	Offset    int64   `json:"offset"`
+	Replicas  []int32 `json:"replicas"`
 }
 
 func (this_ *Service) GetTopics() (res []*TopicInfo, err error) {
@@ -181,11 +182,34 @@ func (this_ *Service) GetTopics() (res []*TopicInfo, err error) {
 			partition := &TopicPartition{
 				Partition: p,
 			}
-			partition.Offset, _ = saramaClient.GetOffset(topic, p, 0)
 			info.Partitions = append(info.Partitions, partition)
 		}
 
 		res = append(res, info)
+	}
+
+	return
+}
+
+func (this_ *Service) GetTopic(topic string, time int64) (res *TopicInfo, err error) {
+	var saramaClient sarama.Client
+	saramaClient, err = this_.getClient()
+	if err != nil {
+		return
+	}
+	defer closeSaramaClient(saramaClient)
+
+	res = &TopicInfo{
+		Topic: topic,
+	}
+	ps, _ := saramaClient.Partitions(topic)
+	for _, p := range ps {
+		partition := &TopicPartition{
+			Partition: p,
+		}
+		partition.Offset, _ = saramaClient.GetOffset(topic, p, time)
+		partition.Replicas, _ = saramaClient.Replicas(topic, p)
+		res.Partitions = append(res.Partitions, partition)
 	}
 
 	return
