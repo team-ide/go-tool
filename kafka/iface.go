@@ -19,4 +19,9 @@ type IService interface {
 	Push(msg *Message) (err error)
 	GetOffset(topic string, partitionID int32, time int64) (offset int64, err error)
 	Partitions(topic string) (partitions []int32, err error)
+	ListConsumerGroups() (res map[string]string, err error)
+	DescribeConsumerGroups(groups []string) (res []*sarama.GroupDescription, err error)
+	DeleteConsumerGroupOffset(group string, topic string, partition int32) (err error)
+	ListConsumerGroupOffsets(group string, topicPartitions map[string][]int32) (res *sarama.OffsetFetchResponse, err error)
+	GetClient() (res sarama.Client, err error)
 }

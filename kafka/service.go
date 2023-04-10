@@ -332,6 +332,87 @@ func (this_ *Service) ResetOffset(groupId string, topic string, partition int32,
 	return
 }
 
+func (this_ *Service) ListConsumerGroups() (res map[string]string, err error) {
+	var saramaClient sarama.Client
+	saramaClient, err = this_.getClient()
+	if err != nil {
+		return
+	}
+	defer closeSaramaClient(saramaClient)
+	manager, err := sarama.NewClusterAdminFromClient(saramaClient)
+	if err != nil {
+		return
+	}
+	defer closeClusterAdmin(manager)
+
+	res, err = manager.ListConsumerGroups()
+
+	return
+}
+
+func (this_ *Service) DescribeConsumerGroups(groups []string) (res []*sarama.GroupDescription, err error) {
+	var saramaClient sarama.Client
+	saramaClient, err = this_.getClient()
+	if err != nil {
+		return
+	}
+	defer closeSaramaClient(saramaClient)
+	manager, err := sarama.NewClusterAdminFromClient(saramaClient)
+	if err != nil {
+		return
+	}
+	defer closeClusterAdmin(manager)
+
+	res, err = manager.DescribeConsumerGroups(groups)
+
+	return
+}
+
+func (this_ *Service) DeleteConsumerGroupOffset(group string, topic string, partition int32) (err error) {
+	var saramaClient sarama.Client
+	saramaClient, err = this_.getClient()
+	if err != nil {
+		return
+	}
+	defer closeSaramaClient(saramaClient)
+	manager, err := sarama.NewClusterAdminFromClient(saramaClient)
+	if err != nil {
+		return
+	}
+	defer closeClusterAdmin(manager)
+
+	err = manager.DeleteConsumerGroupOffset(group, topic, partition)
+
+	return
+}
+
+func (this_ *Service) ListConsumerGroupOffsets(group string, topicPartitions map[string][]int32) (res *sarama.OffsetFetchResponse, err error) {
+	var saramaClient sarama.Client
+	saramaClient, err = this_.getClient()
+	if err != nil {
+		return
+	}
+	defer closeSaramaClient(saramaClient)
+	manager, err := sarama.NewClusterAdminFromClient(saramaClient)
+	if err != nil {
+		return
+	}
+	defer closeClusterAdmin(manager)
+
+	res, err = manager.ListConsumerGroupOffsets(group, topicPartitions)
+
+	return
+}
+
+func (this_ *Service) GetClient() (res sarama.Client, err error) {
+	res, err = this_.getClient()
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func (this_ *Service) CreatePartitions(topic string, count int32) (err error) {
 	var saramaClient sarama.Client
 	saramaClient, err = this_.getClient()
