@@ -671,6 +671,82 @@ func (this_ *Service) DeleteConsumerGroup(groupId string) (err error) {
 	return
 }
 
+type TopicMetadata struct {
+	// Version defines the protocol version to use for encode and decode
+	Version int16 `json:"version"`
+	// Err contains the topic error, or 0 if there was no error.
+	Err sarama.KError `json:"err"`
+	// Name contains the topic name.
+	Name string `json:"name"`
+	// IsInternal contains a True if the topic is internal.
+	IsInternal bool `json:"isInternal"`
+	// Partitions contains each partition in the topic.
+	Partitions []*PartitionMetadata `json:"partitions"`
+}
+
+type PartitionMetadata struct {
+	// Version defines the protocol version to use for encode and decode
+	Version int16 `json:"version"`
+	// Err contains the partition error, or 0 if there was no error.
+	Err sarama.KError `json:"err"`
+	// ID contains the partition index.
+	ID int32 `json:"ID"`
+	// Leader contains the ID of the leader broker.
+	Leader int32 `json:"leader"`
+	// LeaderEpoch contains the leader epoch of this partition.
+	LeaderEpoch int32 `json:"leaderEpoch"`
+	// Replicas contains the set of all nodes that host this partition.
+	Replicas []int32 `json:"replicas"`
+	// Isr contains the set of nodes that are in sync with the leader for this partition.
+	Isr []int32 `json:"isr"`
+	// OfflineReplicas contains the set of offline replicas of this partition.
+	OfflineReplicas []int32 `json:"offlineReplicas"`
+}
+
+func (this_ *Service) DescribeTopics(topics []string) (res []*TopicMetadata, err error) {
+	var saramaClient sarama.Client
+	saramaClient, err = this_.getClient()
+	if err != nil {
+		return
+	}
+	defer closeSaramaClient(saramaClient)
+	admin, err := sarama.NewClusterAdminFromClient(saramaClient)
+	if err != nil {
+		return
+	}
+
+	defer closeClusterAdmin(admin)
+
+	list, err := admin.DescribeTopics(topics)
+	if err != nil {
+		return
+	}
+
+	for _, one := range list {
+		d := &TopicMetadata{
+			Version:    one.Version,
+			Err:        one.Err,
+			Name:       one.Name,
+			IsInternal: one.IsInternal,
+		}
+		for _, v := range one.Partitions {
+			d.Partitions = append(d.Partitions, &PartitionMetadata{
+				Version:         v.Version,
+				Err:             v.Err,
+				ID:              v.ID,
+				Leader:          v.Leader,
+				LeaderEpoch:     v.LeaderEpoch,
+				Replicas:        v.Replicas,
+				Isr:             v.Isr,
+				OfflineReplicas: v.OfflineReplicas,
+			})
+		}
+		res = append(res, d)
+	}
+
+	return
+}
+
 func (this_ *Service) DeleteRecords(topic string, partitionOffsets map[int32]int64) (err error) {
 	var saramaClient sarama.Client
 	saramaClient, err = this_.getClient()

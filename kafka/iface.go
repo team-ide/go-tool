@@ -24,5 +24,6 @@ type IService interface {
 	DeleteConsumerGroupOffset(group string, topic string, partition int32) (err error)
 	ListConsumerGroupOffsets(group string, topicPartitions map[string][]int32) (res *OffsetFetchResponse, err error)
 	RemoveMemberFromConsumerGroup(groupId string, groupInstanceIds []string) (res *LeaveGroupResponse, err error)
+	DescribeTopics(topics []string) (res []*TopicMetadata, err error)
 	GetClient() (res sarama.Client, err error)
 }
