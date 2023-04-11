@@ -438,8 +438,8 @@ func (this_ *Service) DescribeConsumerGroups(groups []string) (res []*GroupDescr
 			AuthorizedOperations: one.AuthorizedOperations,
 			Members:              map[string]*GroupMemberDescription{},
 		}
-		if d.Members != nil {
-			for key, v := range d.Members {
+		if one.Members != nil {
+			for key, v := range one.Members {
 				d.Members[key] = &GroupMemberDescription{
 					Version:          v.Version,
 					MemberId:         v.MemberId,
