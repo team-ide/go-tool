@@ -451,6 +451,7 @@ func (this_ *Service) DescribeConsumerGroups(groups []string) (res []*GroupDescr
 				}
 			}
 		}
+		res = append(res, d)
 	}
 
 	return
