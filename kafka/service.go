@@ -332,7 +332,12 @@ func (this_ *Service) ResetOffset(groupId string, topic string, partition int32,
 	return
 }
 
-func (this_ *Service) ListConsumerGroups() (res map[string]string, err error) {
+type Group struct {
+	GroupId string `json:"groupId"`
+	Cluster string `json:"cluster"`
+}
+
+func (this_ *Service) ListConsumerGroups() (res []*Group, err error) {
 	var saramaClient sarama.Client
 	saramaClient, err = this_.getClient()
 	if err != nil {
@@ -345,7 +350,18 @@ func (this_ *Service) ListConsumerGroups() (res map[string]string, err error) {
 	}
 	defer closeClusterAdmin(manager)
 
-	res, err = manager.ListConsumerGroups()
+	data, err := manager.ListConsumerGroups()
+	if err != nil {
+		return
+	}
+	if data != nil {
+		for groupId, cluster := range data {
+			res = append(res, &Group{
+				GroupId: groupId,
+				Cluster: cluster,
+			})
+		}
+	}
 
 	return
 }
