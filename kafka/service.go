@@ -350,7 +350,50 @@ func (this_ *Service) ListConsumerGroups() (res map[string]string, err error) {
 	return
 }
 
-func (this_ *Service) DescribeConsumerGroups(groups []string) (res []*sarama.GroupDescription, err error) {
+type GroupDescription struct {
+	// Version defines the protocol version to use for encode and decode
+	Version int16 `json:"version"`
+	// Err contains the describe error as the KError type.
+	Err sarama.KError `json:"err"`
+	// ErrorCode contains the describe error, or 0 if there was no error.
+	ErrorCode int16 `json:"errorCode"`
+	// GroupId contains the group ID string.
+	GroupId string `json:"groupId"`
+	// State contains the group state string, or the empty string.
+	State string `json:"state"`
+	// ProtocolType contains the group protocol type, or the empty string.
+	ProtocolType string `json:"protocolType"`
+	// Protocol contains the group protocol data, or the empty string.
+	Protocol string `json:"protocol"`
+	// Members contains the group members.
+	Members map[string]*GroupMemberDescription `json:"members"`
+	// AuthorizedOperations contains a 32-bit bitfield to represent authorized
+	// operations for this group.
+	AuthorizedOperations int32 `json:"authorizedOperations"`
+}
+
+type GroupMemberDescription struct {
+	// Version defines the protocol version to use for encode and decode
+	Version int16 `json:"version"`
+	// MemberId contains the member ID assigned by the group coordinator.
+	MemberId string `json:"memberId"`
+	// GroupInstanceId contains the unique identifier of the consumer instance
+	// provided by end user.
+	GroupInstanceId *string `json:"groupInstanceId"`
+	// ClientId contains the client ID used in the member's latest join group
+	// request.
+	ClientId string `json:"clientId"`
+	// ClientHost contains the client host.
+	ClientHost string `json:"clientHost"`
+	// MemberMetadata contains the metadata corresponding to the current group
+	// protocol in use.
+	MemberMetadata []byte `json:"memberMetadata"`
+	// MemberAssignment contains the current assignment provided by the group
+	// leader.
+	MemberAssignment []byte `json:"memberAssignment"`
+}
+
+func (this_ *Service) DescribeConsumerGroups(groups []string) (res []*GroupDescription, err error) {
 	var saramaClient sarama.Client
 	saramaClient, err = this_.getClient()
 	if err != nil {
@@ -363,7 +406,84 @@ func (this_ *Service) DescribeConsumerGroups(groups []string) (res []*sarama.Gro
 	}
 	defer closeClusterAdmin(manager)
 
-	res, err = manager.DescribeConsumerGroups(groups)
+	list, err := manager.DescribeConsumerGroups(groups)
+	if err != nil {
+		return
+	}
+	for _, one := range list {
+		d := &GroupDescription{
+			Version:              one.Version,
+			GroupId:              one.GroupId,
+			Err:                  one.Err,
+			ErrorCode:            one.ErrorCode,
+			State:                one.State,
+			ProtocolType:         one.ProtocolType,
+			Protocol:             one.Protocol,
+			AuthorizedOperations: one.AuthorizedOperations,
+			Members:              map[string]*GroupMemberDescription{},
+		}
+		if d.Members != nil {
+			for key, v := range d.Members {
+				d.Members[key] = &GroupMemberDescription{
+					Version:          v.Version,
+					MemberId:         v.MemberId,
+					GroupInstanceId:  v.GroupInstanceId,
+					ClientId:         v.ClientId,
+					ClientHost:       v.ClientHost,
+					MemberMetadata:   v.MemberMetadata,
+					MemberAssignment: v.MemberAssignment,
+				}
+			}
+		}
+	}
+
+	return
+}
+
+type LeaveGroupResponse struct {
+	Version      int16            `json:"version"`
+	ThrottleTime int32            `json:"throttleTime"`
+	Err          sarama.KError    `json:"err"`
+	Members      []MemberResponse `json:"members"`
+}
+
+type MemberResponse struct {
+	MemberId        string        `json:"memberId"`
+	GroupInstanceId *string       `json:"groupInstanceId"`
+	Err             sarama.KError `json:"err"`
+}
+
+func (this_ *Service) RemoveMemberFromConsumerGroup(groupId string, groupInstanceIds []string) (res *LeaveGroupResponse, err error) {
+	var saramaClient sarama.Client
+	saramaClient, err = this_.getClient()
+	if err != nil {
+		return
+	}
+	defer closeSaramaClient(saramaClient)
+	manager, err := sarama.NewClusterAdminFromClient(saramaClient)
+	if err != nil {
+		return
+	}
+	defer closeClusterAdmin(manager)
+
+	one, err := manager.RemoveMemberFromConsumerGroup(groupId, groupInstanceIds)
+	if err != nil {
+		return
+	}
+	if one != nil {
+		res = &LeaveGroupResponse{
+			Version:      one.Version,
+			ThrottleTime: one.ThrottleTime,
+			Err:          one.Err,
+		}
+		for _, v := range one.Members {
+			res.Members = append(res.Members, MemberResponse{
+				MemberId:        v.MemberId,
+				GroupInstanceId: v.GroupInstanceId,
+				Err:             v.Err,
+			})
+		}
+	}
 
 	return
 }
@@ -386,7 +506,21 @@ func (this_ *Service) DeleteConsumerGroupOffset(group string, topic string, part
 	return
 }
 
-func (this_ *Service) ListConsumerGroupOffsets(group string, topicPartitions map[string][]int32) (res *sarama.OffsetFetchResponse, err error) {
+type OffsetFetchResponse struct {
+	Version        int16                                          `json:"version"`
+	ThrottleTimeMs int32                                          `json:"throttleTimeMs"`
+	Blocks         map[string]map[int32]*OffsetFetchResponseBlock `json:"blocks"`
+	Err            sarama.KError                                  `json:"err"`
+}
+
+type OffsetFetchResponseBlock struct {
+	Offset      int64         `json:"offset"`
+	LeaderEpoch int32         `json:"leaderEpoch"`
+	Metadata    string        `json:"metadata"`
+	Err         sarama.KError `json:"err"`
+}
+
+func (this_ *Service) ListConsumerGroupOffsets(group string, topicPartitions map[string][]int32) (res *OffsetFetchResponse, err error) {
 	var saramaClient sarama.Client
 	saramaClient, err = this_.getClient()
 	if err != nil {
@@ -399,7 +533,29 @@ func (this_ *Service) ListConsumerGroupOffsets(group string, topicPartitions map
 	}
 	defer closeClusterAdmin(manager)
 
-	res, err = manager.ListConsumerGroupOffsets(group, topicPartitions)
+	one, err := manager.ListConsumerGroupOffsets(group, topicPartitions)
+	if one != nil {
+		res = &OffsetFetchResponse{
+			Version:        one.Version,
+			ThrottleTimeMs: one.ThrottleTimeMs,
+			Err:            one.Err,
+			Blocks:         map[string]map[int32]*OffsetFetchResponseBlock{},
+		}
+		for k, v := range one.Blocks {
+			s := map[int32]*OffsetFetchResponseBlock{}
+			if v != nil {
+				for k_, v_ := range v {
+					s[k_] = &OffsetFetchResponseBlock{
+						Offset:      v_.Offset,
+						LeaderEpoch: v_.LeaderEpoch,
+						Metadata:    v_.Metadata,
+						Err:         v_.Err,
+					}
+				}
+			}
+			res.Blocks[k] = s
+		}
+	}
 
 	return
 }
