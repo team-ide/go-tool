@@ -21,6 +21,7 @@ require (
 require (
 	gitee.com/chunanyong/dm v1.8.10 // indirect
 	gitee.com/opengauss/openGauss-connector-go-pq v1.0.4 // indirect
+	github.com/apache/thrift v0.18.1 // indirect
 	github.com/bytedance/sonic v1.8.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
