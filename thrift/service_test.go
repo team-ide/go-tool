@@ -104,9 +104,10 @@ func (this_ *TestServiceImpl) Send(ctx context.Context, res *service.Request, b 
 		return
 	}
 	_r = &service.Response{}
-	fmt.Println("Send res", res, b)
+	fmt.Println("Server On Send res:", toJSON(res), ",b:", b)
 	_r.Field1 = res.Field1 + 1
 	_r.Field2 = res.Field2 + 1
+	fmt.Println("Server On Send _r:", toJSON(_r))
 	return
 }
 

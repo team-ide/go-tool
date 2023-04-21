@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/team-ide/go-tool/util"
+	"strconv"
 	"sync"
 )
 
@@ -31,6 +33,11 @@ func GetStruct(name string) *Struct {
 	return structCache[name]
 }
 
+func toJSON(v interface{}) (res string) {
+	res = util.GetStringValue(v)
+	return
+}
+
 type Struct struct {
 	Include string   `json:"include"`
 	Name    string   `json:"name"`
@@ -38,10 +45,9 @@ type Struct struct {
 }
 
 type Field struct {
-	Num   int16       `json:"num"`
-	Name  string      `json:"name"`
-	Type  *FieldType  `json:"type"`
-	Value interface{} `json:"value"`
+	Num  int16      `json:"num"`
+	Name string     `json:"name"`
+	Type *FieldType `json:"type"`
 }
 
 type FieldType struct {
@@ -53,7 +59,7 @@ type FieldType struct {
 
 func WriteStructFields(ctx context.Context, protocol thrift.TProtocol, name string, fields []*Field, value map[string]interface{}) error {
 
-	fmt.Println("WriteStructFields name:", name, ",fields:", fields, ",value:", value)
+	fmt.Println("WriteStructFields name:", name, ",fields:", toJSON(fields), ",value:", toJSON(value))
 	if err := protocol.WriteStructBegin(ctx, name); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", name), err)
 	}
@@ -73,7 +79,7 @@ func WriteStructFields(ctx context.Context, protocol thrift.TProtocol, name stri
 }
 
 func WriteStructField(ctx context.Context, protocol thrift.TProtocol, field *Field, value interface{}) error {
-	fmt.Println("WriteStructField field:", field, ",value:", value)
+	fmt.Println("WriteStructField field:", toJSON(field), ",value:", toJSON(value))
 	var err error
 	if err = protocol.WriteFieldBegin(ctx, field.Name, field.Type.TypeId, field.Num); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error", field), err)
@@ -173,7 +179,7 @@ func WriteByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Fiel
 }
 
 func ReadStructFields(ctx context.Context, inProtocol thrift.TProtocol, fields []*Field) (map[string]interface{}, error) {
-	fmt.Println("ReadStructFields fields:", fields)
+	fmt.Println("ReadStructFields fields:", toJSON(fields))
 	if _, err := inProtocol.ReadStructBegin(ctx); err != nil {
 		return nil, thrift.PrependError(fmt.Sprintf("%T read error: ", fields), err)
 	}
@@ -195,7 +201,7 @@ func ReadStructFields(ctx context.Context, inProtocol thrift.TProtocol, fields [
 
 		field, ok := fieldMap[fieldId]
 
-		fmt.Println("ReadStructFields find by fieldId:", fieldId, ",find:", ok, ",field:", field)
+		fmt.Println("ReadStructFields find by fieldId:", fieldId, ",find:", ok, ",field:", toJSON(field))
 		if !ok {
 			if err = inProtocol.Skip(ctx, fieldTypeId); err != nil {
 				return nil, err
@@ -219,7 +225,7 @@ func ReadStructFields(ctx context.Context, inProtocol thrift.TProtocol, fields [
 }
 
 func ReadStructField(ctx context.Context, outProtocol thrift.TProtocol, field *Field, fieldTypeId thrift.TType) (interface{}, error) {
-	fmt.Println("ReadStructField field:", field, ",fieldTypeId:", fieldTypeId)
+	fmt.Println("ReadStructField field:", toJSON(field), ",fieldTypeId:", fieldTypeId)
 	var v interface{}
 	var err error
 	if v, err = ReadByType(ctx, outProtocol, field.Type, fieldTypeId); err != nil {
@@ -351,6 +357,9 @@ func getByte(v interface{}) (res int8) {
 	if ok {
 		return
 	}
+	str := util.GetStringValue(v)
+	i64, _ := strconv.ParseInt(str, 10, 64)
+	res = int8(i64)
 	return
 }
 
@@ -362,6 +371,9 @@ func getDouble(v interface{}) (res float64) {
 	if ok {
 		return
 	}
+	str := util.GetStringValue(v)
+	i64, _ := strconv.ParseFloat(str, 64)
+	res = i64
 	return
 }
 
@@ -373,6 +385,9 @@ func getInt16(v interface{}) (res int16) {
 	if ok {
 		return
 	}
+	str := util.GetStringValue(v)
+	i64, _ := strconv.ParseInt(str, 10, 64)
+	res = int16(i64)
 	return
 }
 
@@ -384,6 +399,9 @@ func getInt32(v interface{}) (res int32) {
 	if ok {
 		return
 	}
+	str := util.GetStringValue(v)
+	i64, _ := strconv.ParseInt(str, 10, 64)
+	res = int32(i64)
 	return
 }
 
@@ -395,6 +413,9 @@ func getInt64(v interface{}) (res int64) {
 	if ok {
 		return
 	}
+	str := util.GetStringValue(v)
+	i64, _ := strconv.ParseInt(str, 10, 64)
+	res = i64
 	return
 }
 
@@ -406,5 +427,6 @@ func getString(v interface{}) (res string) {
 	if ok {
 		return
 	}
+	res = util.GetStringValue(v)
 	return
 }

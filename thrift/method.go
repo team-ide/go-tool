@@ -22,12 +22,13 @@ func (this_ *MethodParam) String() string {
 }
 
 func (this_ *MethodParam) Read(ctx context.Context, inProtocol thrift.TProtocol) error {
+	this_.ResultFiled.Name = "result"
 	value, err := ReadStructFields(ctx, inProtocol, []*Field{this_.ResultFiled})
 	if err != nil {
 		return err
 	}
 
-	this_.Result = value
+	this_.Result = value["result"]
 
 	return nil
 }
