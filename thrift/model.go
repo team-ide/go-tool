@@ -207,6 +207,9 @@ func ReadStructFields(ctx context.Context, inProtocol thrift.TProtocol, fields [
 				return nil, err
 			}
 			// 字段不存在
+			field = &Field{
+				Num: fieldId,
+			}
 		}
 		var v interface{}
 		if v, err = ReadStructField(ctx, inProtocol, field, fieldTypeId); err != nil {
@@ -304,12 +307,12 @@ func ReadList(ctx context.Context, protocol thrift.TProtocol, listType *FieldTyp
 
 func ReadByType(ctx context.Context, protocol thrift.TProtocol, fieldType *FieldType, fieldTypeId thrift.TType) (res interface{}, err error) {
 	// 判断类型是否一致
-	if fieldTypeId != fieldType.TypeId {
-		if err = protocol.Skip(ctx, fieldTypeId); err != nil {
-			return nil, err
-		}
-	}
-	switch fieldType.TypeId {
+	//if fieldTypeId != fieldType.TypeId {
+	//	if err = protocol.Skip(ctx, fieldTypeId); err != nil {
+	//		return nil, err
+	//	}
+	//}
+	switch fieldTypeId {
 	case thrift.BOOL:
 		res, err = protocol.ReadBool(ctx)
 	case thrift.BYTE:
