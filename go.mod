@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/Chain-Zhang/pinyin v0.1.3
 	github.com/Shopify/sarama v1.38.1
+	github.com/apache/thrift v0.18.1
 	github.com/dop251/goja v0.0.0-20230304130813-e2f543bf4b4c
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-redis/redis/v8 v8.11.5
@@ -21,7 +22,6 @@ require (
 require (
 	gitee.com/chunanyong/dm v1.8.10 // indirect
 	gitee.com/opengauss/openGauss-connector-go-pq v1.0.4 // indirect
-	github.com/apache/thrift v0.18.1 // indirect
 	github.com/bytedance/sonic v1.8.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
