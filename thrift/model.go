@@ -39,22 +39,22 @@ func toJSON(v interface{}) (res string) {
 }
 
 type Struct struct {
-	Include string   `json:"include"`
-	Name    string   `json:"name"`
-	Fields  []*Field `json:"fields"`
+	Include string   `json:"include,omitempty"`
+	Name    string   `json:"name,omitempty"`
+	Fields  []*Field `json:"fields,omitempty"`
 }
 
 type Field struct {
-	Num  int16      `json:"num"`
-	Name string     `json:"name"`
-	Type *FieldType `json:"type"`
+	Num  int16      `json:"num,omitempty"`
+	Name string     `json:"name,omitempty"`
+	Type *FieldType `json:"type,omitempty"`
 }
 
 type FieldType struct {
-	Include      string       `json:"include"`
-	TypeId       thrift.TType `json:"typeId"`
-	Struct       *Struct      `json:"struct"`
-	GenericTypes []*FieldType `json:"genericTypes"`
+	Include      string       `json:"include,omitempty"`
+	TypeId       thrift.TType `json:"typeId,omitempty"`
+	Struct       *Struct      `json:"struct,omitempty"`
+	GenericTypes []*FieldType `json:"genericTypes,omitempty"`
 }
 
 func WriteStructFields(ctx context.Context, protocol thrift.TProtocol, name string, fields []*Field, value map[string]interface{}) error {
@@ -201,15 +201,14 @@ func ReadStructFields(ctx context.Context, inProtocol thrift.TProtocol, fields [
 
 		field, ok := fieldMap[fieldId]
 
-		fmt.Println("ReadStructFields find by fieldId:", fieldId, ",find:", ok, ",field:", toJSON(field))
+		//fmt.Println("ReadStructFields find by fieldId:", fieldId, ",find:", ok, ",field:", toJSON(field))
 		if !ok {
 			if err = inProtocol.Skip(ctx, fieldTypeId); err != nil {
 				return nil, err
 			}
+
 			// 字段不存在
-			field = &Field{
-				Num: fieldId,
-			}
+			return nil, errors.New(fmt.Sprintf("ReadStructFields field %d %d not found", fieldId, fieldTypeId))
 		}
 		var v interface{}
 		if v, err = ReadStructField(ctx, inProtocol, field, fieldTypeId); err != nil {
