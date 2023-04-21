@@ -7,11 +7,11 @@ import (
 )
 
 type MethodParam struct {
-	Name        string        `json:"name"`
-	Args        []interface{} `json:"args"`
-	ArgFields   []*Field      `json:"argFields"`
-	Result      interface{}   `json:"result"`
-	ResultFiled *Field        `json:"resultFiled"`
+	Name        string        `json:"name,omitempty"`
+	Args        []interface{} `json:"args,omitempty"`
+	ArgFields   []*Field      `json:"argFields,omitempty"`
+	Result      interface{}   `json:"result,omitempty"`
+	ResultFiled *Field        `json:"resultFiled,omitempty"`
 }
 
 func (this_ *MethodParam) String() string {
