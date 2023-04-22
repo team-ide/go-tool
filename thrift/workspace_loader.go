@@ -7,10 +7,9 @@ import (
 	"strings"
 )
 
-func (this_ *Workspace) Load() (errs map[string]error) {
-	errs = map[string]error{}
-
-	this_.loadByDir(this_.formatDir, errs)
+func (this_ *Workspace) Load() {
+	this_.errorCache = make(map[string]error)
+	this_.loadByDir(this_.formatDir, this_.errorCache)
 
 	return
 }
@@ -84,6 +83,8 @@ func (this_ *Workspace) Clean() {
 	this_.enumCache.Clean()
 	this_.exceptionCache.Clean()
 	this_.includePathCache.Clean()
+
+	this_.errorCache = make(map[string]error)
 
 	this_.ServiceList = []*ServiceInfo{}
 

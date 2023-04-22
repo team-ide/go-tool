@@ -2,6 +2,7 @@ package thrift
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
@@ -73,9 +74,9 @@ func WriteStructField(ctx context.Context, protocol thrift.TProtocol, field *Fie
 	return nil
 }
 
-func WriteMap(ctx context.Context, protocol thrift.TProtocol, keyType *FieldType, valueType *FieldType, value map[string]interface{}) error {
+func WriteMap(ctx context.Context, protocol thrift.TProtocol, keyType *FieldType, valueType *FieldType, value map[interface{}]interface{}) error {
 	if value == nil {
-		value = map[string]interface{}{}
+		value = map[interface{}]interface{}{}
 	}
 	size := len(value)
 	if err := protocol.WriteMapBegin(ctx, keyType.TypeId, valueType.TypeId, size); err != nil {
@@ -144,12 +145,36 @@ func WriteByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Fiel
 	case thrift.STRING:
 		err = protocol.WriteString(ctx, getString(value))
 	case thrift.STRUCT:
-		err = WriteStructFields(ctx, protocol, fieldType.structObj.Name, fieldType.structObj.Fields, value.(map[string]interface{}))
+		data, ok := value.(map[string]interface{})
+		if !ok {
+			data = map[string]interface{}{}
+			bs, _ := json.Marshal(value)
+			_ = json.Unmarshal(bs, &data)
+		}
+		err = WriteStructFields(ctx, protocol, fieldType.structObj.Name, fieldType.structObj.Fields, data)
 	case thrift.MAP:
-		err = WriteMap(ctx, protocol, fieldType.MapKeyType, fieldType.MapValueType, value.(map[string]interface{}))
+		data, ok := value.(map[interface{}]interface{})
+		if !ok {
+			data = map[interface{}]interface{}{}
+			bs, _ := json.Marshal(value)
+			_ = json.Unmarshal(bs, &data)
+		}
+		err = WriteMap(ctx, protocol, fieldType.MapKeyType, fieldType.MapValueType, data)
 	case thrift.SET:
-		err = WriteSet(ctx, protocol, fieldType.SetType, value.([]interface{}))
+		data, ok := value.([]interface{})
+		if !ok {
+			data = []interface{}{}
+			bs, _ := json.Marshal(value)
+			_ = json.Unmarshal(bs, &data)
+		}
+		err = WriteSet(ctx, protocol, fieldType.SetType, data)
 	case thrift.LIST:
+		data, ok := value.([]interface{})
+		if !ok {
+			data = []interface{}{}
+			bs, _ := json.Marshal(value)
+			_ = json.Unmarshal(bs, &data)
+		}
 		err = WriteList(ctx, protocol, fieldType.ListType, value.([]interface{}))
 	default:
 		return thrift.PrependError(fmt.Sprintf("%T type error: ", fieldType), errors.New("type unknown"))

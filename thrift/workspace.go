@@ -27,6 +27,8 @@ func NewWorkspace(dir string) *Workspace {
 		enumCache:          util.NewSyncMap(),
 		exceptionCache:     util.NewSyncMap(),
 		includePathCache:   util.NewSyncMap(),
+
+		errorCache: make(map[string]error),
 	}
 	res.ignoreNames = []string{".git", ".idea", "node_modules"}
 	return res
@@ -39,6 +41,7 @@ type Workspace struct {
 	ignoreNames   []string
 	includeSubDir bool
 
+	errorCache         map[string]error
 	ServiceList        []*ServiceInfo
 	treeCache          *util.SyncMap
 	structCache        *util.SyncMap

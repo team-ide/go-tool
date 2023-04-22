@@ -11,9 +11,9 @@ func TestWorkspace(t *testing.T) {
 
 	workspace := NewWorkspace(dir)
 
-	errs := workspace.Load()
-	if len(errs) > 0 {
-		for path, err := range errs {
+	workspace.Load()
+	if len(workspace.errorCache) > 0 {
+		for path, err := range workspace.errorCache {
 			fmt.Println("path:", path)
 			fmt.Println("err:", err)
 		}
