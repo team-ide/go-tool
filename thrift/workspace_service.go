@@ -39,51 +39,76 @@ func (this_ *Workspace) GetMethodParam(filename string, serviceName string, meth
 		Args: args,
 		Name: methodName,
 	}
-	for _, one := range methodNode.Params {
-		param.ArgFields = append(param.ArgFields, this_.GetFieldByNode(filename, one))
+	var structCache map[string]*Struct
+	param.ArgFields, structCache, err = this_.GetMethodArgFields(filename, serviceName, methodName)
+	if err != nil {
+		return
 	}
-	param.ResultType = this_.GetFieldTypeByNode(filename, methodNode.Return)
+	param.ResultType = this_.GetFieldTypeByNode(filename, methodNode.Return, structCache)
 
 	return
 }
 
-func (this_ *Workspace) GetFieldByNode(filename string, fieldNode *thrift.FieldNode) (field *Field) {
+func (this_ *Workspace) GetMethodArgFields(filename string, serviceName string, methodName string) (argFields []*Field, structCache map[string]*Struct, err error) {
+	structCache = map[string]*Struct{}
+
+	filename = util.FormatPath(filename)
+
+	methodNode := this_.GetServiceMethod(filename, serviceName, methodName)
+	if methodNode == nil {
+		err = errors.New("service method node [" + filename + "][" + serviceName + "][" + methodName + "] not found")
+		return
+	}
+	for _, one := range methodNode.Params {
+		argFields = append(argFields, this_.GetFieldByNode(filename, one, structCache))
+	}
+
+	return
+}
+
+func (this_ *Workspace) GetFieldByNode(filename string, fieldNode *thrift.FieldNode, structCache map[string]*Struct) (field *Field) {
 
 	field = &Field{
 		Name: fieldNode.Name,
 		Num:  fieldNode.Num,
 	}
-	field.Type = this_.GetFieldTypeByNode(filename, fieldNode.Type)
+	field.Type = this_.GetFieldTypeByNode(filename, fieldNode.Type, structCache)
 	return
 }
 
-func (this_ *Workspace) GetFieldTypeByNode(filename string, fieldNode *thrift.FieldType) (fieldType *FieldType) {
+func (this_ *Workspace) GetFieldTypeByNode(filename string, fieldNode *thrift.FieldType, structCache map[string]*Struct) (fieldType *FieldType) {
 	fieldType = &FieldType{
 		TypeId: fieldNode.TypeId,
 	}
 	if fieldNode.StructName != "" {
-		fieldType.Struct = this_.GetStructByName(filename, fieldNode.StructInclude, fieldNode.StructName)
+		fieldType.StructName = fieldNode.StructName
+		fieldType.StructInclude = fieldNode.StructInclude
+		fieldType.structObj = this_.GetStructByName(filename, fieldNode.StructInclude, fieldNode.StructName, structCache)
 	}
 	if fieldNode.MapKeyType != nil {
-		fieldType.MapKeyType = this_.GetFieldTypeByNode(filename, fieldNode.MapKeyType)
+		fieldType.MapKeyType = this_.GetFieldTypeByNode(filename, fieldNode.MapKeyType, structCache)
 	}
 	if fieldNode.MapValueType != nil {
-		fieldType.MapValueType = this_.GetFieldTypeByNode(filename, fieldNode.MapValueType)
+		fieldType.MapValueType = this_.GetFieldTypeByNode(filename, fieldNode.MapValueType, structCache)
 	}
 	if fieldNode.ListType != nil {
-		fieldType.ListType = this_.GetFieldTypeByNode(filename, fieldNode.ListType)
+		fieldType.ListType = this_.GetFieldTypeByNode(filename, fieldNode.ListType, structCache)
 	}
 	if fieldNode.SetType != nil {
-		fieldType.SetType = this_.GetFieldTypeByNode(filename, fieldNode.SetType)
+		fieldType.SetType = this_.GetFieldTypeByNode(filename, fieldNode.SetType, structCache)
 	}
 	return
 }
 
-func (this_ *Workspace) GetStructByName(filename string, include string, name string) (res *Struct) {
+func (this_ *Workspace) GetStructByName(filename string, include string, name string, structCache map[string]*Struct) (res *Struct) {
+	defer func() {
+		structCache[include+"-"+name] = res
+	}()
 	key := filename + "-" + include + "-" + name
 	if res := this_.structCache_.Get(key); res != nil {
 		return res.(*Struct)
 	}
+
 	res = &Struct{}
 	res.Name = name
 	structFilename := filename
@@ -93,7 +118,7 @@ func (this_ *Workspace) GetStructByName(filename string, include string, name st
 	structNode := this_.GetStruct(structFilename, name)
 	if structNode != nil {
 		for _, fieldNode := range structNode.Fields {
-			res.Fields = append(res.Fields, this_.GetFieldByNode(structFilename, fieldNode))
+			res.Fields = append(res.Fields, this_.GetFieldByNode(structFilename, fieldNode, structCache))
 		}
 	}
 

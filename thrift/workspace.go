@@ -9,10 +9,10 @@ import (
 )
 
 type ServiceInfo struct {
-	Filename     string                   `json:"filename"`
-	Name         string                   `json:"name"`
-	RelativePath string                   `json:"relativePath"`
-	ServiceNode  *thrift.ServiceStatement `json:"serviceNode"`
+	*thrift.ServiceStatement
+	Filename     string `json:"filename"`
+	Name         string `json:"name"`
+	RelativePath string `json:"relativePath"`
 }
 
 func NewWorkspace(dir string) *Workspace {
@@ -118,10 +118,10 @@ func (this_ *Workspace) SetService(filename string, value *thrift.ServiceStateme
 	}
 
 	serviceInfo := &ServiceInfo{
-		Filename:     filename,
-		RelativePath: this_.GetRelativePath(filename),
-		Name:         value.Name,
-		ServiceNode:  value,
+		Filename:         filename,
+		RelativePath:     this_.GetRelativePath(filename),
+		Name:             value.Name,
+		ServiceStatement: value,
 	}
 	this_.ServiceList = append(this_.ServiceList, serviceInfo)
 }

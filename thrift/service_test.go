@@ -30,7 +30,7 @@ func TestServiceClient(t *testing.T) {
 		Num:  1,
 		Type: &FieldType{
 			TypeId: thrift.STRUCT,
-			Struct: &Struct{
+			structObj: &Struct{
 				Fields: []*Field{
 					{
 						Name: "field1",
@@ -57,7 +57,7 @@ func TestServiceClient(t *testing.T) {
 
 	param.ResultType = &FieldType{
 		TypeId: thrift.STRUCT,
-		Struct: &Struct{
+		structObj: &Struct{
 			Fields: []*Field{
 				{
 					Name: "field1",

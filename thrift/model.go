@@ -15,23 +15,25 @@ func toJSON(v interface{}) (res string) {
 }
 
 type Struct struct {
-	Name   string   `json:"name,omitempty"`
-	Fields []*Field `json:"fields,omitempty"`
+	Name   string   `json:"name"`
+	Fields []*Field `json:"fields"`
 }
 
 type Field struct {
-	Num  int16      `json:"num,omitempty"`
-	Name string     `json:"name,omitempty"`
-	Type *FieldType `json:"type,omitempty"`
+	Num  int16      `json:"num"`
+	Name string     `json:"name"`
+	Type *FieldType `json:"type"`
 }
 
 type FieldType struct {
-	TypeId       thrift.TType `json:"typeId,omitempty"`
-	Struct       *Struct      `json:"struct,omitempty"`
-	SetType      *FieldType   `json:"setType,omitempty"`
-	ListType     *FieldType   `json:"listType,omitempty"`
-	MapKeyType   *FieldType   `json:"mapKeyType,omitempty"`
-	MapValueType *FieldType   `json:"mapValueType,omitempty"`
+	TypeId        thrift.TType `json:"typeId"`
+	StructInclude string       `json:"structInclude"`
+	StructName    string       `json:"structName"`
+	structObj     *Struct
+	SetType       *FieldType `json:"setType"`
+	ListType      *FieldType `json:"listType"`
+	MapKeyType    *FieldType `json:"mapKeyType"`
+	MapValueType  *FieldType `json:"mapValueType"`
 }
 
 func WriteStructFields(ctx context.Context, protocol thrift.TProtocol, name string, fields []*Field, value map[string]interface{}) error {
@@ -142,7 +144,7 @@ func WriteByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Fiel
 	case thrift.STRING:
 		err = protocol.WriteString(ctx, getString(value))
 	case thrift.STRUCT:
-		err = WriteStructFields(ctx, protocol, fieldType.Struct.Name, fieldType.Struct.Fields, value.(map[string]interface{}))
+		err = WriteStructFields(ctx, protocol, fieldType.structObj.Name, fieldType.structObj.Fields, value.(map[string]interface{}))
 	case thrift.MAP:
 		err = WriteMap(ctx, protocol, fieldType.MapKeyType, fieldType.MapValueType, value.(map[string]interface{}))
 	case thrift.SET:
@@ -305,7 +307,7 @@ func ReadByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Field
 	case thrift.STRING:
 		res, err = protocol.ReadString(ctx)
 	case thrift.STRUCT:
-		res, err = ReadStructFields(ctx, protocol, fieldType.Struct.Fields)
+		res, err = ReadStructFields(ctx, protocol, fieldType.structObj.Fields)
 	case thrift.MAP:
 		res, err = ReadMap(ctx, protocol, fieldType.MapKeyType, fieldType.MapValueType)
 	case thrift.SET:
