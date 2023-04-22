@@ -1,7 +1,6 @@
 package thrift
 
 import (
-	"fmt"
 	"github.com/team-ide/go-interpreter/node"
 	"github.com/team-ide/go-interpreter/thrift"
 	"github.com/team-ide/go-tool/util"
@@ -72,7 +71,7 @@ func (this_ *Workspace) GetDir() string {
 }
 
 func (this_ *Workspace) GetRelativePath(filename string) string {
-	return strings.TrimLeft(filename, this_.formatDir)
+	return filename[len(this_.formatDir)+1:]
 }
 
 func (this_ *Workspace) GetFormatDir() string {
@@ -87,7 +86,7 @@ func (this_ *Workspace) GetTree(filename string) *node.Tree {
 }
 
 func (this_ *Workspace) SetTree(filename string, value *node.Tree) {
-	fmt.Println("SetTree filename:", filename)
+	//fmt.Println("SetTree filename:", filename)
 	this_.treeCache.Set(filename, value)
 }
 
@@ -99,7 +98,7 @@ func (this_ *Workspace) GetStruct(filename string, name string) *thrift.StructSt
 }
 
 func (this_ *Workspace) SetStruct(filename string, value *thrift.StructStatement) {
-	fmt.Println("SetStruct filename:", filename, ",name:", value.Name)
+	//fmt.Println("SetStruct filename:", filename, ",name:", value.Name)
 	this_.structCache.Set(filename+"-"+value.Name, value)
 }
 
@@ -111,7 +110,8 @@ func (this_ *Workspace) GetService(filename string, name string) *thrift.Service
 }
 
 func (this_ *Workspace) SetService(filename string, value *thrift.ServiceStatement) {
-	fmt.Println("SetService filename:", filename, ",name:", value.Name)
+	relativePath := this_.GetRelativePath(filename)
+	//fmt.Println("SetService filename:", filename, ",name:", value.Name, ",relativePath:", relativePath)
 	this_.serviceCache.Set(filename+"-"+value.Name, value)
 	for _, method := range value.Methods {
 		this_.SetServiceMethod(filename, value.Name, method)
@@ -119,7 +119,7 @@ func (this_ *Workspace) SetService(filename string, value *thrift.ServiceStateme
 
 	serviceInfo := &ServiceInfo{
 		Filename:         filename,
-		RelativePath:     this_.GetRelativePath(filename),
+		RelativePath:     relativePath,
 		Name:             value.Name,
 		ServiceStatement: value,
 	}
@@ -134,7 +134,7 @@ func (this_ *Workspace) GetServiceMethod(filename string, serviceName string, na
 }
 
 func (this_ *Workspace) SetServiceMethod(filename string, serviceName string, value *thrift.ServiceMethodNode) {
-	fmt.Println("SetServiceMethod filename:", filename, ",serviceName:", serviceName, ",name:", value.Name)
+	//fmt.Println("SetServiceMethod filename:", filename, ",serviceName:", serviceName, ",name:", value.Name)
 	this_.serviceMethodCache.Set(filename+"-"+serviceName+"-"+value.Name, value)
 }
 
@@ -146,7 +146,7 @@ func (this_ *Workspace) GetEnum(filename string, name string) *thrift.EnumStatem
 }
 
 func (this_ *Workspace) SetEnum(filename string, value *thrift.EnumStatement) {
-	fmt.Println("SetEnum filename:", filename, ",name:", value.Name)
+	//fmt.Println("SetEnum filename:", filename, ",name:", value.Name)
 	this_.enumCache.Set(filename+"-"+value.Name, value)
 }
 
@@ -158,7 +158,7 @@ func (this_ *Workspace) GetException(filename string, name string) *thrift.Excep
 }
 
 func (this_ *Workspace) SetException(filename string, value *thrift.ExceptionStatement) {
-	fmt.Println("SetException filename:", filename, ",name:", value.Name)
+	//fmt.Println("SetException filename:", filename, ",name:", value.Name)
 	this_.exceptionCache.Set(filename+"-"+value.Name, value)
 }
 
@@ -183,6 +183,6 @@ func (this_ *Workspace) SetIncludePath(dir string, filename string, value *thrif
 	}
 
 	data[name] = path
-	fmt.Println("SetIncludePath filename:", filename, ",name:", name, ",path:", path)
+	//fmt.Println("SetIncludePath filename:", filename, ",name:", name, ",path:", path)
 	this_.includePathCache.Set(filename, data)
 }

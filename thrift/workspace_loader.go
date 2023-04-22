@@ -2,7 +2,6 @@ package thrift
 
 import (
 	"errors"
-	"fmt"
 	"github.com/team-ide/go-interpreter/thrift"
 	"os"
 	"strings"
@@ -48,7 +47,7 @@ func (this_ *Workspace) loadByDir(dir string, errs map[string]error) {
 }
 
 func (this_ *Workspace) loadByFilename(dir string, filename string) (err error) {
-	fmt.Println("loadByFilename dir:", dir, ",filename:", filename)
+	//fmt.Println("loadByFilename dir:", dir, ",filename:", filename)
 	bs, err := os.ReadFile(filename)
 	if err != nil {
 		return
