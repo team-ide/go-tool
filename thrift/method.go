@@ -7,11 +7,11 @@ import (
 )
 
 type MethodParam struct {
-	Name        string        `json:"name,omitempty"`
-	Args        []interface{} `json:"args,omitempty"`
-	ArgFields   []*Field      `json:"argFields,omitempty"`
-	Result      interface{}   `json:"result,omitempty"`
-	ResultFiled *Field        `json:"resultFiled,omitempty"`
+	Name       string        `json:"name,omitempty"`
+	Args       []interface{} `json:"args,omitempty"`
+	ArgFields  []*Field      `json:"argFields,omitempty"`
+	Result     interface{}   `json:"result,omitempty"`
+	ResultType *FieldType    `json:"resultFiled,omitempty"`
 }
 
 func (this_ *MethodParam) String() string {
@@ -22,8 +22,11 @@ func (this_ *MethodParam) String() string {
 }
 
 func (this_ *MethodParam) Read(ctx context.Context, inProtocol thrift.TProtocol) error {
-	this_.ResultFiled.Name = "result"
-	value, err := ReadStructFields(ctx, inProtocol, []*Field{this_.ResultFiled})
+
+	fmt.Println("MethodParam Read ResultType:", toJSON(this_.ResultType))
+	value, err := ReadStructFields(ctx, inProtocol, []*Field{
+		{Num: 0, Name: "result", Type: this_.ResultType},
+	})
 	if err != nil {
 		return err
 	}

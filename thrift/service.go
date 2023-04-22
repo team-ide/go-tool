@@ -68,8 +68,8 @@ func (this_ *ServiceClient) SetLastResponseMeta_(meta thrift.ResponseMeta) {
 
 func (this_ *ServiceClient) Send(ctx context.Context, param *MethodParam) (result interface{}, err error) {
 	var resultParam = &MethodParam{
-		Name:        param.Name,
-		ResultFiled: param.ResultFiled,
+		Name:       param.Name,
+		ResultType: param.ResultType,
 	}
 	var _meta1 thrift.ResponseMeta
 	_meta1, err = this_.Client_().Call(ctx, param.Name, param, resultParam)

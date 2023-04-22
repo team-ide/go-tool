@@ -55,25 +55,22 @@ func TestServiceClient(t *testing.T) {
 		"field2": int16(2),
 	})
 
-	param.ResultFiled = &Field{
-		Num: 0,
-		Type: &FieldType{
-			TypeId: thrift.STRUCT,
-			Struct: &Struct{
-				Fields: []*Field{
-					{
-						Name: "field1",
-						Num:  1,
-						Type: &FieldType{
-							TypeId: thrift.I08,
-						},
+	param.ResultType = &FieldType{
+		TypeId: thrift.STRUCT,
+		Struct: &Struct{
+			Fields: []*Field{
+				{
+					Name: "field1",
+					Num:  1,
+					Type: &FieldType{
+						TypeId: thrift.I08,
 					},
-					{
-						Name: "field2",
-						Num:  2,
-						Type: &FieldType{
-							TypeId: thrift.I16,
-						},
+				},
+				{
+					Name: "field2",
+					Num:  2,
+					Type: &FieldType{
+						TypeId: thrift.I16,
 					},
 				},
 			},

@@ -16,6 +16,7 @@ require (
 	github.com/tealeg/xlsx v1.0.5
 	github.com/team-ide/go-dialect v1.9.0
 	github.com/team-ide/go-driver v1.2.1
+	github.com/team-ide/go-interpreter v0.0.1
 	go.uber.org/zap v1.24.0
 )
 
@@ -76,7 +77,7 @@ require (
 	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

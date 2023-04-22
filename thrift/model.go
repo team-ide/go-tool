@@ -7,31 +7,7 @@ import (
 	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/team-ide/go-tool/util"
 	"strconv"
-	"sync"
 )
-
-var (
-	structCache     map[string]*Struct
-	structCacheLock sync.Locker = &sync.RWMutex{}
-)
-
-func AddStruct(str *Struct) {
-	structCacheLock.Lock()
-	defer structCacheLock.Unlock()
-
-	key := str.Name
-	if str.Include != "" {
-		key = str.Include + "." + str.Name
-	}
-	structCache[key] = str
-}
-
-func GetStruct(name string) *Struct {
-	structCacheLock.Lock()
-	defer structCacheLock.Unlock()
-
-	return structCache[name]
-}
 
 func toJSON(v interface{}) (res string) {
 	res = util.GetStringValue(v)
@@ -39,9 +15,8 @@ func toJSON(v interface{}) (res string) {
 }
 
 type Struct struct {
-	Include string   `json:"include,omitempty"`
-	Name    string   `json:"name,omitempty"`
-	Fields  []*Field `json:"fields,omitempty"`
+	Name   string   `json:"name,omitempty"`
+	Fields []*Field `json:"fields,omitempty"`
 }
 
 type Field struct {
@@ -51,10 +26,12 @@ type Field struct {
 }
 
 type FieldType struct {
-	Include      string       `json:"include,omitempty"`
 	TypeId       thrift.TType `json:"typeId,omitempty"`
 	Struct       *Struct      `json:"struct,omitempty"`
-	GenericTypes []*FieldType `json:"genericTypes,omitempty"`
+	SetType      *FieldType   `json:"setType,omitempty"`
+	ListType     *FieldType   `json:"listType,omitempty"`
+	MapKeyType   *FieldType   `json:"mapKeyType,omitempty"`
+	MapValueType *FieldType   `json:"mapValueType,omitempty"`
 }
 
 func WriteStructFields(ctx context.Context, protocol thrift.TProtocol, name string, fields []*Field, value map[string]interface{}) error {
@@ -167,11 +144,11 @@ func WriteByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Fiel
 	case thrift.STRUCT:
 		err = WriteStructFields(ctx, protocol, fieldType.Struct.Name, fieldType.Struct.Fields, value.(map[string]interface{}))
 	case thrift.MAP:
-		err = WriteMap(ctx, protocol, fieldType.GenericTypes[0], fieldType.GenericTypes[1], value.(map[string]interface{}))
+		err = WriteMap(ctx, protocol, fieldType.MapKeyType, fieldType.MapValueType, value.(map[string]interface{}))
 	case thrift.SET:
-		err = WriteSet(ctx, protocol, fieldType.GenericTypes[0], value.([]interface{}))
+		err = WriteSet(ctx, protocol, fieldType.SetType, value.([]interface{}))
 	case thrift.LIST:
-		err = WriteList(ctx, protocol, fieldType.GenericTypes[0], value.([]interface{}))
+		err = WriteList(ctx, protocol, fieldType.ListType, value.([]interface{}))
 	default:
 		return thrift.PrependError(fmt.Sprintf("%T type error: ", fieldType), errors.New("type unknown"))
 	}
@@ -207,6 +184,7 @@ func ReadStructFields(ctx context.Context, inProtocol thrift.TProtocol, fields [
 				return nil, err
 			}
 
+			fmt.Println("ReadStructFields fields:", toJSON(fields))
 			// 字段不存在
 			return nil, errors.New(fmt.Sprintf("ReadStructFields field %d %d not found", fieldId, fieldTypeId))
 		}
@@ -329,11 +307,11 @@ func ReadByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Field
 	case thrift.STRUCT:
 		res, err = ReadStructFields(ctx, protocol, fieldType.Struct.Fields)
 	case thrift.MAP:
-		res, err = ReadMap(ctx, protocol, fieldType.GenericTypes[0], fieldType.GenericTypes[1])
+		res, err = ReadMap(ctx, protocol, fieldType.MapKeyType, fieldType.MapValueType)
 	case thrift.SET:
-		res, err = ReadSet(ctx, protocol, fieldType.GenericTypes[0])
+		res, err = ReadSet(ctx, protocol, fieldType.SetType)
 	case thrift.LIST:
-		res, err = ReadList(ctx, protocol, fieldType.GenericTypes[0])
+		res, err = ReadList(ctx, protocol, fieldType.ListType)
 	default:
 		return nil, thrift.PrependError(fmt.Sprintf("%T type error: ", fieldType), errors.New("type unknown"))
 	}
