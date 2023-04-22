@@ -53,6 +53,10 @@ type Workspace struct {
 	includePathCache   *util.SyncMap
 }
 
+func (this_ *Workspace) GetErrors() map[string]error {
+	return this_.errorCache
+}
+
 func (this_ *Workspace) IsIgnoreName(name string) bool {
 	return util.StringIndexOf(this_.ignoreNames, name) >= 0
 }

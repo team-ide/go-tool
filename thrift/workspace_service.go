@@ -16,7 +16,7 @@ func (this_ *Workspace) InvokeByServerAddress(serverAddress string, filename str
 
 	client, err := NewServiceClientByAddress(serverAddress)
 	if err != nil {
-		panic(err)
+		return
 	}
 	defer func() {
 		_ = client.t.Close()
