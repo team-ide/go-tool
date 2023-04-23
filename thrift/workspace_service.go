@@ -39,28 +39,20 @@ func (this_ *Workspace) GetMethodParam(filename string, serviceName string, meth
 		Args: args,
 		Name: methodName,
 	}
-	var structCache map[string]*Struct
-	param.ArgFields, structCache, err = this_.GetMethodArgFields(filename, serviceName, methodName)
-	if err != nil {
-		return
-	}
+	var structCache = map[string]*Struct{}
+	param.ArgFields = this_.GetFields(filename, methodNode.Params, structCache)
 	param.ResultType = this_.GetFieldTypeByNode(filename, methodNode.Return, structCache)
+	param.ExceptionFields = this_.GetFields(filename, methodNode.Exceptions, structCache)
 
 	return
 }
 
-func (this_ *Workspace) GetMethodArgFields(filename string, serviceName string, methodName string) (argFields []*Field, structCache map[string]*Struct, err error) {
-	structCache = map[string]*Struct{}
+func (this_ *Workspace) GetFields(filename string, params []*thrift.FieldNode, structCache map[string]*Struct) (fields []*Field) {
 
 	filename = util.FormatPath(filename)
 
-	methodNode := this_.GetServiceMethod(filename, serviceName, methodName)
-	if methodNode == nil {
-		err = errors.New("service method node [" + filename + "][" + serviceName + "][" + methodName + "] not found")
-		return
-	}
-	for _, one := range methodNode.Params {
-		argFields = append(argFields, this_.GetFieldByNode(filename, one, structCache))
+	for _, one := range params {
+		fields = append(fields, this_.GetFieldByNode(filename, one, structCache))
 	}
 
 	return

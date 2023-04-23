@@ -297,7 +297,7 @@ func ReadSet(ctx context.Context, protocol thrift.TProtocol, setType *FieldType)
 		}
 		res = append(res, v)
 	}
-	if err := protocol.WriteMapEnd(ctx); err != nil {
+	if err := protocol.ReadSetEnd(ctx); err != nil {
 		return nil, thrift.PrependError("read set end error: ", err)
 	}
 	return res, nil
@@ -311,6 +311,7 @@ func ReadList(ctx context.Context, protocol thrift.TProtocol, listType *FieldTyp
 	if listTypeId, size, err = protocol.ReadListBegin(ctx); err != nil {
 		return nil, thrift.PrependError(fmt.Sprintf("%T read list begin error: ", listType), err)
 	}
+	//fmt.Println("ReadList listTypeId:", listTypeId, ",size:", size)
 	for i := 0; i < size; i++ {
 		var v interface{}
 		if v, err = ReadByType(ctx, protocol, listType, listTypeId); err != nil {
@@ -318,10 +319,10 @@ func ReadList(ctx context.Context, protocol thrift.TProtocol, listType *FieldTyp
 		}
 		res = append(res, v)
 	}
-	if err := protocol.WriteMapEnd(ctx); err != nil {
-		return nil, thrift.PrependError("read set list error: ", err)
+	if err := protocol.ReadListEnd(ctx); err != nil {
+		return nil, thrift.PrependError("read list end error: ", err)
 	}
-	return nil, nil
+	return res, nil
 }
 
 func ReadByType(ctx context.Context, protocol thrift.TProtocol, fieldType *FieldType, fieldTypeId thrift.TType) (res interface{}, err error) {
@@ -332,8 +333,12 @@ func ReadByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Field
 	//	}
 	//}
 	switch fieldTypeId {
+	case thrift.VOID:
+	case thrift.STOP:
 	case thrift.BOOL:
 		res, err = protocol.ReadBool(ctx)
+	case thrift.UUID:
+		res, err = protocol.ReadUUID(ctx)
 	case thrift.BYTE:
 		res, err = protocol.ReadByte(ctx)
 	case thrift.DOUBLE:

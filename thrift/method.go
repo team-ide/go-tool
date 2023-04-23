@@ -8,16 +8,17 @@ import (
 )
 
 type MethodParam struct {
-	Name       string                 `json:"name"`
-	Args       []interface{}          `json:"args"`
-	ArgFields  []*Field               `json:"argFields"`
-	Result     interface{}            `json:"result"`
-	ResultMap  map[string]interface{} `json:"resultMap"`
-	ResultType *FieldType             `json:"resultFiled"`
-	ReadStart  time.Time              `json:"readStart"`
-	ReadEnd    time.Time              `json:"readEnd"`
-	WriteStart time.Time              `json:"writeStart"`
-	WriteEnd   time.Time              `json:"writeEnd"`
+	Name            string        `json:"name"`
+	Args            []interface{} `json:"args"`
+	ArgFields       []*Field      `json:"argFields"`
+	Result          interface{}   `json:"result"`
+	Exceptions      []interface{} `json:"exceptions"`
+	ResultType      *FieldType    `json:"resultFiled"`
+	ExceptionFields []*Field      `json:"exceptionFields"`
+	ReadStart       time.Time     `json:"readStart"`
+	ReadEnd         time.Time     `json:"readEnd"`
+	WriteStart      time.Time     `json:"writeStart"`
+	WriteEnd        time.Time     `json:"writeEnd"`
 }
 
 func (this_ *MethodParam) String() string {
@@ -32,13 +33,24 @@ func (this_ *MethodParam) Read(ctx context.Context, inProtocol thrift.TProtocol)
 	defer func() {
 		this_.ReadEnd = time.Now()
 	}()
-	var err error
+	var fields []*Field
+	if this_.ResultType != nil {
+		fields = append(fields, &Field{
+			Num: 0, Name: "success", Type: this_.ResultType,
+		})
+	}
+	for _, e := range this_.ExceptionFields {
+		fields = append(fields, e)
+	}
 	//fmt.Println("MethodParam Read ResultType:", toJSON(this_.ResultType))
-	this_.ResultMap, err = ReadStructFields(ctx, inProtocol, []*Field{
-		{Num: 0, Name: "result", Type: this_.ResultType},
-	})
-	if this_.ResultMap != nil {
-		this_.Result = this_.ResultMap["result"]
+	resultMap, err := ReadStructFields(ctx, inProtocol, fields)
+	if resultMap != nil {
+		this_.Result = resultMap["success"]
+		for _, e := range this_.ExceptionFields {
+			if resultMap[e.Name] != nil {
+				this_.Exceptions = append(this_.Exceptions, resultMap[e.Name])
+			}
+		}
 	}
 	if err != nil {
 		return err

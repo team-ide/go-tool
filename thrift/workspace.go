@@ -167,6 +167,8 @@ func (this_ *Workspace) GetException(filename string, name string) *thrift.Excep
 func (this_ *Workspace) SetException(filename string, value *thrift.ExceptionStatement) {
 	//fmt.Println("SetException filename:", filename, ",name:", value.Name)
 	this_.exceptionCache.Set(filename+"-"+value.Name, value)
+
+	this_.SetStruct(filename, value.StructStatement)
 }
 
 func (this_ *Workspace) GetIncludePath(filename string, name string) string {

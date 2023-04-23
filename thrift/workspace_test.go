@@ -94,3 +94,33 @@ func TestSendMessageByServer(t *testing.T) {
 	bs, _ = json.MarshalIndent(res, "", "  ")
 	fmt.Println("Send result JSON:", string(bs))
 }
+
+func TestListIds(t *testing.T) {
+	dir := `D:\Code\linkdood\thrift`
+
+	workspace := NewWorkspace(dir)
+
+	workspace.Load()
+	if len(workspace.errorCache) > 0 {
+		for path, err := range workspace.errorCache {
+			fmt.Println("path:", path)
+			fmt.Println("err:", err)
+		}
+	}
+
+	filename := workspace.GetFormatDir() + "/idgenerator.thrift"
+
+	var args []interface{}
+
+	args = append(args, 1)
+	args = append(args, 10)
+	res, err := workspace.InvokeByServerAddress(`192.168.0.85:11251`, filename, "IdGeneratorService", "listIds", args...)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Send result:", res)
+
+	bs, _ := json.MarshalIndent(res, "", "  ")
+	fmt.Println("Send result JSON:", string(bs))
+}
