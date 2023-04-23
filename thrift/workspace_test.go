@@ -1,8 +1,11 @@
 package thrift
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/team-ide/go-tool/util"
+	"reflect"
 	"testing"
 )
 
@@ -57,13 +60,29 @@ func TestSendMessageByServer(t *testing.T) {
 	var args []interface{}
 
 	args = append(args, map[string]interface{}{
-		"userID":        "4611686027042922242",
-		"targetID":      "4611686029164805890",
+		"userID":        4611686027042922242,
+		"targetID":      4611686029164805890,
 		"message":       "这是测试消息",
 		"messageType":   2,
 		"msgProperties": map[string]interface{}{},
 	})
 	args = append(args, 2)
+	w := bytes.NewBufferString("")
+	d := json.NewEncoder(w)
+	_ = d.Encode(args)
+	fmt.Println(w.String())
+
+	str := `{"message":"这是测试消息","messageType":2,"msgProperties":{},"targetID":4611686027042922242.1,"userID":4611686029164805890}`
+	data := map[string]interface{}{}
+	_ = util.JSONDecodeUseNumber([]byte(str), &data)
+
+	fmt.Println(data)
+	fmt.Println(data["targetID"])
+	fmt.Println(reflect.TypeOf(data["targetID"]).String())
+	fmt.Println(data["targetID"].(json.Number).String())
+
+	bs, _ := json.MarshalIndent(data, "", "  ")
+	fmt.Println(string(bs))
 
 	res, err := workspace.InvokeByServerAddress(`192.168.0.85:11203`, filename, "ChatService", "sendMessageByServer", args...)
 	if err != nil {
@@ -71,6 +90,7 @@ func TestSendMessageByServer(t *testing.T) {
 	}
 
 	fmt.Println("Send result:", res)
-	bs, _ := json.Marshal(res)
+
+	bs, _ = json.MarshalIndent(res, "", "  ")
 	fmt.Println("Send result JSON:", string(bs))
 }

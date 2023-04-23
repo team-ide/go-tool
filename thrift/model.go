@@ -129,6 +129,7 @@ func WriteList(ctx context.Context, protocol thrift.TProtocol, listType *FieldTy
 }
 
 func WriteByType(ctx context.Context, protocol thrift.TProtocol, fieldType *FieldType, value interface{}) (err error) {
+
 	switch fieldType.TypeId {
 	case thrift.BOOL:
 		err = protocol.WriteBool(ctx, getBool(value))
@@ -149,7 +150,7 @@ func WriteByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Fiel
 		if !ok {
 			data = map[string]interface{}{}
 			bs, _ := json.Marshal(value)
-			_ = json.Unmarshal(bs, &data)
+			_ = util.JSONDecodeUseNumber(bs, &data)
 		}
 		err = WriteStructFields(ctx, protocol, fieldType.structObj.Name, fieldType.structObj.Fields, data)
 	case thrift.MAP:
@@ -157,7 +158,21 @@ func WriteByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Fiel
 		if !ok {
 			data = map[interface{}]interface{}{}
 			bs, _ := json.Marshal(value)
-			_ = json.Unmarshal(bs, &data)
+
+			strMap := map[string]interface{}{}
+			if e := util.JSONDecodeUseNumber(bs, &strMap); e == nil {
+				for k, v := range strMap {
+					data[k] = v
+				}
+			} else {
+				intMap := map[int64]interface{}{}
+				if e = util.JSONDecodeUseNumber(bs, &intMap); e == nil {
+					for k, v := range intMap {
+						data[k] = v
+					}
+				}
+			}
+
 		}
 		err = WriteMap(ctx, protocol, fieldType.MapKeyType, fieldType.MapValueType, data)
 	case thrift.SET:
@@ -165,7 +180,7 @@ func WriteByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Fiel
 		if !ok {
 			data = []interface{}{}
 			bs, _ := json.Marshal(value)
-			_ = json.Unmarshal(bs, &data)
+			_ = util.JSONDecodeUseNumber(bs, &data)
 		}
 		err = WriteSet(ctx, protocol, fieldType.SetType, data)
 	case thrift.LIST:
@@ -173,7 +188,7 @@ func WriteByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Fiel
 		if !ok {
 			data = []interface{}{}
 			bs, _ := json.Marshal(value)
-			_ = json.Unmarshal(bs, &data)
+			_ = util.JSONDecodeUseNumber(bs, &data)
 		}
 		err = WriteList(ctx, protocol, fieldType.ListType, data)
 	default:
@@ -353,6 +368,20 @@ func getBool(v interface{}) (res bool) {
 	if ok {
 		return
 	}
+	return util.IsTrue(v)
+}
+
+func toInt64(v interface{}) (res int64, ok bool) {
+	if f, ok := v.(float64); ok {
+		return int64(f), true
+	}
+	if f, ok := v.(float32); ok {
+		return int64(f), true
+	}
+	if f, ok := v.(json.Number); ok {
+		res, _ = f.Int64()
+		return res, true
+	}
 	return
 }
 
@@ -363,6 +392,9 @@ func getByte(v interface{}) (res int8) {
 	res, ok := v.(int8)
 	if ok {
 		return
+	}
+	if f, ok := toInt64(v); ok {
+		return int8(f)
 	}
 	str := util.GetStringValue(v)
 	i64, _ := strconv.ParseInt(str, 10, 64)
@@ -378,6 +410,9 @@ func getDouble(v interface{}) (res float64) {
 	if ok {
 		return
 	}
+	if f, ok := v.(float32); ok {
+		return float64(f)
+	}
 	str := util.GetStringValue(v)
 	i64, _ := strconv.ParseFloat(str, 64)
 	res = i64
@@ -391,6 +426,9 @@ func getInt16(v interface{}) (res int16) {
 	res, ok := v.(int16)
 	if ok {
 		return
+	}
+	if f, ok := toInt64(v); ok {
+		return int16(f)
 	}
 	str := util.GetStringValue(v)
 	i64, _ := strconv.ParseInt(str, 10, 64)
@@ -406,6 +444,9 @@ func getInt32(v interface{}) (res int32) {
 	if ok {
 		return
 	}
+	if f, ok := toInt64(v); ok {
+		return int32(f)
+	}
 	str := util.GetStringValue(v)
 	i64, _ := strconv.ParseInt(str, 10, 64)
 	res = int32(i64)
@@ -419,6 +460,9 @@ func getInt64(v interface{}) (res int64) {
 	res, ok := v.(int64)
 	if ok {
 		return
+	}
+	if f, ok := toInt64(v); ok {
+		return f
 	}
 	str := util.GetStringValue(v)
 	i64, _ := strconv.ParseInt(str, 10, 64)

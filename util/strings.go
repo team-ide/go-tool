@@ -91,6 +91,10 @@ func GetStringValue(value interface{}) (valueString string) {
 	case []byte:
 		valueString = string(v)
 		break
+	case json.Number:
+		valueString = v.String()
+	case *json.Number:
+		valueString = v.String()
 	default:
 		var bs []byte
 		bs, err := json.Marshal(value)
