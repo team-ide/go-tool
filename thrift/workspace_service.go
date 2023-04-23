@@ -3,6 +3,7 @@ package thrift
 import (
 	"context"
 	"errors"
+	thrift2 "github.com/apache/thrift/lib/go/thrift"
 	"github.com/team-ide/go-interpreter/thrift"
 	"github.com/team-ide/go-tool/util"
 )
@@ -68,6 +69,11 @@ func (this_ *Workspace) GetFieldByNode(filename string, fieldNode *thrift.FieldN
 	return
 }
 
+func (this_ *Workspace) GetFieldDemoData(filename string, fieldNode *Field) (res interface{}) {
+	res = this_.GetFieldDemoDataByType(filename, fieldNode.Type)
+	return
+}
+
 func (this_ *Workspace) GetFieldTypeByNode(filename string, fieldNode *thrift.FieldType, structCache map[string]*Struct) (fieldType *FieldType) {
 	fieldType = &FieldType{
 		TypeId: fieldNode.TypeId,
@@ -88,6 +94,31 @@ func (this_ *Workspace) GetFieldTypeByNode(filename string, fieldNode *thrift.Fi
 	}
 	if fieldNode.SetType != nil {
 		fieldType.SetType = this_.GetFieldTypeByNode(filename, fieldNode.SetType, structCache)
+	}
+	//fmt.Println("GetFieldTypeByNode filename:", filename, ",fieldNode:", toJSON(fieldNode), ",fieldType:", toJSON(fieldType))
+	return
+}
+
+func (this_ *Workspace) GetFieldDemoDataByType(filename string, fieldNode *FieldType) (res interface{}) {
+
+	if fieldNode.StructName != "" {
+		return this_.GetStructDemoData(filename, fieldNode.StructInclude, fieldNode.StructName)
+	}
+	if fieldNode.MapKeyType != nil || fieldNode.MapValueType != nil {
+		return map[string]interface{}{}
+	}
+	if fieldNode.ListType != nil {
+		return []interface{}{}
+	}
+	if fieldNode.SetType != nil {
+		return []interface{}{}
+	}
+	if fieldNode.TypeId == thrift2.STRING || fieldNode.TypeId == thrift2.UUID {
+		res = ""
+	} else if fieldNode.TypeId == thrift2.BOOL {
+		res = false
+	} else {
+		res = 0
 	}
 	//fmt.Println("GetFieldTypeByNode filename:", filename, ",fieldNode:", toJSON(fieldNode), ",fieldType:", toJSON(fieldType))
 	return
@@ -120,5 +151,24 @@ func (this_ *Workspace) GetStructByName(filename string, include string, name st
 	}
 
 	this_.structCache_.Set(key, res)
+	return
+}
+
+func (this_ *Workspace) GetStructDemoData(filename string, include string, name string) (res interface{}) {
+
+	key := filename + "-" + include + "-" + name
+	r := this_.structCache_.Get(key)
+	s := r.(*Struct)
+
+	structFilename := filename
+	if include != "" {
+		structFilename = this_.GetIncludePath(filename, include)
+	}
+
+	data := map[string]interface{}{}
+	res = data
+	for _, fieldNode := range s.Fields {
+		data[fieldNode.Name] = this_.GetFieldDemoData(structFilename, fieldNode)
+	}
 	return
 }
