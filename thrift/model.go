@@ -39,7 +39,7 @@ type FieldType struct {
 
 func WriteStructFields(ctx context.Context, protocol thrift.TProtocol, name string, fields []*Field, value map[string]interface{}) error {
 
-	fmt.Println("WriteStructFields name:", name, ",fields:", toJSON(fields), ",value:", toJSON(value))
+	//fmt.Println("WriteStructFields name:", name, ",fields:", toJSON(fields), ",value:", toJSON(value))
 	if err := protocol.WriteStructBegin(ctx, name); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", name), err)
 	}
@@ -59,7 +59,7 @@ func WriteStructFields(ctx context.Context, protocol thrift.TProtocol, name stri
 }
 
 func WriteStructField(ctx context.Context, protocol thrift.TProtocol, field *Field, value interface{}) error {
-	fmt.Println("WriteStructField field:", toJSON(field), ",value:", toJSON(value))
+	//fmt.Println("WriteStructField field:", toJSON(field), ",value:", toJSON(value))
 	var err error
 	if err = protocol.WriteFieldBegin(ctx, field.Name, field.Type.TypeId, field.Num); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error", field), err)
@@ -175,7 +175,7 @@ func WriteByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Fiel
 			bs, _ := json.Marshal(value)
 			_ = json.Unmarshal(bs, &data)
 		}
-		err = WriteList(ctx, protocol, fieldType.ListType, value.([]interface{}))
+		err = WriteList(ctx, protocol, fieldType.ListType, data)
 	default:
 		return thrift.PrependError(fmt.Sprintf("%T type error: ", fieldType), errors.New("type unknown"))
 	}
@@ -183,7 +183,7 @@ func WriteByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Fiel
 }
 
 func ReadStructFields(ctx context.Context, inProtocol thrift.TProtocol, fields []*Field) (map[string]interface{}, error) {
-	fmt.Println("ReadStructFields fields:", toJSON(fields))
+	//fmt.Println("ReadStructFields fields:", toJSON(fields))
 	if _, err := inProtocol.ReadStructBegin(ctx); err != nil {
 		return nil, thrift.PrependError(fmt.Sprintf("%T read error: ", fields), err)
 	}
@@ -211,7 +211,7 @@ func ReadStructFields(ctx context.Context, inProtocol thrift.TProtocol, fields [
 				return nil, err
 			}
 
-			fmt.Println("ReadStructFields fields:", toJSON(fields))
+			//fmt.Println("ReadStructFields fields:", toJSON(fields))
 			// 字段不存在
 			return nil, errors.New(fmt.Sprintf("ReadStructFields field %d %d not found", fieldId, fieldTypeId))
 		}
@@ -232,7 +232,7 @@ func ReadStructFields(ctx context.Context, inProtocol thrift.TProtocol, fields [
 }
 
 func ReadStructField(ctx context.Context, outProtocol thrift.TProtocol, field *Field, fieldTypeId thrift.TType) (interface{}, error) {
-	fmt.Println("ReadStructField field:", toJSON(field), ",fieldTypeId:", fieldTypeId)
+	//fmt.Println("ReadStructField field:", toJSON(field), ",fieldTypeId:", fieldTypeId)
 	var v interface{}
 	var err error
 	if v, err = ReadByType(ctx, outProtocol, field.Type, fieldTypeId); err != nil {

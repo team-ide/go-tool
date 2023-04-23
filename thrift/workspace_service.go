@@ -7,9 +7,9 @@ import (
 	"github.com/team-ide/go-tool/util"
 )
 
-func (this_ *Workspace) InvokeByServerAddress(serverAddress string, filename string, serviceName string, methodName string, args ...interface{}) (res interface{}, err error) {
+func (this_ *Workspace) InvokeByServerAddress(serverAddress string, filename string, serviceName string, methodName string, args ...interface{}) (param *MethodParam, err error) {
 
-	param, err := this_.GetMethodParam(filename, serviceName, methodName, args...)
+	param, err = this_.GetMethodParam(filename, serviceName, methodName, args...)
 	if err != nil {
 		return
 	}
@@ -22,7 +22,7 @@ func (this_ *Workspace) InvokeByServerAddress(serverAddress string, filename str
 		_ = client.t.Close()
 	}()
 
-	res, err = client.Send(context.Background(), param)
+	_, err = client.Send(context.Background(), param)
 	return
 }
 
@@ -97,16 +97,19 @@ func (this_ *Workspace) GetFieldTypeByNode(filename string, fieldNode *thrift.Fi
 	if fieldNode.SetType != nil {
 		fieldType.SetType = this_.GetFieldTypeByNode(filename, fieldNode.SetType, structCache)
 	}
+	//fmt.Println("GetFieldTypeByNode filename:", filename, ",fieldNode:", toJSON(fieldNode), ",fieldType:", toJSON(fieldType))
 	return
 }
 
 func (this_ *Workspace) GetStructByName(filename string, include string, name string, structCache map[string]*Struct) (res *Struct) {
 	defer func() {
+		//fmt.Println("GetStructByName filename:", filename, ",include:", include, ",name:", name, ",res:", toJSON(res))
 		structCache[include+"-"+name] = res
 	}()
 	key := filename + "-" + include + "-" + name
-	if res := this_.structCache_.Get(key); res != nil {
-		return res.(*Struct)
+	if d := this_.structCache_.Get(key); d != nil {
+		res = d.(*Struct)
+		return
 	}
 
 	res = &Struct{}
@@ -115,7 +118,9 @@ func (this_ *Workspace) GetStructByName(filename string, include string, name st
 	if include != "" {
 		structFilename = this_.GetIncludePath(filename, include)
 	}
+	//fmt.Println("GetStruct structFilename:", structFilename, ",name:", name)
 	structNode := this_.GetStruct(structFilename, name)
+	//fmt.Println("GetStructByName filename:", filename, ",include:", include, ",name:", name, ",structNode:", toJSON(structNode))
 	if structNode != nil {
 		for _, fieldNode := range structNode.Fields {
 			res.Fields = append(res.Fields, this_.GetFieldByNode(structFilename, fieldNode, structCache))

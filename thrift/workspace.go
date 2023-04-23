@@ -172,6 +172,7 @@ func (this_ *Workspace) SetException(filename string, value *thrift.ExceptionSta
 func (this_ *Workspace) GetIncludePath(filename string, name string) string {
 	if res := this_.includePathCache.Get(filename); res != nil {
 		data := res.(map[string]string)
+		//fmt.Println("GetIncludePath filename:", filename, ",name:", name, ",data:", toJSON(data))
 		return data[name]
 	}
 	return ""
@@ -184,11 +185,12 @@ func (this_ *Workspace) SetIncludePath(dir string, filename string, value *thrif
 	}
 	data := res.(map[string]string)
 	path := util.FormatPath(dir + "/" + value.Include)
-	name := strings.TrimRight(path, ".thrift")
+	name := path[:len(path)-len(".thrift")]
 	if strings.Index(name, "/") >= 0 {
-		name = path[strings.LastIndex(path, "/")+1:]
+		name = name[strings.LastIndex(name, "/")+1:]
 	}
 
+	//fmt.Println("SetIncludePath filename:", filename, ",path:", path, ",name:", name)
 	data[name] = path
 	//fmt.Println("SetIncludePath filename:", filename, ",name:", name, ",path:", path)
 	this_.includePathCache.Set(filename, data)
