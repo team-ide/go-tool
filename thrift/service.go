@@ -29,33 +29,39 @@ func NewServiceClientByAddress(address string) (client *ServiceClient, err error
 }
 
 type ServiceClient struct {
-	t    thrift.TTransport
-	c    thrift.TClient
-	meta thrift.ResponseMeta
+	TTransport thrift.TTransport
+	TClient    thrift.TClient
+	meta       thrift.ResponseMeta
 }
 
 func NewServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *ServiceClient {
 	return &ServiceClient{
-		t: t,
-		c: thrift.NewTStandardClient(f.GetProtocol(t), f.GetProtocol(t)),
+		TTransport: t,
+		TClient:    thrift.NewTStandardClient(f.GetProtocol(t), f.GetProtocol(t)),
 	}
 }
 
 func NewServiceClientProtocol(t thrift.TTransport, inProtocol thrift.TProtocol, outProtocol thrift.TProtocol) *ServiceClient {
 	return &ServiceClient{
-		t: t,
-		c: thrift.NewTStandardClient(inProtocol, outProtocol),
+		TTransport: t,
+		TClient:    thrift.NewTStandardClient(inProtocol, outProtocol),
 	}
 }
 
 func NewServiceClient(c thrift.TClient) *ServiceClient {
 	return &ServiceClient{
-		c: c,
+		TClient: c,
 	}
 }
 
 func (this_ *ServiceClient) Client_() thrift.TClient {
-	return this_.c
+	return this_.TClient
+}
+
+func (this_ *ServiceClient) Stop() {
+	if this_ != nil && this_.TTransport != nil {
+		_ = this_.TTransport.Close()
+	}
 }
 
 func (this_ *ServiceClient) LastResponseMeta_() thrift.ResponseMeta {

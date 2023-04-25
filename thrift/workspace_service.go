@@ -20,7 +20,7 @@ func (this_ *Workspace) InvokeByServerAddress(serverAddress string, filename str
 		return
 	}
 	defer func() {
-		_ = client.t.Close()
+		_ = client.TTransport.Close()
 	}()
 
 	_, err = client.Send(context.Background(), param)

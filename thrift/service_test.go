@@ -19,7 +19,7 @@ func TestServiceClient(t *testing.T) {
 		panic(err)
 	}
 	defer func() {
-		_ = client.t.Close()
+		_ = client.TTransport.Close()
 	}()
 	fmt.Println("service client create success")
 	param := &MethodParam{
