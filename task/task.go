@@ -3,6 +3,7 @@ package task
 import (
 	"errors"
 	"fmt"
+	"github.com/team-ide/go-tool/metric"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"sync"
@@ -39,6 +40,7 @@ func New(options *Options) (task *Task, err error) {
 		nextLocker:    &sync.Mutex{},
 		counterLocker: &sync.Mutex{},
 		waitGroup:     &sync.WaitGroup{},
+		Metric:        &metric.Metric{},
 	}
 
 	return
@@ -71,6 +73,10 @@ type Task struct {
 	ExecutorErrorCount   int `json:"executorErrorCount"`
 
 	waitGroup *sync.WaitGroup
+
+	workerList []*Worker
+
+	Metric *metric.Metric
 }
 
 func (this_ *Task) Run() {
@@ -130,86 +136,23 @@ func (this_ *Task) runDo() {
 	util.Logger.Info("任务执行 [runDo]", zap.Any("Key", this_.Key))
 
 	this_.waitGroup.Add(this_.Worker)
-	for i := 0; i < this_.Worker; i++ {
-		go func(workerIndex int) {
-			defer func() {
-				this_.waitGroup.Done()
-			}()
-			this_.workerWork(workerIndex)
-		}(i)
+
+	// 主工作线程  如果配置单线程执行 则无需开启其它线程
+	rootWorker := NewWorker(0, this_)
+	this_.workerList = append(this_.workerList, rootWorker)
+
+	for i := len(this_.workerList); i < this_.Worker; i++ {
+		worker := NewWorker(i, this_)
+		this_.workerList = append(this_.workerList, worker)
+
+		go func() {
+			worker.work()
+		}()
 	}
+	rootWorker.work()
 
 	this_.waitGroup.Wait()
 
-}
-
-func (this_ *Task) workerWork(workerIndex int) {
-	index := this_.getNext()
-	// 索引 小于0 表示结束
-	if index < 0 {
-		return
-	}
-
-	param := &ExecutorParam{
-		Index:       index,
-		WorkerIndex: workerIndex,
-	}
-	this_.runExecutor(param)
-}
-
-func (this_ *Task) executorDo(param *ExecutorParam, counter *int, start *time.Time, end *time.Time, do func(param *ExecutorParam) error) (err error) {
-	defer func() {
-		*end = time.Now()
-		this_.counterLocker.Lock()
-		defer this_.counterLocker.Unlock()
-
-		*counter++
-	}()
-	*start = time.Now()
-	err = do(param)
-	return
-}
-
-func (this_ *Task) runExecutor(param *ExecutorParam) {
-	var err error
-	defer func() {
-		if e := recover(); e != nil {
-			err = errors.New(fmt.Sprintf("任务执行 [runExecutor] 异常:%s", e))
-			util.Logger.Error("runExecutor error", zap.Error(err))
-		}
-
-		param.EndTime = time.Now()
-		param.Error = err
-
-		this_.counterLocker.Lock()
-		defer this_.counterLocker.Unlock()
-
-		if err != nil {
-			this_.ExecutorErrorCount++
-		} else {
-			this_.ExecutorSuccessCount++
-		}
-	}()
-
-	param.StartTime = time.Now()
-
-	err = this_.executorDo(param, &this_.ExecutorBeforeCount, &param.BeforeStartTime, &param.BeforeEndTime, this_.Executor.Before)
-
-	if err != nil {
-		return
-	}
-
-	err = this_.executorDo(param, &this_.ExecutorExecuteCount, &param.ExecuteStartTime, &param.ExecuteEndTime, this_.Executor.Execute)
-
-	if err != nil {
-		return
-	}
-
-	err = this_.executorDo(param, &this_.ExecutorAfterCount, &param.AfterStartTime, &param.AfterEndTime, this_.Executor.After)
-
-	if err != nil {
-		return
-	}
 }
 
 func (this_ *Task) getNext() (index int) {
