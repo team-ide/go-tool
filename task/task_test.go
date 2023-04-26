@@ -30,14 +30,14 @@ func TestTask(t *testing.T) {
 	fmt.Println("-----分钟统计 开始------")
 	cs := task.Metric.CountMinute()
 	for _, c := range cs {
-		fmt.Println("分钟时间：", util.TimeFormat(c.StartTime, "2006-01-02 15:04"))
+		fmt.Println("分钟时间：", util.TimeFormat(time.UnixMilli(c.StartTime/int64(time.Millisecond)), "2006-01-02 15:04"))
 		bs, _ := json.Marshal(c)
 		fmt.Println(string(bs))
 	}
 	fmt.Println("-----秒统计 开始------")
 	cs = task.Metric.CountSecond()
 	for _, c := range cs {
-		fmt.Println("秒时间：", util.TimeFormat(c.StartTime, "2006-01-02 15:04:05"))
+		fmt.Println("秒时间：", util.TimeFormat(time.UnixMilli(c.StartTime/int64(time.Millisecond)), "2006-01-02 15:04:05"))
 		bs, _ := json.Marshal(c)
 		fmt.Println(string(bs))
 	}

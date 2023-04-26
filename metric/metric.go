@@ -10,14 +10,14 @@ import (
 type Metric struct {
 	locker   sync.Mutex
 	items    []*Item
-	TopCount int
+	TopCount int `json:"topCount"`
 }
 
 func (this_ *Metric) NewItem(workerIndex int, startTime time.Time) (item *Item) {
 
 	item = &Item{
 		WorkerIndex: workerIndex,
-		StartTime:   startTime,
+		StartTime:   startTime.UnixNano(),
 	}
 
 	this_.locker.Lock()
@@ -41,10 +41,10 @@ func (this_ *Metric) CountSecond() (counts []*Count) {
 
 	var ts []int
 	for _, item := range items {
-		if item.StartTime.IsZero() || item.EndTime.IsZero() {
+		if item.StartTime == 0 || item.EndTime == 0 {
 			continue
 		}
-		t := item.StartTime.Second()
+		t := int(item.StartTime / int64(time.Second))
 		if cacheItems[t] == nil {
 			cacheItems[t] = &[]*Item{}
 			ts = append(ts, t)
@@ -68,10 +68,10 @@ func (this_ *Metric) CountMinute() (counts []*Count) {
 
 	var ts []int
 	for _, item := range items {
-		if item.StartTime.IsZero() || item.EndTime.IsZero() {
+		if item.StartTime == 0 || item.EndTime == 0 {
 			continue
 		}
-		t := item.StartTime.Minute()
+		t := int(item.StartTime / int64(time.Minute))
 		if cacheItems[t] == nil {
 			cacheItems[t] = &[]*Item{}
 			ts = append(ts, t)
@@ -90,8 +90,8 @@ func (this_ *Metric) CountMinute() (counts []*Count) {
 
 type Item struct {
 	WorkerIndex int         `json:"workerIndex"` // 工作线程索引  用于并发线程下 每个线程的时间跨度计算
-	StartTime   time.Time   `json:"startTime"`
-	EndTime     time.Time   `json:"endTime"`
+	StartTime   int64       `json:"startTime"`
+	EndTime     int64       `json:"endTime"`
 	Success     bool        `json:"success"`
 	LossTime    int64       `json:"lossTime"` // 损耗时长 纳秒 统计时候将去除该部分时长
 	Extend      interface{} `json:"extend"`
@@ -100,7 +100,7 @@ type Item struct {
 
 func (this_ *Item) End(endTime time.Time, err error) {
 	this_.Success = err == nil
-	this_.EndTime = endTime
+	this_.EndTime = endTime.UnixNano()
 }
 
 func (this_ *Item) Loss(lossTime int64) {
@@ -118,26 +118,26 @@ func CountItems(itemList ItemList, topCount int) (count *Count) {
 	var MinUseTime int64 = -1
 
 	count.WorkerLossTime = map[int]int64{}
-	count.WorkerStartTime = map[int]time.Time{}
-	count.WorkerEndTime = map[int]time.Time{}
+	count.WorkerStartTime = map[int]int64{}
+	count.WorkerEndTime = map[int]int64{}
 	for _, item := range itemList {
-		if item.StartTime.IsZero() || item.EndTime.IsZero() {
+		if item.StartTime == 0 || item.EndTime == 0 {
 			continue
 		}
-		startNano := item.StartTime.UnixNano()
-		endNano := item.EndTime.UnixNano()
+		startNano := item.StartTime
+		endNano := item.EndTime
 
-		if count.StartTime.IsZero() || startNano < count.StartTime.UnixNano() {
+		if count.StartTime == 0 || startNano < count.StartTime {
 			count.StartTime = item.StartTime
 		}
-		if count.EndTime.IsZero() || endNano > count.EndTime.UnixNano() {
+		if count.EndTime == 0 || endNano > count.EndTime {
 			count.EndTime = item.EndTime
 		}
 
-		if count.WorkerStartTime[item.WorkerIndex].IsZero() || startNano < count.WorkerStartTime[item.WorkerIndex].UnixNano() {
+		if count.WorkerStartTime[item.WorkerIndex] == 0 || startNano < count.WorkerStartTime[item.WorkerIndex] {
 			count.WorkerStartTime[item.WorkerIndex] = item.StartTime
 		}
-		if count.WorkerEndTime[item.WorkerIndex].IsZero() || endNano > count.WorkerEndTime[item.WorkerIndex].UnixNano() {
+		if count.WorkerEndTime[item.WorkerIndex] == 0 || endNano > count.WorkerEndTime[item.WorkerIndex] {
 			count.WorkerEndTime[item.WorkerIndex] = item.EndTime
 		}
 
@@ -168,46 +168,46 @@ func CountItems(itemList ItemList, topCount int) (count *Count) {
 	if MinUseTime >= 0 {
 		count.MinUseTime = MinUseTime
 	}
-	if count.StartTime.IsZero() {
-		count.StartTime = time.Now()
+	if count.StartTime == 0 {
+		count.StartTime = time.Now().UnixNano()
 	}
-	if count.EndTime.IsZero() {
-		count.EndTime = time.Now()
+	if count.EndTime == 0 {
+		count.EndTime = time.Now().UnixNano()
 	}
 	count.full(itemList)
 	return
 }
 
 type Count struct {
-	StartTime       time.Time         `json:"startTime"`
-	EndTime         time.Time         `json:"endTime"`
-	Count           int               `json:"count"`
-	SuccessCount    int               `json:"successCount"`
-	ErrorCount      int               `json:"errorCount"`
-	TotalTime       int64             `json:"totalTime"` // 执行时长 从 最小 开始时间 到 最大结束时间 的时间差 纳秒
-	Total           string            `json:"total"`     // 执行时长 毫秒 保留 2位小数
-	UseTime         int64             `json:"useTime"`   // 总调用时长 使用 所有项 的 耗时 相加
-	Use             string            `json:"use"`       // 总调用时长 毫秒 保留 2位小数
-	Max             string            `json:"max"`       // 最大时间 毫秒 保留 2位小数
-	MaxUseTime      int64             `json:"maxTime"`   // 最大时间 纳秒
-	Min             string            `json:"min"`       // 最小时间 毫秒 保留 2位小数
-	MinUseTime      int64             `json:"minTime"`   // 最小时间 纳秒
-	Tps             string            `json:"tps"`       // TPS 总次数 / 执行时长 秒 保留 2位小数
-	TpsValue        float64           `json:"tpsValue"`  // TPS 总次数 / 执行时长 秒
-	Avg             string            `json:"avg"`       // 平均耗时 总调用时长 / 总次数 毫秒 保留 2位小数
-	AvgValue        float64           `json:"avgValue"`  // 平均耗时 总调用时长 / 总次数 毫秒
-	T50             string            `json:"t50"`       // TOP 50 表示 百分之 50 的调用超过这个时间 毫秒 保留 2位小数
-	T60             string            `json:"t60"`       // TOP 60 表示 百分之 60 的调用超过这个时间 毫秒 保留 2位小数
-	T70             string            `json:"t70"`       // TOP 70 表示 百分之 70 的调用超过这个时间 毫秒 保留 2位小数
-	T80             string            `json:"t80"`       // TOP 80 表示 百分之 80 的调用超过这个时间 毫秒 保留 2位小数
-	T90             string            `json:"t90"`       // TOP 90 表示 百分之 90 的调用超过这个时间 毫秒 保留 2位小数
-	T99             string            `json:"t99"`       // TOP 99 表示 百分之 99 的调用超过这个时间 毫秒 保留 2位小数
-	TopItems        []*Item           `json:"topItems"`  // 耗时最高的 10 条记录
-	WorkerLossTime  map[int]int64     `json:"workerLossTime"`
-	WorkerStartTime map[int]time.Time `json:"workerStartTime"`
-	WorkerEndTime   map[int]time.Time `json:"workerEndTime"`
-	WorkerTotalTime map[int]int64     `json:"workerTotalTime"`
-	WorkerTotal     map[int]string    `json:"workerTotal"`
+	StartTime       int64          `json:"startTime"` // 纳秒
+	EndTime         int64          `json:"endTime"`   // 纳秒
+	Count           int            `json:"count"`
+	SuccessCount    int            `json:"successCount"`
+	ErrorCount      int            `json:"errorCount"`
+	TotalTime       int64          `json:"totalTime"` // 执行时长 从 最小 开始时间 到 最大结束时间 的时间差 纳秒
+	Total           string         `json:"total"`     // 执行时长 毫秒 保留 2位小数
+	UseTime         int64          `json:"useTime"`   // 总调用时长 使用 所有项 的 耗时 相加
+	Use             string         `json:"use"`       // 总调用时长 毫秒 保留 2位小数
+	Max             string         `json:"max"`       // 最大时间 毫秒 保留 2位小数
+	MaxUseTime      int64          `json:"maxTime"`   // 最大时间 纳秒
+	Min             string         `json:"min"`       // 最小时间 毫秒 保留 2位小数
+	MinUseTime      int64          `json:"minTime"`   // 最小时间 纳秒
+	Tps             string         `json:"tps"`       // TPS 总次数 / 执行时长 秒 保留 2位小数
+	TpsValue        float64        `json:"tpsValue"`  // TPS 总次数 / 执行时长 秒
+	Avg             string         `json:"avg"`       // 平均耗时 总调用时长 / 总次数 毫秒 保留 2位小数
+	AvgValue        float64        `json:"avgValue"`  // 平均耗时 总调用时长 / 总次数 毫秒
+	T50             string         `json:"t50"`       // TOP 50 表示 百分之 50 的调用超过这个时间 毫秒 保留 2位小数
+	T60             string         `json:"t60"`       // TOP 60 表示 百分之 60 的调用超过这个时间 毫秒 保留 2位小数
+	T70             string         `json:"t70"`       // TOP 70 表示 百分之 70 的调用超过这个时间 毫秒 保留 2位小数
+	T80             string         `json:"t80"`       // TOP 80 表示 百分之 80 的调用超过这个时间 毫秒 保留 2位小数
+	T90             string         `json:"t90"`       // TOP 90 表示 百分之 90 的调用超过这个时间 毫秒 保留 2位小数
+	T99             string         `json:"t99"`       // TOP 99 表示 百分之 99 的调用超过这个时间 毫秒 保留 2位小数
+	TopItems        []*Item        `json:"topItems"`  // 耗时最高的 10 条记录
+	WorkerLossTime  map[int]int64  `json:"workerLossTime"`
+	WorkerStartTime map[int]int64  `json:"workerStartTime"`
+	WorkerEndTime   map[int]int64  `json:"workerEndTime"`
+	WorkerTotalTime map[int]int64  `json:"workerTotalTime"`
+	WorkerTotal     map[int]string `json:"workerTotal"`
 	topCount        int
 }
 
@@ -217,18 +217,21 @@ func (this_ *Count) full(itemList ItemList) {
 	secF := float64(1000000000)
 
 	// 耗时 纳秒
-	this_.TotalTime = this_.EndTime.UnixNano() - this_.StartTime.UnixNano()
+	this_.TotalTime = this_.EndTime - this_.StartTime
 	// 真正消耗时间  需要 减去 损耗时间  这里减去某个工作线程的 损耗时间
-	if this_.WorkerLossTime[0] > 0 {
-		this_.TotalTime -= this_.WorkerLossTime[0]
+	for _, one := range this_.WorkerLossTime {
+		if one > 0 {
+			this_.TotalTime -= one
+			break
+		}
 	}
 	this_.WorkerTotalTime = make(map[int]int64)
 	this_.WorkerTotal = make(map[int]string)
 	for workerIndex, startTime := range this_.WorkerStartTime {
-		if this_.WorkerEndTime[workerIndex].IsZero() {
+		if this_.WorkerEndTime[workerIndex] == 0 {
 			continue
 		}
-		this_.WorkerTotalTime[workerIndex] = this_.WorkerEndTime[workerIndex].UnixNano() - startTime.UnixNano()
+		this_.WorkerTotalTime[workerIndex] = this_.WorkerEndTime[workerIndex] - startTime
 		this_.WorkerTotalTime[workerIndex] -= this_.WorkerLossTime[workerIndex]
 		this_.WorkerTotal[workerIndex] = strconv.FormatFloat(float64(this_.WorkerTotalTime[workerIndex])/millF, 'f', 2, 64)
 	}
