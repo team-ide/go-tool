@@ -123,7 +123,9 @@ func LoadDirFilenames(dir string) (filenames []string, err error) {
 		}
 		return nil
 	})
-	sort.Strings(filenames)
+	sort.Slice(filenames, func(i, j int) bool {
+		return strings.ToLower(filenames[i]) < strings.ToLower(filenames[j]) //升序  即前面的值比后面的小 忽略大小写排序
+	})
 	return
 }
 

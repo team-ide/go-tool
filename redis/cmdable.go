@@ -6,6 +6,7 @@ import (
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -19,8 +20,9 @@ func Keys(ctx context.Context, client redis.Cmdable, database int, pattern strin
 	}
 	keysResult.Count = len(list)
 
-	sor := sort.StringSlice(list)
-	sor.Sort()
+	sort.Slice(list, func(i, j int) bool {
+		return strings.ToLower(list[i]) < strings.ToLower(list[j]) //升序  即前面的值比后面的小 忽略大小写排序
+	})
 
 	var keys []string
 	if int64(keysResult.Count) <= size || size < 0 {

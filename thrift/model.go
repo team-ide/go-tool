@@ -106,7 +106,7 @@ func WriteSet(ctx context.Context, protocol thrift.TProtocol, setType *FieldType
 			return err
 		}
 	}
-	if err := protocol.WriteMapEnd(ctx); err != nil {
+	if err := protocol.WriteSetEnd(ctx); err != nil {
 		return thrift.PrependError("write set end error: ", err)
 	}
 	return nil
@@ -122,8 +122,8 @@ func WriteList(ctx context.Context, protocol thrift.TProtocol, listType *FieldTy
 			return err
 		}
 	}
-	if err := protocol.WriteMapEnd(ctx); err != nil {
-		return thrift.PrependError("write set list error: ", err)
+	if err := protocol.WriteListEnd(ctx); err != nil {
+		return thrift.PrependError("write list end error: ", err)
 	}
 	return nil
 }
@@ -221,20 +221,27 @@ func ReadStructFields(ctx context.Context, inProtocol thrift.TProtocol, fields [
 		field, ok := fieldMap[fieldId]
 
 		//fmt.Println("ReadStructFields find by fieldId:", fieldId, ",find:", ok, ",field:", toJSON(field))
-		if !ok {
-			if err = inProtocol.Skip(ctx, fieldTypeId); err != nil {
-				return nil, err
-			}
+		if !ok { // 如果字段不存在，也继续解析
+			//
 
-			//fmt.Println("ReadStructFields fields:", toJSON(fields))
-			// 字段不存在
-			return nil, errors.New(fmt.Sprintf("ReadStructFields field %d %d not found", fieldId, fieldTypeId))
+			//if err = inProtocol.Skip(ctx, fieldTypeId); err != nil {
+			//	return nil, err
+			//}
+			//
+			////fmt.Println("ReadStructFields fields:", toJSON(fields))
+			//// 字段不存在
+			//return nil, errors.New(fmt.Sprintf("ReadStructFields field %d %d not found", fieldId, fieldTypeId))
 		}
 		var v interface{}
-		if v, err = ReadStructField(ctx, inProtocol, field, fieldTypeId); err != nil {
+		if v, err = ReadStructField(ctx, inProtocol, field, fieldId, fieldTypeId); err != nil {
 			return nil, err
 		}
-		value[field.Name] = v
+		if field == nil {
+			name := fmt.Sprintf("field-unknow-%d", fieldId)
+			value[name] = v
+		} else {
+			value[field.Name] = v
+		}
 
 		if err = inProtocol.ReadFieldEnd(ctx); err != nil {
 			return nil, err
@@ -246,12 +253,16 @@ func ReadStructFields(ctx context.Context, inProtocol thrift.TProtocol, fields [
 	return value, nil
 }
 
-func ReadStructField(ctx context.Context, outProtocol thrift.TProtocol, field *Field, fieldTypeId thrift.TType) (interface{}, error) {
+func ReadStructField(ctx context.Context, outProtocol thrift.TProtocol, field *Field, fieldId int16, fieldTypeId thrift.TType) (interface{}, error) {
 	//fmt.Println("ReadStructField field:", toJSON(field), ",fieldTypeId:", fieldTypeId)
 	var v interface{}
 	var err error
-	if v, err = ReadByType(ctx, outProtocol, field.Type, fieldTypeId); err != nil {
-		return nil, thrift.PrependError(fmt.Sprintf("error reading field %d:%s : ", field.Num, field.Name), err)
+	var fieldType *FieldType
+	if field != nil {
+		fieldType = field.Type
+	}
+	if v, err = ReadByType(ctx, outProtocol, fieldType, fieldTypeId); err != nil {
+		return nil, thrift.PrependError(fmt.Sprintf("error reading field %d:%d : ", fieldId, fieldTypeId), err)
 	}
 	return v, nil
 }
@@ -352,13 +363,31 @@ func ReadByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Field
 	case thrift.STRING:
 		res, err = protocol.ReadString(ctx)
 	case thrift.STRUCT:
-		res, err = ReadStructFields(ctx, protocol, fieldType.structObj.Fields)
+		var fields []*Field
+		if fieldType != nil && fieldType.structObj != nil {
+			fields = fieldType.structObj.Fields
+		}
+		res, err = ReadStructFields(ctx, protocol, fields)
 	case thrift.MAP:
-		res, err = ReadMap(ctx, protocol, fieldType.MapKeyType, fieldType.MapValueType)
+		var keyType *FieldType
+		var valueType *FieldType
+		if fieldType != nil {
+			keyType = fieldType.MapKeyType
+			valueType = fieldType.MapValueType
+		}
+		res, err = ReadMap(ctx, protocol, keyType, valueType)
 	case thrift.SET:
-		res, err = ReadSet(ctx, protocol, fieldType.SetType)
+		var setType *FieldType
+		if fieldType != nil {
+			setType = fieldType.SetType
+		}
+		res, err = ReadSet(ctx, protocol, setType)
 	case thrift.LIST:
-		res, err = ReadList(ctx, protocol, fieldType.ListType)
+		var listType *FieldType
+		if fieldType != nil {
+			listType = fieldType.ListType
+		}
+		res, err = ReadList(ctx, protocol, listType)
 	default:
 		return nil, thrift.PrependError(fmt.Sprintf("%T type error: ", fieldType), errors.New("type unknown"))
 	}

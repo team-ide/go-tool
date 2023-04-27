@@ -171,7 +171,9 @@ func (this_ *Service) GetTopics() (res []*TopicInfo, err error) {
 		return
 	}
 
-	sort.Strings(topics)
+	sort.Slice(topics, func(i, j int) bool {
+		return strings.ToLower(topics[i]) < strings.ToLower(topics[j]) //升序  即前面的值比后面的小 忽略大小写排序
+	})
 
 	for _, topic := range topics {
 		info := &TopicInfo{

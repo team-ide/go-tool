@@ -179,7 +179,9 @@ func (this_ *V7Service) Indexes() (indexes []*IndexInfo, err error) {
 		return
 	}
 
-	sort.Strings(indexNames)
+	sort.Slice(indexNames, func(i, j int) bool {
+		return strings.ToLower(indexNames[i]) < strings.ToLower(indexNames[j]) //升序  即前面的值比后面的小 忽略大小写排序
+	})
 	for _, indexName := range indexNames {
 		info := &IndexInfo{
 			IndexName: indexName,

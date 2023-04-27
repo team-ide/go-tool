@@ -257,7 +257,9 @@ func (this_ *Service) Stat(path string) (info *StatInfo, err error) {
 // GetChildren 查询子节点
 func (this_ *Service) GetChildren(path string) (children []string, err error) {
 	children, _, err = this_.GetConn().Children(path)
-	sort.Strings(children)
+	sort.Slice(children, func(i, j int) bool {
+		return strings.ToLower(children[i]) < strings.ToLower(children[j]) //升序  即前面的值比后面的小 忽略大小写排序
+	})
 	return
 }
 

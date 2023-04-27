@@ -8,6 +8,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/team-ide/go-tool/util"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -362,8 +363,10 @@ func ClusterKeys(ctx context.Context, client *redis.ClusterClient, database int,
 		list = append(list, ls...)
 		return
 	})
-	sor := sort.StringSlice(list)
-	sor.Sort()
+
+	sort.Slice(list, func(i, j int) bool {
+		return strings.ToLower(list[i]) < strings.ToLower(list[j]) //升序  即前面的值比后面的小 忽略大小写排序
+	})
 	var keys []string
 	if int64(keysResult.Count) <= size || size < 0 {
 		keys = list
