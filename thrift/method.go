@@ -15,10 +15,11 @@ type MethodParam struct {
 	Exceptions      []interface{} `json:"exceptions"`
 	ResultType      *FieldType    `json:"resultFiled,omitempty"`
 	ExceptionFields []*Field      `json:"exceptionFields,omitempty"`
-	ReadStart       time.Time     `json:"readStart"`
-	ReadEnd         time.Time     `json:"readEnd"`
-	WriteStart      time.Time     `json:"writeStart"`
-	WriteEnd        time.Time     `json:"writeEnd"`
+	ReadStart       int64         `json:"readStart"`
+	ReadEnd         int64         `json:"readEnd"`
+	WriteStart      int64         `json:"writeStart"`
+	WriteEnd        int64         `json:"writeEnd"`
+	UseTime         int64         `json:"useTime"`
 	Error           error         `json:"error"`
 }
 
@@ -30,9 +31,12 @@ func (this_ *MethodParam) String() string {
 }
 
 func (this_ *MethodParam) Read(ctx context.Context, inProtocol thrift.TProtocol) error {
-	this_.ReadStart = time.Now()
+	this_.ReadStart = time.Now().UnixMilli()
+	if this_.WriteEnd > 0 {
+		this_.UseTime = this_.ReadStart - this_.WriteEnd
+	}
 	defer func() {
-		this_.ReadEnd = time.Now()
+		this_.ReadEnd = time.Now().UnixMilli()
 	}()
 	var fields []*Field
 	if this_.ResultType != nil {
@@ -61,9 +65,9 @@ func (this_ *MethodParam) Read(ctx context.Context, inProtocol thrift.TProtocol)
 }
 
 func (this_ *MethodParam) Write(ctx context.Context, outProtocol thrift.TProtocol) error {
-	this_.WriteStart = time.Now()
+	this_.WriteStart = time.Now().UnixMilli()
 	defer func() {
-		this_.WriteEnd = time.Now()
+		this_.WriteEnd = time.Now().UnixMilli()
 	}()
 
 	value := map[string]interface{}{}
