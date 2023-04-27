@@ -10,11 +10,11 @@ import (
 type MethodParam struct {
 	Name            string        `json:"name"`
 	Args            []interface{} `json:"args"`
-	ArgFields       []*Field      `json:"argFields"`
+	ArgFields       []*Field      `json:"argFields,omitempty"`
 	Result          interface{}   `json:"result"`
 	Exceptions      []interface{} `json:"exceptions"`
-	ResultType      *FieldType    `json:"resultFiled"`
-	ExceptionFields []*Field      `json:"exceptionFields"`
+	ResultType      *FieldType    `json:"resultFiled,omitempty"`
+	ExceptionFields []*Field      `json:"exceptionFields,omitempty"`
 	ReadStart       time.Time     `json:"readStart"`
 	ReadEnd         time.Time     `json:"readEnd"`
 	WriteStart      time.Time     `json:"writeStart"`
