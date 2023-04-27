@@ -19,6 +19,7 @@ type MethodParam struct {
 	ReadEnd         time.Time     `json:"readEnd"`
 	WriteStart      time.Time     `json:"writeStart"`
 	WriteEnd        time.Time     `json:"writeEnd"`
+	Error           error         `json:"error"`
 }
 
 func (this_ *MethodParam) String() string {
