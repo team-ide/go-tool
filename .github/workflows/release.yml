@@ -90,6 +90,9 @@ jobs:
       - name: Checkout git repo
         uses: actions/checkout@v1
 
+      - run: |
+          sudo apt-get install -y zip unzip
+          zip -help
       # 下载共享资源
 #      - uses: actions/download-artifact@v2
 #        with:
