@@ -20,7 +20,7 @@ type MethodParam struct {
 	WriteStart      int64         `json:"writeStart"`
 	WriteEnd        int64         `json:"writeEnd"`
 	UseTime         int64         `json:"useTime"`
-	Error           error         `json:"error"`
+	Error           string        `json:"error"`
 }
 
 func (this_ *MethodParam) String() string {

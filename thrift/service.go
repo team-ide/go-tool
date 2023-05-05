@@ -77,7 +77,7 @@ func (this_ *ServiceClient) Send(ctx context.Context, param *MethodParam) (resul
 	_meta1, err = this_.Client_().Call(ctx, param.Name, param, param)
 	this_.SetLastResponseMeta_(_meta1)
 	if err != nil {
-		param.Error = err
+		param.Error = err.Error()
 		return
 	}
 	return param.Result, nil
