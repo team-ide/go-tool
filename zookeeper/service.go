@@ -64,7 +64,8 @@ func (this_ *Service) init(sshClient *ssh.Client) (err error) {
 		this_.zkConn, this_.zkEvent, err = zk.Connect(this_.GetServers(), time.Second*10, func(c *zk.Conn) {
 			c.SetLogger(ZKLogger)
 		}, zk.WithDialer(func(network, address string, timeout time.Duration) (net.Conn, error) {
-			return sshClient.Dial(network, address)
+			conn, e := sshClient.Dial(network, address)
+			return &util.SSHChanConn{Conn: conn}, e
 		}))
 	} else {
 		this_.zkConn, this_.zkEvent, err = zk.Connect(this_.GetServers(), time.Second*10, func(c *zk.Conn) {

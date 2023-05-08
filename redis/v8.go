@@ -80,7 +80,8 @@ func (this_ *V8Service) init(sshClient *ssh.Client) (err error) {
 	}
 	if sshClient != nil {
 		options.Dialer = func(ctx context.Context, network, addr string) (net.Conn, error) {
-			return sshClient.Dial(network, addr)
+			conn, e := sshClient.Dial("tcp", addr)
+			return &util.SSHChanConn{Conn: conn}, e
 		}
 	}
 

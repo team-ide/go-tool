@@ -21,7 +21,8 @@ func init() {
 					config.Username, config.Password, config.Host, config.Port, config.Database)
 				// 注册ssh代理
 				mysql.RegisterDialContext("mysql+ssh", func(ctx context.Context, addr string) (net.Conn, error) {
-					return config.SSHClient.Dial("tcp", addr)
+					conn, e := config.SSHClient.Dial("tcp", addr)
+					return &util.SSHChanConn{Conn: conn}, e
 				})
 			}
 			db, err = db_mysql.Open(dsn)
