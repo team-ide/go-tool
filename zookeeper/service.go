@@ -6,6 +6,8 @@ import (
 	"github.com/go-zookeeper/zk"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/ssh"
+	"net"
 	"sort"
 	"strings"
 	"time"
@@ -30,7 +32,19 @@ func New(config Config) (IService, error) {
 	service := &Service{
 		Config: config,
 	}
-	err := service.init()
+	err := service.init(nil)
+	if err != nil {
+		return nil, err
+	}
+	return service, nil
+}
+
+// NewForSSH 创建SSH zookeeper客户端
+func NewForSSH(config Config, sshClient *ssh.Client) (IService, error) {
+	service := &Service{
+		Config: config,
+	}
+	err := service.init(sshClient)
 	if err != nil {
 		return nil, err
 	}
@@ -45,10 +59,18 @@ type Service struct {
 	isStop  bool
 }
 
-func (this_ *Service) init() (err error) {
-	this_.zkConn, this_.zkEvent, err = zk.Connect(this_.GetServers(), time.Second*10, func(c *zk.Conn) {
-		c.SetLogger(ZKLogger)
-	})
+func (this_ *Service) init(sshClient *ssh.Client) (err error) {
+	if sshClient != nil {
+		this_.zkConn, this_.zkEvent, err = zk.Connect(this_.GetServers(), time.Second*10, func(c *zk.Conn) {
+			c.SetLogger(ZKLogger)
+		}, zk.WithDialer(func(network, address string, timeout time.Duration) (net.Conn, error) {
+			return sshClient.Dial(network, address)
+		}))
+	} else {
+		this_.zkConn, this_.zkEvent, err = zk.Connect(this_.GetServers(), time.Second*10, func(c *zk.Conn) {
+			c.SetLogger(ZKLogger)
+		})
+	}
 	if err != nil {
 		util.Logger.Error("zk.Connect error", zap.Any("servers", this_.GetServers()), zap.Error(err))
 		if this_.zkConn != nil {

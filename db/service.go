@@ -8,6 +8,7 @@ import (
 	"github.com/team-ide/go-dialect/worker"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/ssh"
 	"os"
 	"strings"
 	"time"
@@ -24,11 +25,12 @@ type Config struct {
 	OdbcDsn         string `json:"odbcDsn,omitempty"`
 	OdbcDialectName string `json:"odbcDialectName,omitempty"`
 
-	Schema       string `json:"schema,omitempty"`
-	Sid          string `json:"sid,omitempty"`
-	MaxIdleConn  int    `json:"maxIdleConn,omitempty"`
-	MaxOpenConn  int    `json:"maxOpenConn,omitempty"`
-	DatabasePath string `json:"databasePath,omitempty"`
+	Schema       string      `json:"schema,omitempty"`
+	Sid          string      `json:"sid,omitempty"`
+	MaxIdleConn  int         `json:"maxIdleConn,omitempty"`
+	MaxOpenConn  int         `json:"maxOpenConn,omitempty"`
+	DatabasePath string      `json:"databasePath,omitempty"`
+	SSHClient    *ssh.Client `json:"-"`
 }
 
 // New 创建 db客户端

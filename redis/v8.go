@@ -7,6 +7,8 @@ import (
 	"errors"
 	"github.com/go-redis/redis/v8"
 	"github.com/team-ide/go-tool/util"
+	"golang.org/x/crypto/ssh"
+	"net"
 	"time"
 )
 
@@ -18,7 +20,22 @@ func NewRedisService(address string, username string, auth string, certPath stri
 		auth:     auth,
 		certPath: certPath,
 	}
-	err := service.init()
+	err := service.init(nil)
+	if err != nil {
+		return nil, err
+	}
+	return service, nil
+}
+
+// NewRedisServiceForSSH 创建 SSH 客户端
+func NewRedisServiceForSSH(address string, username string, auth string, certPath string, sshClient *ssh.Client) (IService, error) {
+	service := &V8Service{
+		address:  address,
+		username: username,
+		auth:     auth,
+		certPath: certPath,
+	}
+	err := service.init(sshClient)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +50,7 @@ type V8Service struct {
 	certPath string
 }
 
-func (this_ *V8Service) init() (err error) {
+func (this_ *V8Service) init(sshClient *ssh.Client) (err error) {
 	options := &redis.Options{
 		Addr:         this_.address,
 		DialTimeout:  100 * time.Second,
@@ -42,6 +59,7 @@ func (this_ *V8Service) init() (err error) {
 		Password:     this_.auth,
 		Username:     this_.username,
 	}
+
 	if this_.certPath != "" {
 		certPool := x509.NewCertPool()
 		var pemCerts []byte
@@ -59,6 +77,11 @@ func (this_ *V8Service) init() (err error) {
 		}
 		TLSClientConfig.RootCAs = certPool
 		options.TLSConfig = TLSClientConfig
+	}
+	if sshClient != nil {
+		options.Dialer = func(ctx context.Context, network, addr string) (net.Conn, error) {
+			return sshClient.Dial(network, addr)
+		}
 	}
 
 	client := redis.NewClient(options)
