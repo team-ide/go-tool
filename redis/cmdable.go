@@ -215,13 +215,13 @@ func GetValueInfo(ctx context.Context, client redis.Cmdable, database int, key s
 	return
 }
 
-func Get(ctx context.Context, client redis.Cmdable, key string) (value string, notFound bool, err error) {
+func Get(ctx context.Context, client redis.Cmdable, key string) (value string, err error) {
 
 	cmd := client.Get(ctx, key)
 	value, err = cmd.Result()
 	if err == redis.Nil {
 		err = nil
-		notFound = true
+		//notFound = true
 		return
 	}
 	return
@@ -290,25 +290,25 @@ func HDel(ctx context.Context, client redis.Cmdable, key string, field string) (
 	return
 }
 
-func HGet(ctx context.Context, client redis.Cmdable, key string, field string) (value string, notFound bool, err error) {
+func HGet(ctx context.Context, client redis.Cmdable, key string, field string) (value string, err error) {
 
 	cmd := client.HGet(ctx, key, field)
 	value, err = cmd.Result()
 	if err == redis.Nil {
 		err = nil
-		notFound = true
+		//notFound = true
 		return
 	}
 	return
 }
 
-func HGetAll(ctx context.Context, client redis.Cmdable, key string) (value map[string]string, notFound bool, err error) {
+func HGetAll(ctx context.Context, client redis.Cmdable, key string) (value map[string]string, err error) {
 
 	cmd := client.HGetAll(ctx, key)
 	value, err = cmd.Result()
 	if err == redis.Nil {
 		err = nil
-		notFound = true
+		//notFound = true
 		return
 	}
 	return

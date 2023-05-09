@@ -1,4 +1,4 @@
-package javascript
+package context_map
 
 type FuncInfo struct {
 	Name     string         `json:"name"`

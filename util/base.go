@@ -23,6 +23,23 @@ func IsNotEmpty(v interface{}) bool {
 	return !IsEmpty(v)
 }
 
+// IsNull 是否为nil
+// @param v interface{} "传入任意值"
+// @return bool
+func IsNull(v interface{}) bool {
+	if v == nil {
+		return true
+	}
+	return false
+}
+
+// IsNotNull 是否不为nil或空字符串
+// @param v interface{} "传入任意值"
+// @return bool
+func IsNotNull(v interface{}) bool {
+	return !IsNull(v)
+}
+
 // IsTrue 是否为真 判断是true、"true"、1、"1"
 // @param v interface{} "传入任意值"
 // @return bool

@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/team-ide/go-tool/javascript"
+	"github.com/team-ide/go-tool/javascript/context_map"
 	"github.com/team-ide/go-tool/util"
 	"os"
 	"strings"
 	"testing"
 )
 
-func TestGenContextUtil(t *testing.T) {
+func TestGenFuncUtil(t *testing.T) {
 	var err error
 
 	rootDir := util.GetRootDir()
@@ -18,7 +18,7 @@ func TestGenContextUtil(t *testing.T) {
 	if err != nil {
 		panic("LoadDirFilenames error:" + err.Error())
 	}
-	var funcInfoList []*javascript.FuncInfo
+	var funcInfoList []*context_map.FuncInfo
 	for _, filename := range filenames {
 		if strings.HasSuffix(filename, "_test.go") {
 			continue
@@ -56,7 +56,7 @@ func TestGenContextUtil(t *testing.T) {
 			if !strings.HasPrefix(lastComment, fS) {
 				continue
 			}
-			funcInfo := &javascript.FuncInfo{
+			funcInfo := &context_map.FuncInfo{
 				Name:    funcName,
 				Comment: lastComment[len(fS):],
 			}
@@ -73,7 +73,10 @@ func TestGenContextUtil(t *testing.T) {
 
 	genContent := `package javascript
 
-import "github.com/team-ide/go-tool/util"
+import (
+	"github.com/team-ide/go-tool/javascript/context_map"
+	"github.com/team-ide/go-tool/util"
+)
 
 func init() {
 `
@@ -86,7 +89,7 @@ func init() {
 			name = util.FirstToLower(name)
 		}
 		genContent += `
-	AddFunc(&FuncInfo{
+	context_map.AddFunc(&context_map.FuncInfo{
 		Name:    "` + name + `",
 		Comment: "` + comment + `",
 		Func:    util.` + funcInfo.Name + `,

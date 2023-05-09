@@ -2,6 +2,7 @@ package util
 
 import (
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -26,4 +27,31 @@ func RandomInt(min int, max int) (res int) {
 func RandomInt64(min int64, max int64) (res int64) {
 	res = min + RandForRandomInt.Int63n(max-min+1)
 	return
+}
+
+// StringToInt 字符串转 int
+func StringToInt(str string) int {
+	if str == "" {
+		return 0
+	}
+	res, _ := strconv.Atoi(str)
+	return res
+}
+
+// StringToInt64 字符串转 int64
+func StringToInt64(str string) int64 {
+	if str == "" {
+		return 0
+	}
+	res, _ := strconv.ParseInt(str, 10, 64)
+	return res
+}
+
+// StringToFloat64 字符串转 float64
+func StringToFloat64(str string) float64 {
+	if str == "" {
+		return 0
+	}
+	res, _ := strconv.ParseFloat(str, 64)
+	return res
 }

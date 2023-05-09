@@ -251,7 +251,7 @@ func (this_ *ClusterService) HSet(param *Param, key string, field string, value 
 	return HSet(param.Ctx, client, key, field, value)
 }
 
-func (this_ *ClusterService) HGet(param *Param, key string, field string) (value string, notFound bool, err error) {
+func (this_ *ClusterService) HGet(param *Param, key string, field string) (value string, err error) {
 	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
@@ -262,7 +262,7 @@ func (this_ *ClusterService) HGet(param *Param, key string, field string) (value
 	return HGet(param.Ctx, client, key, field)
 }
 
-func (this_ *ClusterService) HGetAll(param *Param, key string) (value map[string]string, notFound bool, err error) {
+func (this_ *ClusterService) HGetAll(param *Param, key string) (value map[string]string, err error) {
 	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
@@ -273,7 +273,7 @@ func (this_ *ClusterService) HGetAll(param *Param, key string) (value map[string
 	return HGetAll(param.Ctx, client, key)
 }
 
-func (this_ *ClusterService) Get(param *Param, key string) (value string, notFound bool, err error) {
+func (this_ *ClusterService) Get(param *Param, key string) (value string, err error) {
 	param = formatParam(param)
 
 	client, err := this_.GetClient(param)

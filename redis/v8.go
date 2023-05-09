@@ -260,7 +260,7 @@ func (this_ *V8Service) HSet(param *Param, key string, field string, value strin
 	return HSet(param.Ctx, client, key, field, value)
 }
 
-func (this_ *V8Service) HGet(param *Param, key string, field string) (value string, notFound bool, err error) {
+func (this_ *V8Service) HGet(param *Param, key string, field string) (value string, err error) {
 	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
@@ -271,7 +271,7 @@ func (this_ *V8Service) HGet(param *Param, key string, field string) (value stri
 	return HGet(param.Ctx, client, key, field)
 }
 
-func (this_ *V8Service) HGetAll(param *Param, key string) (value map[string]string, notFound bool, err error) {
+func (this_ *V8Service) HGetAll(param *Param, key string) (value map[string]string, err error) {
 	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
@@ -282,7 +282,7 @@ func (this_ *V8Service) HGetAll(param *Param, key string) (value map[string]stri
 	return HGetAll(param.Ctx, client, key)
 }
 
-func (this_ *V8Service) Get(param *Param, key string) (value string, notFound bool, err error) {
+func (this_ *V8Service) Get(param *Param, key string) (value string, err error) {
 	param = formatParam(param)
 
 	client, err := this_.GetClient(param)
