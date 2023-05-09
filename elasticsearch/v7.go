@@ -16,30 +16,9 @@ import (
 	"sync"
 )
 
-type Config struct {
-	Url      string `json:"url,omitempty"`
-	Username string `json:"username,omitempty"`
-	Password string `json:"password,omitempty"`
-	CertPath string `json:"certPath,omitempty"`
-}
-
-func New(config Config) (IService, error) {
-	service := &V7Service{
-		url:      config.Url,
-		username: config.Username,
-		password: config.Password,
-		certPath: config.CertPath,
-	}
-	err := service.init()
-	return service, err
-}
-
 // V7Service 注册处理器在线信息等
 type V7Service struct {
-	url        string
-	username   string
-	password   string
-	certPath   string
+	*Config
 	client     *elastic.Client
 	clientLock sync.Mutex
 }
@@ -56,14 +35,14 @@ func (this_ *V7Service) GetClient() (client *elastic.Client, err error) {
 		client = this_.client
 		return
 	}
-	util.Logger.Info("es client is null or not running,now to create client", zap.Any("url", this_.url))
+	util.Logger.Info("es client is null or not running,now to create client", zap.Any("url", this_.Url))
 	var urls []string
-	if strings.Contains(this_.url, ",") {
-		urls = strings.Split(this_.url, ",")
-	} else if strings.Contains(this_.url, ";") {
-		urls = strings.Split(this_.url, ";")
+	if strings.Contains(this_.Url, ",") {
+		urls = strings.Split(this_.Url, ",")
+	} else if strings.Contains(this_.Url, ";") {
+		urls = strings.Split(this_.Url, ";")
 	} else {
-		urls = []string{this_.url}
+		urls = []string{this_.Url}
 	}
 	var isHttps bool
 	for _, one := range urls {
@@ -81,16 +60,16 @@ func (this_ *V7Service) GetClient() (client *elastic.Client, err error) {
 		TLSClientConfig := &tls.Config{
 			InsecureSkipVerify: true,
 		}
-		if this_.certPath != "" {
+		if this_.CertPath != "" {
 			certPool := x509.NewCertPool()
 			var pemCerts []byte
-			pemCerts, err = ioutil.ReadFile(this_.certPath)
+			pemCerts, err = ioutil.ReadFile(this_.CertPath)
 			if err != nil {
 				return
 			}
 
 			if !certPool.AppendCertsFromPEM(pemCerts) {
-				err = errors.New("证书[" + this_.certPath + "]解析失败")
+				err = errors.New("证书[" + this_.CertPath + "]解析失败")
 				return
 			}
 			TLSClientConfig.RootCAs = certPool
@@ -103,8 +82,8 @@ func (this_ *V7Service) GetClient() (client *elastic.Client, err error) {
 		}
 		options = append(options, elastic.SetHttpClient(httpClient))
 	}
-	if this_.username != "" {
-		options = append(options, elastic.SetBasicAuth(this_.username, this_.password))
+	if this_.Username != "" {
+		options = append(options, elastic.SetBasicAuth(this_.Username, this_.Password))
 	}
 	client, err = elastic.NewClient(options...)
 	if err != nil {

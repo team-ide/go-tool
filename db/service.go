@@ -34,8 +34,8 @@ type Config struct {
 }
 
 // New 创建 db客户端
-func New(config Config) (IService, error) {
-	return createService(&config)
+func New(config *Config) (IService, error) {
+	return createService(config)
 }
 
 func createService(config *Config) (*Service, error) {

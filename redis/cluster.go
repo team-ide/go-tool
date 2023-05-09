@@ -7,20 +7,19 @@ import (
 	"errors"
 	"github.com/go-redis/redis/v8"
 	"github.com/team-ide/go-tool/util"
+	"golang.org/x/crypto/ssh"
+	"net"
 	"sort"
 	"strings"
 	"time"
 )
 
 // NewClusterService 创建集群客户端
-func NewClusterService(servers []string, username string, auth string, certPath string) (IService, error) {
+func NewClusterService(config *Config) (IService, error) {
 	service := &ClusterService{
-		servers:  servers,
-		username: username,
-		auth:     auth,
-		certPath: certPath,
+		Config: config,
 	}
-	err := service.init()
+	err := service.init(config.SSHClient)
 	if err != nil {
 		return nil, err
 	}
@@ -28,32 +27,29 @@ func NewClusterService(servers []string, username string, auth string, certPath 
 }
 
 type ClusterService struct {
-	servers      []string
-	auth         string
-	username     string
-	certPath     string
+	*Config
 	redisCluster *redis.ClusterClient
 }
 
-func (this_ *ClusterService) init() (err error) {
+func (this_ *ClusterService) init(sshClient *ssh.Client) (err error) {
 	options := &redis.ClusterOptions{
-		Addrs:        this_.servers,
+		Addrs:        this_.Servers,
 		DialTimeout:  100 * time.Second,
 		ReadTimeout:  100 * time.Second,
 		WriteTimeout: 100 * time.Second,
-		Username:     this_.username,
-		Password:     this_.auth,
+		Username:     this_.Username,
+		Password:     this_.Auth,
 	}
-	if this_.certPath != "" {
+	if this_.CertPath != "" {
 		certPool := x509.NewCertPool()
 		var pemCerts []byte
-		pemCerts, err = util.ReadFile(this_.certPath)
+		pemCerts, err = util.ReadFile(this_.CertPath)
 		if err != nil {
 			return
 		}
 
 		if !certPool.AppendCertsFromPEM(pemCerts) {
-			err = errors.New("证书[" + this_.certPath + "]解析失败")
+			err = errors.New("证书[" + this_.CertPath + "]解析失败")
 			return
 		}
 		TLSClientConfig := &tls.Config{
@@ -63,13 +59,20 @@ func (this_ *ClusterService) init() (err error) {
 		options.TLSConfig = TLSClientConfig
 	}
 
+	if sshClient != nil {
+		options.Dialer = func(ctx context.Context, network, addr string) (net.Conn, error) {
+			conn, e := sshClient.Dial("tcp", addr)
+			return &util.SSHChanConn{Conn: conn}, e
+		}
+	}
+
 	redisCluster := redis.NewClusterClient(options)
 	this_.redisCluster = redisCluster
 	return
 }
 
 func (this_ *ClusterService) Stop() {
-	if this_.redisCluster != nil {
+	if this_ != nil && this_.redisCluster != nil {
 		_ = this_.redisCluster.Close()
 	}
 }

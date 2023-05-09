@@ -9,6 +9,7 @@ require (
 	github.com/dop251/goja v0.0.0-20230304130813-e2f543bf4b4c
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/go-sql-driver/mysql v1.7.0
 	github.com/go-zookeeper/zk v1.0.3
 	github.com/google/uuid v1.3.0
 	github.com/olivere/elastic/v7 v7.0.32
@@ -18,6 +19,7 @@ require (
 	github.com/team-ide/go-driver v1.2.1
 	github.com/team-ide/go-interpreter v0.0.4
 	go.uber.org/zap v1.24.0
+	golang.org/x/crypto v0.5.0
 )
 
 require (
@@ -39,7 +41,6 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.11.2 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
-	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
 	github.com/godror/godror v0.36.0 // indirect
 	github.com/godror/knownpb v0.1.0 // indirect
@@ -76,7 +77,6 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
-	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.9.0 // indirect

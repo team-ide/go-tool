@@ -6,7 +6,7 @@ import (
 )
 
 func TestRedis(t *testing.T) {
-	config := Config{
+	config := &Config{
 		Address: "127.0.0.1:6379",
 	}
 	service, err := New(config)

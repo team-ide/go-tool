@@ -1,28 +1,32 @@
 package redis
 
-import "strings"
+import (
+	"golang.org/x/crypto/ssh"
+	"strings"
+)
 
 type Config struct {
-	Address  string `json:"address"`
-	Auth     string `json:"auth"`
-	Username string `json:"username"`
-	CertPath string `json:"certPath"`
+	Address   string      `json:"address"`
+	Auth      string      `json:"auth"`
+	Username  string      `json:"username"`
+	CertPath  string      `json:"certPath"`
+	Servers   []string    `json:"servers"`
+	SSHClient *ssh.Client `json:"-"`
 }
 
 // New 创建Redis服务
-func New(config Config) (service IService, err error) {
+func New(config *Config) (service IService, err error) {
 	if !strings.Contains(config.Address, ",") && !strings.Contains(config.Address, ";") {
-		service, err = NewRedisService(config.Address, config.Username, config.Auth, config.CertPath)
+		service, err = NewRedisService(config)
 	} else {
-		var servers []string
 		if strings.Contains(config.Address, ",") {
-			servers = strings.Split(config.Address, ",")
+			config.Servers = strings.Split(config.Address, ",")
 		} else if strings.Contains(config.Address, ";") {
-			servers = strings.Split(config.Address, ";")
+			config.Servers = strings.Split(config.Address, ";")
 		} else {
-			servers = []string{config.Address}
+			config.Servers = []string{config.Address}
 		}
-		service, err = NewClusterService(servers, config.Username, config.Auth, config.CertPath)
+		service, err = NewClusterService(config)
 	}
 	return
 }

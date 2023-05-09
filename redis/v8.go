@@ -13,29 +13,11 @@ import (
 )
 
 // NewRedisService 创建客户端
-func NewRedisService(address string, username string, auth string, certPath string) (IService, error) {
+func NewRedisService(config *Config) (IService, error) {
 	service := &V8Service{
-		address:  address,
-		username: username,
-		auth:     auth,
-		certPath: certPath,
+		Config: config,
 	}
-	err := service.init(nil)
-	if err != nil {
-		return nil, err
-	}
-	return service, nil
-}
-
-// NewRedisServiceForSSH 创建 SSH 客户端
-func NewRedisServiceForSSH(address string, username string, auth string, certPath string, sshClient *ssh.Client) (IService, error) {
-	service := &V8Service{
-		address:  address,
-		username: username,
-		auth:     auth,
-		certPath: certPath,
-	}
-	err := service.init(sshClient)
+	err := service.init(config.SSHClient)
 	if err != nil {
 		return nil, err
 	}
@@ -43,33 +25,30 @@ func NewRedisServiceForSSH(address string, username string, auth string, certPat
 }
 
 type V8Service struct {
-	address  string
-	auth     string
-	username string
-	client   *redis.Client
-	certPath string
+	*Config
+	client *redis.Client
 }
 
 func (this_ *V8Service) init(sshClient *ssh.Client) (err error) {
 	options := &redis.Options{
-		Addr:         this_.address,
+		Addr:         this_.Address,
 		DialTimeout:  100 * time.Second,
 		ReadTimeout:  100 * time.Second,
 		WriteTimeout: 100 * time.Second,
-		Password:     this_.auth,
-		Username:     this_.username,
+		Password:     this_.Auth,
+		Username:     this_.Username,
 	}
 
-	if this_.certPath != "" {
+	if this_.CertPath != "" {
 		certPool := x509.NewCertPool()
 		var pemCerts []byte
-		pemCerts, err = util.ReadFile(this_.certPath)
+		pemCerts, err = util.ReadFile(this_.CertPath)
 		if err != nil {
 			return
 		}
 
 		if !certPool.AppendCertsFromPEM(pemCerts) {
-			err = errors.New("证书[" + this_.certPath + "]解析失败")
+			err = errors.New("证书[" + this_.CertPath + "]解析失败")
 			return
 		}
 		TLSClientConfig := &tls.Config{
@@ -91,7 +70,7 @@ func (this_ *V8Service) init(sshClient *ssh.Client) (err error) {
 }
 
 func (this_ *V8Service) Stop() {
-	if this_.client != nil {
+	if this_ != nil && this_.client != nil {
 		_ = this_.client.Close()
 	}
 }

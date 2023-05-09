@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestGen(t *testing.T) {
+func TestGenContextUtil(t *testing.T) {
 	var err error
 
 	rootDir := util.GetRootDir()
@@ -46,6 +46,9 @@ func TestGen(t *testing.T) {
 				i--
 			}
 			vv := []rune(funcName)
+			if len(vv) == 0 {
+				continue
+			}
 			if vv[0] >= 97 && vv[0] <= 122 {
 				continue
 			}
