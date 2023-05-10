@@ -49,8 +49,8 @@ github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuy
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d/go.mod h1:rBZYJk541a8SKzHPHnH3zbiI+7dagKZ0cgpgrD7Fyho=
-github.com/apache/thrift v0.17.0 h1:cMd2aj52n+8VoAtvSvLn4kDC3aZ6IAkBuqWQ2IDu7wo=
-github.com/apache/thrift v0.17.0/go.mod h1:OLxhMRJxomX+1I/KUw03qoV3mMz16BwaKI+d4fPBx7Q=
+github.com/apache/thrift v0.16.0 h1:qEy6UW60iVOlUy+b9ZR0d5WzUWYGOo4HfopoyBaNmoY=
+github.com/apache/thrift v0.16.0/go.mod h1:PHK3hniurgQaNMZYaCLEqXKsYK8upmhPbmdP2FXSqgU=
 github.com/aws/aws-sdk-go v1.43.21/go.mod h1:y4AeaBuwd2Lk+GepC1E9v0qOiTws0MIWAX4oIKwKHZo=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
@@ -396,8 +396,8 @@ github.com/team-ide/go-dialect v1.9.1 h1:WZkSQzsfL6cGOStHlS7PKuacgljqz/6UyIs3oBU
 github.com/team-ide/go-dialect v1.9.1/go.mod h1:Z9O/r+xVRLdue7lSLhEyRXojS7ztnRxha0KZCtyfFPU=
 github.com/team-ide/go-driver v1.2.3 h1:Vn9iECrUIJrHkfnf/HBiTiF0q+yRmz4xauuFSzt3el0=
 github.com/team-ide/go-driver v1.2.3/go.mod h1:IKnihkLhQKAXWtL5wAtlaONSe7yRMzZNDvdUvhfmJEE=
-github.com/team-ide/go-interpreter v0.0.6 h1:fCaqxextkCRXtzCZEMTfDsEiE6Xu7IKacQaoGZfLe8M=
-github.com/team-ide/go-interpreter v0.0.6/go.mod h1:5/SpNwGD1PdWXNBUHqGUoVq2y2Wk4lome8yxL1o3HhQ=
+github.com/team-ide/go-interpreter v0.0.7 h1:sPROjgOwCcUciMynLw8Afnej8BDNRrQtD4CABClo62Y=
+github.com/team-ide/go-interpreter v0.0.7/go.mod h1:o2kgFsvMOqaaXh9mcbf7cPuBH7wfUjGVJYjT6AyZEew=
 github.com/tjfoc/gmsm v1.4.1 h1:aMe1GlZb+0bLjn+cKTPEvvn9oUEBlJitaZiiBwsbgho=
 github.com/tjfoc/gmsm v1.4.1/go.mod h1:j4INPkHWMrhJb38G+J6W4Tw0AbuN8Thu3PbdVYhVcTE=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
