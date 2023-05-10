@@ -1,6 +1,6 @@
 module github.com/team-ide/go-tool
 
-go 1.17
+go 1.18
 
 require (
 	github.com/Chain-Zhang/pinyin v0.1.3

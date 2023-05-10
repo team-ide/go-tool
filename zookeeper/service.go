@@ -8,6 +8,7 @@ type Config struct {
 	Address   string      `json:"address"`
 	Username  string      `json:"username,omitempty"`
 	Password  string      `json:"password,omitempty"`
+	Timeout   int         `json:"timeout,omitempty"`
 	SSHClient *ssh.Client `json:"-"`
 }
 

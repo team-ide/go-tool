@@ -30,15 +30,20 @@ type Service struct {
 }
 
 func (this_ *Service) init(sshClient *ssh.Client) (err error) {
+	timeout := this_.Timeout
+	if timeout == 0 {
+		timeout = 60
+	}
+	sessionTimeout := time.Second * time.Duration(timeout)
 	if sshClient != nil {
-		this_.zkConn, this_.zkEvent, err = zk.Connect(this_.GetServers(), time.Second*60, func(c *zk.Conn) {
+		this_.zkConn, this_.zkEvent, err = zk.Connect(this_.GetServers(), sessionTimeout, func(c *zk.Conn) {
 			c.SetLogger(ZKLogger)
 		}, zk.WithDialer(func(network, address string, timeout time.Duration) (net.Conn, error) {
 			conn, e := sshClient.Dial(network, address)
 			return &util.SSHChanConn{Conn: conn}, e
 		}))
 	} else {
-		this_.zkConn, this_.zkEvent, err = zk.Connect(this_.GetServers(), time.Second*60, func(c *zk.Conn) {
+		this_.zkConn, this_.zkEvent, err = zk.Connect(this_.GetServers(), sessionTimeout, func(c *zk.Conn) {
 			c.SetLogger(ZKLogger)
 		})
 	}
