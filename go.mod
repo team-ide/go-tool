@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/Chain-Zhang/pinyin v0.1.3
 	github.com/Shopify/sarama v1.38.1
-	github.com/apache/thrift v0.18.1
+	github.com/apache/thrift v0.17.0
 	github.com/dop251/goja v0.0.0-20230427124612-428fc442ff5f
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-redis/redis/v8 v8.11.5
@@ -17,7 +17,7 @@ require (
 	github.com/tealeg/xlsx v1.0.5
 	github.com/team-ide/go-dialect v1.9.1
 	github.com/team-ide/go-driver v1.2.3
-	github.com/team-ide/go-interpreter v0.0.4
+	github.com/team-ide/go-interpreter v0.0.6
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.9.0
 )
