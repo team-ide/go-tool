@@ -5,11 +5,12 @@ import (
 )
 
 type Config struct {
-	Address   string      `json:"address"`
-	Username  string      `json:"username,omitempty"`
-	Password  string      `json:"password,omitempty"`
-	Timeout   int         `json:"timeout,omitempty"`
-	SSHClient *ssh.Client `json:"-"`
+	Address           string      `json:"address"`
+	Username          string      `json:"username,omitempty"`
+	Password          string      `json:"password,omitempty"`
+	SessionTimeout    int         `json:"sessionTimeout,omitempty"`    // 会话超时 单位 毫秒
+	ConnectionTimeout int         `json:"connectionTimeout,omitempty"` // 客户端连接超时 单位 毫秒
+	SSHClient         *ssh.Client `json:"-"`
 }
 
 // New 创建zookeeper客户端
