@@ -113,7 +113,7 @@ func (this_ *Workspace) GetFieldDemoDataByType(filename string, fieldNode *Field
 	if fieldNode.SetType != nil {
 		return []interface{}{}
 	}
-	if fieldNode.TypeId == thrift2.STRING || fieldNode.TypeId == thrift2.UUID {
+	if fieldNode.TypeId == thrift2.STRING { // || fieldNode.TypeId == thrift2.UUID
 		res = ""
 	} else if fieldNode.TypeId == thrift2.BOOL {
 		res = false
