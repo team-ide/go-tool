@@ -17,7 +17,7 @@ require (
 	github.com/tealeg/xlsx v1.0.5
 	github.com/team-ide/go-dialect v1.9.2
 	github.com/team-ide/go-driver v1.2.4
-	github.com/team-ide/go-interpreter v0.0.8
+	github.com/team-ide/go-interpreter v0.1.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.9.0
 )

@@ -348,8 +348,8 @@ func ReadByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Field
 	case thrift.STOP:
 	case thrift.BOOL:
 		res, err = protocol.ReadBool(ctx)
-	case thrift.UUID:
-		res, err = protocol.ReadUUID(ctx)
+	//case thrift.UUID:
+	//	res, err = protocol.ReadUUID(ctx)
 	case thrift.BYTE:
 		res, err = protocol.ReadByte(ctx)
 	case thrift.DOUBLE:
