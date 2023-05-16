@@ -5,47 +5,8 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
-	"sort"
-	"strings"
 	"time"
 )
-
-func Keys(ctx context.Context, client redis.Cmdable, database int, pattern string, size int64) (keysResult *KeysResult, err error) {
-	keysResult = &KeysResult{}
-	var list []string
-	cmdKeys := client.Keys(ctx, pattern)
-	list, err = cmdKeys.Result()
-	if err != nil {
-		return
-	}
-	keysResult.Count = len(list)
-
-	sort.Slice(list, func(i, j int) bool {
-		return strings.ToLower(list[i]) < strings.ToLower(list[j]) //升序  即前面的值比后面的小 忽略大小写排序
-	})
-
-	var keys []string
-	if int64(keysResult.Count) <= size || size < 0 {
-		keys = list
-	} else {
-		keys = list[0:size]
-	}
-	for _, key := range keys {
-		info := &KeyInfo{
-			Key:      key,
-			Database: database,
-		}
-		keysResult.KeyList = append(keysResult.KeyList, info)
-	}
-	return
-}
-
-func Exists(ctx context.Context, client redis.Cmdable, key string) (res int64, err error) {
-
-	cmdExists := client.Exists(ctx, key)
-	res, err = cmdExists.Result()
-	return
-}
 
 func ValueType(ctx context.Context, client redis.Cmdable, key string) (ValueType string, err error) {
 
@@ -58,42 +19,9 @@ func ValueType(ctx context.Context, client redis.Cmdable, key string) (ValueType
 	return
 }
 
-// Expire 让给定键在指定的秒数之后过期
-func Expire(ctx context.Context, client redis.Cmdable, key string, expire int64) (res bool, err error) {
-	cmd := client.Expire(ctx, key, time.Duration(expire)*time.Second)
-	res, err = cmd.Result()
-	if err == redis.Nil {
-		err = nil
-		return
-	}
-	return
-}
-
-// Persist 移除键的过期时间
-func Persist(ctx context.Context, client redis.Cmdable, key string) (res bool, err error) {
-	cmd := client.Persist(ctx, key)
-	res, err = cmd.Result()
-	if err == redis.Nil {
-		err = nil
-		return
-	}
-	return
-}
-
-// TTL 查看给定键距离过期还有多少秒
-func TTL(ctx context.Context, client redis.Cmdable, key string) (res int64, err error) {
-	cmd := client.TTL(ctx, key)
-	r, err := cmd.Result()
-	if err == redis.Nil {
-		err = nil
-		return
-	}
-	if err != nil {
-		return
-	}
-	if r > 0 {
-		res = int64(r / time.Second)
-	}
+func MemoryUsage(ctx context.Context, client redis.Cmdable, key string) (size int64, err error) {
+	cmd := client.MemoryUsage(ctx, key)
+	size, err = cmd.Result()
 	return
 }
 
@@ -107,9 +35,15 @@ func GetValueInfo(ctx context.Context, client redis.Cmdable, database int, key s
 		Key:      key,
 		Database: database,
 	}
+	MemoryUsageCmd := client.MemoryUsage(ctx, key)
 
-	valueInfo.MemoryUsage, _ = MemoryUsage(ctx, client, key)
-	valueInfo.TTL, _ = TTL(ctx, client, key)
+	valueInfo.MemoryUsage, _ = MemoryUsageCmd.Result()
+
+	TTLCmd := client.TTL(ctx, key)
+	ttlV, _ := TTLCmd.Result()
+	if ttlV > 0 {
+		valueInfo.TTL = int64(ttlV / time.Second)
+	}
 	var value interface{}
 
 	if valueType == "none" {
@@ -215,154 +149,340 @@ func GetValueInfo(ctx context.Context, client redis.Cmdable, database int, key s
 	return
 }
 
-func Get(ctx context.Context, client redis.Cmdable, key string) (value string, err error) {
+type CmdService struct {
+	GetClient func(param *Param) (client redis.Cmdable, err error) `json:"-"`
+}
 
-	cmd := client.Get(ctx, key)
-	value, err = cmd.Result()
-	if err == redis.Nil {
-		err = nil
-		//notFound = true
+func (this_ *CmdService) Info(args ...Arg) (res string, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
 		return
 	}
-	return
-}
 
-func Set(ctx context.Context, client redis.Cmdable, key string, value string) (err error) {
-
-	cmd := client.Set(ctx, key, value, time.Duration(0))
-	_, err = cmd.Result()
-	return
-}
-
-func SAdd(ctx context.Context, client redis.Cmdable, key string, value string) (err error) {
-
-	cmd := client.SAdd(ctx, key, value)
-	_, err = cmd.Result()
-	return
-}
-
-func SRem(ctx context.Context, client redis.Cmdable, key string, value string) (err error) {
-
-	cmd := client.SRem(ctx, key, value)
-	_, err = cmd.Result()
-	return
-}
-
-func LPush(ctx context.Context, client redis.Cmdable, key string, value string) (err error) {
-
-	cmd := client.LPush(ctx, key, value)
-	_, err = cmd.Result()
-	return
-}
-
-func RPush(ctx context.Context, client redis.Cmdable, key string, value string) (err error) {
-
-	cmd := client.RPush(ctx, key, value)
-	_, err = cmd.Result()
-	return
-}
-
-func LSet(ctx context.Context, client redis.Cmdable, key string, index int64, value string) (err error) {
-
-	cmd := client.LSet(ctx, key, index, value)
-	_, err = cmd.Result()
-	return
-}
-
-func LRem(ctx context.Context, client redis.Cmdable, key string, count int64, value string) (err error) {
-
-	cmd := client.LRem(ctx, key, count, value)
-	_, err = cmd.Result()
-	return
-}
-
-func HSet(ctx context.Context, client redis.Cmdable, key string, field string, value string) (err error) {
-
-	cmd := client.HSet(ctx, key, field, value)
-	_, err = cmd.Result()
-	return
-}
-
-func HDel(ctx context.Context, client redis.Cmdable, key string, field string) (err error) {
-
-	cmd := client.HDel(ctx, key, field)
-	_, err = cmd.Result()
-	return
-}
-
-func HGet(ctx context.Context, client redis.Cmdable, key string, field string) (value string, err error) {
-
-	cmd := client.HGet(ctx, key, field)
-	value, err = cmd.Result()
-	if err == redis.Nil {
-		err = nil
-		//notFound = true
-		return
-	}
-	return
-}
-
-func HGetAll(ctx context.Context, client redis.Cmdable, key string) (value map[string]string, err error) {
-
-	cmd := client.HGetAll(ctx, key)
-	value, err = cmd.Result()
-	if err == redis.Nil {
-		err = nil
-		//notFound = true
-		return
-	}
-	return
-}
-
-func SetBit(ctx context.Context, client redis.Cmdable, key string, offset int64, value int) (err error) {
-
-	cmd := client.SetBit(ctx, key, offset, value)
-	err = cmd.Err()
-	return
-}
-
-func BitCount(ctx context.Context, client redis.Cmdable, key string) (count int64, err error) {
-	cmd := client.BitCount(ctx, key, nil)
-	count, err = cmd.Result()
-	return
-}
-
-func Info(ctx context.Context, client redis.Cmdable) (res string, err error) {
-	cmd := client.Info(ctx)
+	cmd := client.Info(param.Ctx)
 	res, err = cmd.Result()
 	return
 }
 
-func MemoryUsage(ctx context.Context, client redis.Cmdable, key string) (size int64, err error) {
-	cmd := client.MemoryUsage(ctx, key)
-	size, err = cmd.Result()
-	return
-}
+// Exists key是否存在
+func (this_ *CmdService) Exists(key string, args ...Arg) (res int64, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
 
-func Del(ctx context.Context, client redis.Cmdable, key string) (count int, err error) {
-
-	cmd := client.Del(ctx, key)
-	_, err = cmd.Result()
-	if err == nil {
-		count++
-	}
-	return
-}
-
-func DelPattern(ctx context.Context, client redis.Cmdable, database int, pattern string) (count int, err error) {
-	count = 0
-	keysResult, err := Keys(ctx, client, database, pattern, -1)
+	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
-	for _, keyInfo := range keysResult.KeyList {
-		cmd := client.Del(ctx, keyInfo.Key)
-		_, err = cmd.Result()
-		if err == nil {
-			count++
-		} else {
-			return
-		}
+
+	cmdExists := client.Exists(param.Ctx, key)
+	res, err = cmdExists.Result()
+	return
+}
+
+// Expire 让给定键在指定的秒数之后过期
+func (this_ *CmdService) Expire(key string, expire int64, args ...Arg) (res bool, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.Expire(param.Ctx, key, time.Duration(expire)*time.Second)
+	res, err = cmd.Result()
+	if err == redis.Nil {
+		err = nil
+		return
+	}
+	return
+}
+
+// Persist 移除键的过期时间
+func (this_ *CmdService) Persist(key string, args ...Arg) (res bool, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.Persist(param.Ctx, key)
+	res, err = cmd.Result()
+	if err == redis.Nil {
+		err = nil
+		return
+	}
+	return
+}
+
+// TTL 查看给定键距离过期还有多少秒
+func (this_ *CmdService) TTL(key string, args ...Arg) (res int64, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.TTL(param.Ctx, key)
+	r, err := cmd.Result()
+	if err == redis.Nil {
+		err = nil
+		return
+	}
+	if err != nil {
+		return
+	}
+	if r > 0 {
+		res = int64(r / time.Second)
+	}
+	return
+}
+
+func (this_ *CmdService) Get(key string, args ...Arg) (value string, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.Get(param.Ctx, key)
+	value, err = cmd.Result()
+	if err == redis.Nil {
+		err = nil
+		//notFound = true
+		return
+	}
+	return
+}
+
+func (this_ *CmdService) Set(key string, value string, args ...Arg) (err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.Set(param.Ctx, key, value, time.Duration(0))
+	_, err = cmd.Result()
+	return
+}
+
+func (this_ *CmdService) SAdd(key string, value string, args ...Arg) (err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.SAdd(param.Ctx, key, value)
+	_, err = cmd.Result()
+	return
+}
+
+func (this_ *CmdService) SRem(key string, value string, args ...Arg) (err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.SRem(param.Ctx, key, value)
+	_, err = cmd.Result()
+	return
+}
+
+func (this_ *CmdService) SCard(key string, args ...Arg) (res int64, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.SCard(param.Ctx, key)
+	res, err = cmd.Result()
+	return
+}
+
+func (this_ *CmdService) LPush(key string, value string, args ...Arg) (err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.LPush(param.Ctx, key, value)
+	_, err = cmd.Result()
+	return
+}
+
+func (this_ *CmdService) LSet(key string, index int64, value string, args ...Arg) (err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.LSet(param.Ctx, key, index, value)
+	_, err = cmd.Result()
+	return
+}
+
+func (this_ *CmdService) LRem(key string, count int64, value string, args ...Arg) (err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.LRem(param.Ctx, key, count, value)
+	_, err = cmd.Result()
+	return
+}
+
+func (this_ *CmdService) RPush(key string, value string, args ...Arg) (err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.RPush(param.Ctx, key, value)
+	_, err = cmd.Result()
+	return
+}
+
+func (this_ *CmdService) HSet(key string, field string, value string, args ...Arg) (err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.HSet(param.Ctx, key, field, value)
+	_, err = cmd.Result()
+	return
+}
+
+func (this_ *CmdService) HGet(key string, field string, args ...Arg) (value string, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.HGet(param.Ctx, key, field)
+	value, err = cmd.Result()
+	if err == redis.Nil {
+		err = nil
+		//notFound = true
+		return
+	}
+	return
+}
+
+func (this_ *CmdService) HGetAll(key string, args ...Arg) (value map[string]string, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.HGetAll(param.Ctx, key)
+	value, err = cmd.Result()
+	if err == redis.Nil {
+		err = nil
+		//notFound = true
+		return
+	}
+	return
+}
+
+func (this_ *CmdService) HDel(key string, field string, args ...Arg) (err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.HDel(param.Ctx, key, field)
+	_, err = cmd.Result()
+	return
+}
+
+func (this_ *CmdService) SetBit(key string, offset int64, value int, args ...Arg) (err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.SetBit(param.Ctx, key, offset, value)
+	err = cmd.Err()
+	return
+}
+
+func (this_ *CmdService) BitCount(key string, args ...Arg) (count int64, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.BitCount(param.Ctx, key, nil)
+	count, err = cmd.Result()
+	return
+}
+
+func (this_ *CmdService) Del(key string, args ...Arg) (count int, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	cmd := client.Del(param.Ctx, key)
+	_, err = cmd.Result()
+	if err == nil {
+		count++
 	}
 	return
 }

@@ -48,10 +48,10 @@ func (this_ *Service) WatchChildren(path string, listen func(data *WatchChildren
 }
 
 type WatchChildrenListenData struct {
-	Path  string
-	Event *NodeEvent
-	Child string
-	Err   error
+	Path  string     `json:"path"`
+	Event *NodeEvent `json:"event"`
+	Child string     `json:"child"`
+	Err   error      `json:"err"`
 }
 
 type watchChildrenCache struct {

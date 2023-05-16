@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"reflect"
+	"sync"
 )
 
 // IsEmpty 是否为nil或空字符串
@@ -151,4 +152,14 @@ func GetTempDir() (dir string, err error) {
 	}
 	dir = tempDir
 	return
+}
+
+// NewWaitGroup 创建 WaitGroup
+func NewWaitGroup() *sync.WaitGroup {
+	return &sync.WaitGroup{}
+}
+
+// NewLocker 创建 Mutex Locker
+func NewLocker() sync.Locker {
+	return &sync.Mutex{}
 }

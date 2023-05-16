@@ -11,3 +11,26 @@ func JSONDecodeUseNumber(bs []byte, obj interface{}) (err error) {
 	err = d.Decode(obj)
 	return
 }
+
+// ObjToJson 对象 转 json 字符串
+func ObjToJson(obj interface{}) (res string, err error) {
+	bs, err := json.Marshal(obj)
+	if err != nil {
+		return
+	}
+	res = string(bs)
+	return
+}
+
+// JsonToMap json 字符串 转 map对象
+func JsonToMap(str string) (res map[string]interface{}, err error) {
+	res = map[string]interface{}{}
+	err = JSONDecodeUseNumber([]byte(str), &res)
+	return
+}
+
+// JsonToObj json 字符串 转 对象
+func JsonToObj(str string, obj interface{}) (err error) {
+	err = JSONDecodeUseNumber([]byte(str), obj)
+	return
+}

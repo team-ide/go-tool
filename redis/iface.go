@@ -1,32 +1,45 @@
 package redis
 
-import "context"
+import (
+	"context"
+	"github.com/go-redis/redis/v8"
+)
 
 type IService interface {
 	Stop()
-	Info(param *Param) (res string, err error)
-	Keys(param *Param, pattern string, size int64) (keysResult *KeysResult, err error)
-	Expire(param *Param, key string, expire int64) (res bool, err error)
-	TTL(param *Param, key string) (res int64, err error)
-	Persist(param *Param, key string) (res bool, err error)
-	Exists(param *Param, key string) (res int64, err error)
-	GetValueInfo(param *Param, key string, valueStart, valueSize int64) (valueInfo *ValueInfo, err error)
-	Set(param *Param, key string, value string) (err error)
-	SAdd(param *Param, key string, value string) (err error)
-	SRem(param *Param, key string, value string) (err error)
-	LPush(param *Param, key string, value string) (err error)
-	RPush(param *Param, key string, value string) (err error)
-	LSet(param *Param, key string, index int64, value string) (err error)
-	LRem(param *Param, key string, count int64, value string) (err error)
-	HSet(param *Param, key string, field string, value string) (err error)
-	HGet(param *Param, key string, field string) (value string, err error)
-	HGetAll(param *Param, key string) (value map[string]string, err error)
-	HDel(param *Param, key string, field string) (err error)
-	Del(param *Param, key string) (count int, err error)
-	DelPattern(param *Param, pattern string) (count int, err error)
-	SetBit(param *Param, key string, offset int64, value int) (err error)
-	BitCount(param *Param, key string) (count int64, err error)
-	Get(param *Param, key string) (value string, err error)
+	GetClient(args ...Arg) (client redis.Cmdable, err error)
+	Info(args ...Arg) (res string, err error)
+	Keys(pattern string, args ...Arg) (keysResult *KeysResult, err error)
+	Expire(key string, expire int64, args ...Arg) (res bool, err error)
+	TTL(key string, args ...Arg) (res int64, err error)
+	Persist(key string, args ...Arg) (res bool, err error)
+	Exists(key string, args ...Arg) (res int64, err error)
+	GetValueInfo(key string, args ...Arg) (valueInfo *ValueInfo, err error)
+
+	Get(key string, args ...Arg) (value string, err error)
+	Set(key string, value string, args ...Arg) (err error)
+
+	SAdd(key string, value string, args ...Arg) (err error)
+	SRem(key string, value string, args ...Arg) (err error)
+	SCard(key string, args ...Arg) (res int64, err error)
+
+	LPush(key string, value string, args ...Arg) (err error)
+	RPush(key string, value string, args ...Arg) (err error)
+	LSet(key string, index int64, value string, args ...Arg) (err error)
+	LRem(key string, count int64, value string, args ...Arg) (err error)
+	HSet(key string, field string, value string, args ...Arg) (err error)
+	HGet(key string, field string, args ...Arg) (value string, err error)
+	HGetAll(key string, args ...Arg) (value map[string]string, err error)
+	HDel(key string, field string, args ...Arg) (err error)
+
+	Del(key string, args ...Arg) (count int, err error)
+	DelPattern(pattern string, args ...Arg) (count int, err error)
+	SetBit(key string, offset int64, value int, args ...Arg) (err error)
+	BitCount(key string, args ...Arg) (count int64, err error)
+}
+
+type Arg interface {
+	IsArg()
 }
 
 type ValueInfo struct {
@@ -53,4 +66,50 @@ type KeyInfo struct {
 type Param struct {
 	Ctx      context.Context
 	Database int
+}
+
+func (this_ *Param) IsArg() {}
+
+type SizeArg struct {
+	Size int
+}
+
+func (this_ *SizeArg) IsArg() {}
+
+func NewSizeArg(size int) *SizeArg {
+	return &SizeArg{Size: size}
+}
+
+type StartArg struct {
+	Start int
+}
+
+func (this_ *StartArg) IsArg() {}
+
+func NewStartArg(start int) *StartArg {
+	return &StartArg{Start: start}
+}
+
+type ArgCache struct {
+	Param    *Param
+	SizeArg  *SizeArg
+	StartArg *StartArg
+}
+
+func getArgCache(args ...Arg) (res *ArgCache) {
+	res = &ArgCache{}
+	for _, arg := range args {
+		if arg == nil {
+			continue
+		}
+		switch tV := arg.(type) {
+		case *Param:
+			res.Param = tV
+		case *SizeArg:
+			res.SizeArg = tV
+		case *StartArg:
+			res.StartArg = tV
+		}
+	}
+	return
 }

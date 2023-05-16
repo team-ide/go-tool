@@ -17,8 +17,10 @@ import (
 // NewClusterService 创建集群客户端
 func NewClusterService(config *Config) (IService, error) {
 	service := &ClusterService{
-		Config: config,
+		Config:     config,
+		CmdService: &CmdService{},
 	}
+	service.CmdService.GetClient = service.getClient
 	err := service.init(config.SSHClient)
 	if err != nil {
 		return nil, err
@@ -29,6 +31,7 @@ func NewClusterService(config *Config) (IService, error) {
 type ClusterService struct {
 	*Config
 	redisCluster *redis.ClusterClient
+	*CmdService
 }
 
 func (this_ *ClusterService) init(sshClient *ssh.Client) (err error) {
@@ -77,7 +80,7 @@ func (this_ *ClusterService) Stop() {
 	}
 }
 
-func (this_ *ClusterService) GetClient(param *Param) (client redis.Cmdable, err error) {
+func (this_ *ClusterService) getClient(param *Param) (client redis.Cmdable, err error) {
 	param = formatParam(param)
 	client = this_.redisCluster
 	if param.Ctx != nil && param.Database >= 0 {
@@ -86,250 +89,52 @@ func (this_ *ClusterService) GetClient(param *Param) (client redis.Cmdable, err 
 	return
 }
 
-func (this_ *ClusterService) Info(param *Param) (res string, err error) {
-	param = formatParam(param)
+func (this_ *ClusterService) GetClient(args ...Arg) (client redis.Cmdable, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+	return this_.getClient(param)
+}
+
+func (this_ *ClusterService) Keys(pattern string, args ...Arg) (keysResult *KeysResult, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
 
-	return Info(param.Ctx, client)
-}
-
-func (this_ *ClusterService) Keys(param *Param, pattern string, size int64) (keysResult *KeysResult, err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
+	var size = -1
+	if argCache.SizeArg != nil {
+		size = argCache.SizeArg.Size
 	}
 
 	return ClusterKeys(param.Ctx, client.(*redis.ClusterClient), param.Database, pattern, size)
 }
 
-func (this_ *ClusterService) Expire(param *Param, key string, expire int64) (res bool, err error) {
-	param = formatParam(param)
+func (this_ *ClusterService) GetValueInfo(key string, args ...Arg) (valueInfo *ValueInfo, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
 		return
 	}
-
-	return Expire(param.Ctx, client, key, expire)
-}
-
-func (this_ *ClusterService) TTL(param *Param, key string) (res int64, err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
+	var valueStart int64 = -1
+	var valueSize int64 = -1
+	if argCache.StartArg != nil {
+		valueStart = int64(argCache.StartArg.Start)
 	}
-
-	return TTL(param.Ctx, client, key)
-}
-
-func (this_ *ClusterService) Persist(param *Param, key string) (res bool, err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return Persist(param.Ctx, client, key)
-}
-
-func (this_ *ClusterService) Exists(param *Param, key string) (res int64, err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return Exists(param.Ctx, client, key)
-}
-
-func (this_ *ClusterService) GetValueInfo(param *Param, key string, valueStart, valueSize int64) (valueInfo *ValueInfo, err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
+	if argCache.SizeArg != nil {
+		valueSize = int64(argCache.SizeArg.Size)
 	}
 
 	return GetValueInfo(param.Ctx, client, param.Database, key, valueStart, valueSize)
 }
 
-func (this_ *ClusterService) Set(param *Param, key string, value string) (err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return Set(param.Ctx, client, key, value)
-}
-
-func (this_ *ClusterService) SAdd(param *Param, key string, value string) (err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return SAdd(param.Ctx, client, key, value)
-}
-
-func (this_ *ClusterService) SRem(param *Param, key string, value string) (err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return SRem(param.Ctx, client, key, value)
-}
-
-func (this_ *ClusterService) LPush(param *Param, key string, value string) (err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return LPush(param.Ctx, client, key, value)
-}
-
-func (this_ *ClusterService) RPush(param *Param, key string, value string) (err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return RPush(param.Ctx, client, key, value)
-}
-
-func (this_ *ClusterService) LSet(param *Param, key string, index int64, value string) (err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return LSet(param.Ctx, client, key, index, value)
-}
-
-func (this_ *ClusterService) LRem(param *Param, key string, count int64, value string) (err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return LRem(param.Ctx, client, key, count, value)
-}
-
-func (this_ *ClusterService) HSet(param *Param, key string, field string, value string) (err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return HSet(param.Ctx, client, key, field, value)
-}
-
-func (this_ *ClusterService) HGet(param *Param, key string, field string) (value string, err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return HGet(param.Ctx, client, key, field)
-}
-
-func (this_ *ClusterService) HGetAll(param *Param, key string) (value map[string]string, err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return HGetAll(param.Ctx, client, key)
-}
-
-func (this_ *ClusterService) Get(param *Param, key string) (value string, err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return Get(param.Ctx, client, key)
-}
-
-func (this_ *ClusterService) SetBit(param *Param, key string, offset int64, value int) (err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return SetBit(param.Ctx, client, key, offset, value)
-}
-
-func (this_ *ClusterService) BitCount(param *Param, key string) (count int64, err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return BitCount(param.Ctx, client, key)
-}
-
-func (this_ *ClusterService) HDel(param *Param, key string, field string) (err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return HDel(param.Ctx, client, key, field)
-}
-
-func (this_ *ClusterService) Del(param *Param, key string) (count int, err error) {
-	param = formatParam(param)
-
-	client, err := this_.GetClient(param)
-	if err != nil {
-		return
-	}
-
-	return Del(param.Ctx, client, key)
-}
-
-func (this_ *ClusterService) DelPattern(param *Param, pattern string) (count int, err error) {
-	param = formatParam(param)
+func (this_ *ClusterService) DelPattern(pattern string, args ...Arg) (count int, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
 
 	client, err := this_.GetClient(param)
 	if err != nil {
@@ -343,7 +148,8 @@ func (this_ *ClusterService) DelPattern(param *Param, pattern string) (count int
 
 	count = 0
 	for _, keyInfo := range keysResult.KeyList {
-		_, err = Del(param.Ctx, client, keyInfo.Key)
+		cmd := client.Del(param.Ctx, keyInfo.Key)
+		_, err = cmd.Result()
 		if err == nil {
 			count++
 		}
@@ -351,7 +157,7 @@ func (this_ *ClusterService) DelPattern(param *Param, pattern string) (count int
 	return
 }
 
-func ClusterKeys(ctx context.Context, client *redis.ClusterClient, database int, pattern string, size int64) (keysResult *KeysResult, err error) {
+func ClusterKeys(ctx context.Context, client *redis.ClusterClient, database int, pattern string, size int) (keysResult *KeysResult, err error) {
 	keysResult = &KeysResult{}
 	var list []string
 	err = client.ForEachMaster(ctx, func(ctx context.Context, client *redis.Client) (err error) {
@@ -371,7 +177,7 @@ func ClusterKeys(ctx context.Context, client *redis.ClusterClient, database int,
 		return strings.ToLower(list[i]) < strings.ToLower(list[j]) //升序  即前面的值比后面的小 忽略大小写排序
 	})
 	var keys []string
-	if int64(keysResult.Count) <= size || size < 0 {
+	if keysResult.Count <= size || size < 0 {
 		keys = list
 	} else {
 		keys = list[0:size]

@@ -80,6 +80,18 @@ func init() {
 	})
 
 	context_map.AddFunc(&context_map.FuncInfo{
+		Name:    "newWaitGroup",
+		Comment: "创建 WaitGroup",
+		Func:    util.NewWaitGroup,
+	})
+
+	context_map.AddFunc(&context_map.FuncInfo{
+		Name:    "newLocker",
+		Comment: "创建 Mutex Locker",
+		Func:    util.NewLocker,
+	})
+
+	context_map.AddFunc(&context_map.FuncInfo{
 		Name:    "getRootDir",
 		Comment: "获取当前程序根路径",
 		Func:    util.GetRootDir,
@@ -161,6 +173,24 @@ func init() {
 		Name:    "getLocalIPList",
 		Comment: "获取当前IP列表",
 		Func:    util.GetLocalIPList,
+	})
+
+	context_map.AddFunc(&context_map.FuncInfo{
+		Name:    "objToJson",
+		Comment: "对象 转 json 字符串",
+		Func:    util.ObjToJson,
+	})
+
+	context_map.AddFunc(&context_map.FuncInfo{
+		Name:    "jsonToMap",
+		Comment: "json 字符串 转 map对象",
+		Func:    util.JsonToMap,
+	})
+
+	context_map.AddFunc(&context_map.FuncInfo{
+		Name:    "jsonToObj",
+		Comment: "json 字符串 转 对象",
+		Func:    util.JsonToObj,
 	})
 
 	context_map.AddFunc(&context_map.FuncInfo{
