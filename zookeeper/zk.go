@@ -89,7 +89,7 @@ func (this_ *Service) GetServers() []string {
 	return servers
 }
 
-func (this_ *Service) Stop() {
+func (this_ *Service) Close() {
 	this_.isStop = true
 	conn := this_.GetConn()
 	if conn != nil {
@@ -102,39 +102,6 @@ func (this_ *Service) GetConn() *zk.Conn {
 		return nil
 	}
 	return this_.zkConn
-}
-
-// Create 创建节点
-func (this_ *Service) Create(path string, data string) (err error) {
-
-	return this_.CreateByMode(path, data, 0)
-}
-
-// CreateByMode 创建节点
-func (this_ *Service) CreateByMode(path string, data string, mode int32) (err error) {
-	isExist, err := this_.Exists(path)
-	if err != nil {
-		return
-	}
-	if isExist {
-		err = errors.New("node:" + path + " already exists")
-		return
-	}
-	if strings.LastIndex(path, "/") > 0 {
-		parentPath := path[0:strings.LastIndex(path, "/")]
-		err = this_.CreateIfNotExists(parentPath, "")
-		if err != nil {
-			if err == zk.ErrNodeExists {
-				err = nil
-			} else {
-				return
-			}
-		}
-	}
-	if _, err = this_.GetConn().Create(path, []byte(data), mode, zk.WorldACL(zk.PermAll)); err != nil {
-		return
-	}
-	return
 }
 
 type Info struct {
@@ -152,17 +119,9 @@ func (this_ *Service) Info() (info *Info, err error) {
 	return
 }
 
-// Set 修改节点数据
-func (this_ *Service) Set(path string, data string) (err error) {
-	isExist, state, err := this_.GetConn().Exists(path)
-	if err != nil {
-		return
-	}
-	if !isExist {
-		err = errors.New("node:" + path + " not exists")
-		return
-	}
-	if _, err = this_.GetConn().Set(path, []byte(data), state.Version); err != nil {
+func (this_ *Service) Create(path string, data string) (err error) {
+	if _, err = this_.GetConn().Create(path, []byte(data), 0, zk.WorldACL(zk.PermAll)); err != nil {
+		err = errors.New("path [" + path + "] create error:" + err.Error())
 		return
 	}
 	return
@@ -188,10 +147,66 @@ func (this_ *Service) CreateIfNotExists(path string, data string) (err error) {
 			}
 		}
 	}
+	if _, err = this_.GetConn().Create(path, []byte(data), 0, zk.WorldACL(zk.PermAll)); err != nil {
+		if err == zk.ErrNodeExists {
+			err = nil
+		} else {
+			err = errors.New("path [" + path + "] create error:" + err.Error())
+		}
+	}
+	return
+}
+
+func (this_ *Service) CreateEphemeral(path string, data string) (err error) {
+	if _, err = this_.GetConn().Create(path, []byte(data), zk.FlagEphemeral, zk.WorldACL(zk.PermAll)); err != nil {
+		err = errors.New("path [" + path + "] create error:" + err.Error())
+		return
+	}
+	return
+}
+
+func (this_ *Service) CreateEphemeralIfNotExists(path string, data string) (err error) {
+	isExist, err := this_.Exists(path)
+	if err != nil {
+		return
+	}
+	if isExist {
+		return
+	}
+	if strings.LastIndex(path, "/") > 0 {
+		parentPath := path[0:strings.LastIndex(path, "/")]
+		err = this_.CreateIfNotExists(parentPath, "")
+		if err != nil {
+			if err == zk.ErrNodeExists {
+				err = nil
+			} else {
+				return
+			}
+		}
+	}
 	if _, err = this_.GetConn().Create(path, []byte(data), zk.FlagEphemeral, zk.WorldACL(zk.PermAll)); err != nil {
 		if err == zk.ErrNodeExists {
 			err = nil
+		} else {
+			err = errors.New("path [" + path + "] create error:" + err.Error())
 		}
+	}
+	return
+}
+
+// Set 修改节点数据
+func (this_ *Service) Set(path string, data string) (err error) {
+	isExist, state, err := this_.GetConn().Exists(path)
+	if err != nil {
+		return
+	}
+	if !isExist {
+		err = errors.New("path:" + path + " not exists")
+		return
+	}
+	if _, err = this_.GetConn().Set(path, []byte(data), state.Version); err != nil {
+		err = errors.New("path [" + path + "] set error:" + err.Error())
+		return
 	}
 	return
 }
@@ -199,6 +214,10 @@ func (this_ *Service) CreateIfNotExists(path string, data string) (err error) {
 // Exists 判断节点是否存在
 func (this_ *Service) Exists(path string) (isExist bool, err error) {
 	isExist, _, err = this_.GetConn().Exists(path)
+	if err != nil {
+		err = errors.New("path [" + path + "] exists error:" + err.Error())
+		return
+	}
 	return
 }
 
@@ -227,6 +246,7 @@ func (this_ *Service) Get(path string) (data string, err error) {
 
 	bs, _, err := this_.GetConn().Get(path)
 	if err != nil {
+		err = errors.New("path [" + path + "] get error:" + err.Error())
 		return
 	}
 	data = string(bs)
@@ -238,6 +258,7 @@ func (this_ *Service) GetInfo(path string) (info *NodeInfo, err error) {
 
 	data, stat, err := this_.GetConn().Get(path)
 	if err != nil {
+		err = errors.New("path [" + path + "] get error:" + err.Error())
 		return
 	}
 	info = &NodeInfo{}
@@ -270,6 +291,7 @@ func StatToInfo(stat *zk.Stat) (info *StatInfo) {
 func (this_ *Service) Stat(path string) (info *StatInfo, err error) {
 	_, stat, err := this_.GetConn().Exists(path)
 	if err != nil {
+		err = errors.New("path [" + path + "] exists error:" + err.Error())
 		return
 	}
 	if stat != nil {
@@ -281,6 +303,10 @@ func (this_ *Service) Stat(path string) (info *StatInfo, err error) {
 // GetChildren 查询子节点
 func (this_ *Service) GetChildren(path string) (children []string, err error) {
 	children, _, err = this_.GetConn().Children(path)
+	if err != nil {
+		err = errors.New("path [" + path + "] children error:" + err.Error())
+		return
+	}
 	sort.Slice(children, func(i, j int) bool {
 		return strings.ToLower(children[i]) < strings.ToLower(children[j]) //升序  即前面的值比后面的小 忽略大小写排序
 	})
@@ -292,12 +318,17 @@ func (this_ *Service) Delete(path string) (err error) {
 	var isExist bool
 	var stat *zk.Stat
 	isExist, stat, err = this_.GetConn().Exists(path)
+	if err != nil {
+		err = errors.New("path [" + path + "] exists error:" + err.Error())
+		return
+	}
 	if !isExist {
 		return
 	}
 	var children []string
 	children, _, err = this_.GetConn().Children(path)
 	if err != nil {
+		err = errors.New("path [" + path + "] children error:" + err.Error())
 		return
 	}
 	if len(children) > 0 {
@@ -309,5 +340,9 @@ func (this_ *Service) Delete(path string) (err error) {
 		}
 	}
 	err = this_.GetConn().Delete(path, stat.Version)
+	if err != nil {
+		err = errors.New("path [" + path + "] delete error:" + err.Error())
+		return
+	}
 	return
 }
