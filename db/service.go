@@ -102,8 +102,15 @@ func (this_ *Service) init() (err error) {
 	return
 }
 
-func (this_ *Service) Stop() {
-	if this_.db != nil {
+func (this_ *Service) GetDb() *sql.DB {
+	if this_ != nil && this_.db != nil {
+		return this_.db
+	}
+	return nil
+}
+
+func (this_ *Service) Close() {
+	if this_ != nil && this_.db != nil {
 		_ = this_.db.Close()
 	}
 	return

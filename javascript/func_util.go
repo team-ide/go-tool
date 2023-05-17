@@ -212,6 +212,12 @@ func init() {
 	})
 
 	context_map.AddFunc(&context_map.FuncInfo{
+		Name:    "getLogger",
+		Comment: "获取logger输出对象",
+		Func:    util.GetLogger,
+	})
+
+	context_map.AddFunc(&context_map.FuncInfo{
 		Name:    "getMD5",
 		Comment: "获取MD5字符串",
 		Func:    util.GetMD5,
@@ -311,6 +317,18 @@ func init() {
 		Name:    "randomUserName",
 		Comment: "随机姓名",
 		Func:    util.RandomUserName,
+	})
+
+	context_map.AddFunc(&context_map.FuncInfo{
+		Name:    "strPadLeft",
+		Comment: "在字符串 左侧补全 字符串 到 指定长度",
+		Func:    util.StrPadLeft,
+	})
+
+	context_map.AddFunc(&context_map.FuncInfo{
+		Name:    "strPadRight",
+		Comment: "在字符串 右侧补全 字符串 到 指定长度",
+		Func:    util.StrPadRight,
 	})
 
 	context_map.AddFunc(&context_map.FuncInfo{

@@ -13,27 +13,47 @@ func TestGenContextService(t *testing.T) {
 	var err error
 
 	rootDir := util.GetRootDir()
-	utilDir := rootDir + "/util/"
+	utilDir := rootDir + "/"
 	filenames, err := util.LoadDirFilenames(utilDir)
 	if err != nil {
 		panic("LoadDirFilenames error:" + err.Error())
 	}
-	var funcInfoList []*context_map.FuncInfo
+	var serviceList []*context_map.ServiceInfo
 	for _, filename := range filenames {
-		if strings.HasSuffix(filename, "_test.go") {
+		if !strings.HasSuffix(filename, "iface.go") {
 			continue
 		}
 		var lines []string
 		lines, err = util.ReadLine(utilDir + filename)
 		fmt.Println("---------------", filename, "---------------")
+		serviceName := filename[0:strings.Index(filename, "/")]
+		serviceName += "Service"
+		serviceInfo := &context_map.ServiceInfo{
+			Name: serviceName,
+		}
+		serviceList = append(serviceList, serviceInfo)
+		var isInIFace bool
 		for row, line := range lines {
-			if !strings.HasPrefix(line, "func ") {
+			if strings.HasPrefix(line, "type IService interface {") {
+				isInIFace = true
+			}
+			if !isInIFace {
 				continue
 			}
-			if row == 0 {
+			if isInIFace {
+				if strings.HasPrefix(line, "}") {
+					break
+				}
+			}
+			line = strings.TrimSpace(line)
+			if strings.HasPrefix(line, "// ") {
 				continue
 			}
-			funcName := line[len("func "):strings.Index(line, "(")]
+			if strings.Index(line, "(") < 0 {
+				continue
+			}
+
+			funcName := line[0:strings.Index(line, "(")]
 			var commandLines []string
 			var lastComment string
 			var i = row - 1
@@ -53,6 +73,7 @@ func TestGenContextService(t *testing.T) {
 				continue
 			}
 			var fS = "// " + funcName + " "
+			//fmt.Println("lastComment", lastComment, ",fS", fS)
 			if !strings.HasPrefix(lastComment, fS) {
 				continue
 			}
@@ -63,44 +84,61 @@ func TestGenContextService(t *testing.T) {
 			for i = len(commandLines) - 1; i >= 0; i-- {
 				fmt.Println(commandLines[i])
 			}
-			fmt.Println("funcName", funcName)
-			funcInfoList = append(funcInfoList, funcInfo)
+			fmt.Println(serviceName, ".", funcName)
+			serviceInfo.FuncList = append(serviceInfo.FuncList, funcInfo)
 
 		}
 	}
 
-	fmt.Println("--------------------", "func info list", "----------")
+	fmt.Println("--------------------", "service info list", "----------")
 
-	genContent := `package javascript
+	genContent := `package context_service
 
 import (
 	"github.com/team-ide/go-tool/javascript/context_map"
-	"github.com/team-ide/go-tool/util"
 )
 
 func init() {
 `
-	for _, funcInfo := range funcInfoList {
-		comment := funcInfo.Comment
+	for _, serviceInfo := range serviceList {
+		comment := serviceInfo.Comment
 		comment = strings.ReplaceAll(comment, `"`, `\"`)
-		name := funcInfo.Name
+		name := serviceInfo.Name
 		vv := []rune(name)
 		if vv[1] >= 97 && vv[1] <= 122 {
 			name = util.FirstToLower(name)
 		}
 		genContent += `
-	context_map.AddFunc(&context_map.FuncInfo{
+	context_map.AddService(&context_map.ServiceInfo{
 		Name:    "` + name + `",
 		Comment: "` + comment + `",
-		Func:    util.` + funcInfo.Name + `,
+		FuncList: []*context_map.FuncInfo{
+`
+		for _, funcInfo := range serviceInfo.FuncList {
+			comment := funcInfo.Comment
+			comment = strings.ReplaceAll(comment, `"`, `\"`)
+			name := funcInfo.Name
+			vv := []rune(name)
+			if vv[1] >= 97 && vv[1] <= 122 {
+				name = util.FirstToLower(name)
+			}
+			genContent += `
+			{
+				Name:    "` + name + `",
+				Comment: "` + comment + `",
+			},`
+			fmt.Println(serviceInfo.Name, ".", funcInfo.Name, ":", funcInfo.Comment)
+		}
+
+		genContent += `
+		},
 	})
 `
-		fmt.Println(funcInfo.Name, ":", funcInfo.Comment)
 	}
 	genContent += `
 }`
 
-	f, err := os.Create(rootDir + "/javascript/func_util.go")
+	f, err := os.Create(rootDir + "/javascript/context_service/service_func.go")
 	if err != nil {
 		panic("os.Create error:" + err.Error())
 	}

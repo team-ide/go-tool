@@ -74,7 +74,7 @@ func (this_ *ClusterService) init(sshClient *ssh.Client) (err error) {
 	return
 }
 
-func (this_ *ClusterService) Stop() {
+func (this_ *ClusterService) Close() {
 	if this_ != nil && this_.redisCluster != nil {
 		_ = this_.redisCluster.Close()
 	}

@@ -211,3 +211,55 @@ func RandomUserName(size int) (res string) {
 	}
 	return
 }
+
+// StrPadLeft 在字符串 左侧补全 字符串 到 指定长度
+// input string 原字符串
+// padLength int 规定补齐后的字符串长度
+// padString string 自定义填充字符串
+func StrPadLeft(input string, padLength int, padString string) string {
+
+	output := ""
+	inputLen := len(input)
+
+	if inputLen >= padLength {
+		return input
+	}
+
+	padStringLen := len(padString)
+	needFillLen := padLength - inputLen
+
+	if diffLen := padStringLen - needFillLen; diffLen > 0 {
+		padString = padString[diffLen:]
+	}
+
+	for i := 1; i <= needFillLen; i += padStringLen {
+		output += padString
+	}
+	return output + input
+}
+
+// StrPadRight 在字符串 右侧补全 字符串 到 指定长度
+// input string 原字符串
+// padLength int 规定补齐后的字符串长度
+// padString string 自定义填充字符串
+func StrPadRight(input string, padLength int, padString string) string {
+
+	output := ""
+	inputLen := len(input)
+
+	if inputLen >= padLength {
+		return input
+	}
+
+	padStringLen := len(padString)
+	needFillLen := padLength - inputLen
+
+	if diffLen := padStringLen - needFillLen; diffLen > 0 {
+		padString = padString[diffLen:]
+	}
+
+	for i := 1; i <= needFillLen; i += padStringLen {
+		output += padString
+	}
+	return input + output
+}

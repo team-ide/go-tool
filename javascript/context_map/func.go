@@ -1,5 +1,10 @@
 package context_map
 
+type ServiceInfo struct {
+	Name     string      `json:"name"`
+	Comment  string      `json:"comment"`
+	FuncList []*FuncInfo `json:"funcList"`
+}
 type FuncInfo struct {
 	Name     string         `json:"name"`
 	Comment  string         `json:"comment"`
@@ -16,9 +21,14 @@ type FuncVarInfo struct {
 }
 
 var (
-	FuncList []*FuncInfo
+	FuncList    []*FuncInfo
+	ServiceList []*ServiceInfo
 )
 
 func AddFunc(funcInfo *FuncInfo) {
 	FuncList = append(FuncList, funcInfo)
+}
+
+func AddService(serviceInfo *ServiceInfo) {
+	ServiceList = append(ServiceList, serviceInfo)
 }

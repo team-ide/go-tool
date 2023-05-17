@@ -75,7 +75,7 @@ func (this_ *V8Service) init(sshClient *ssh.Client) (err error) {
 	return
 }
 
-func (this_ *V8Service) Stop() {
+func (this_ *V8Service) Close() {
 	if this_ != nil && this_.client != nil {
 		_ = this_.client.Close()
 	}

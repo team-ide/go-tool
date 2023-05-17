@@ -11,11 +11,11 @@ type IService interface {
 	Info() (info *Info, err error)
 	// Create 创建 永久 节点
 	Create(path string, value string) (err error)
-	// CreateIfNotExists 如果不存在 则创建 永久 节点  如果 父节点不存在 则先创建父节点
+	// CreateIfNotExists 如果不存在 则创建 永久 节点 创建时候如果已存在不报错  如果 父节点不存在 则先创建父节点
 	CreateIfNotExists(path string, value string) (err error)
 	// CreateEphemeral 创建 临时 节点
 	CreateEphemeral(path string, value string) (err error)
-	// CreateEphemeralIfNotExists 如果不存在 则创建 临时 节点  如果 父节点不存在 则先创建父节点
+	// CreateEphemeralIfNotExists 如果不存在 则创建 临时 节点 创建时候如果已存在不报错 如果 父节点不存在 则先创建父节点
 	CreateEphemeralIfNotExists(path string, value string) (err error)
 	// Exists 查看节点是否存在
 	Exists(path string) (isExist bool, err error)
@@ -31,6 +31,6 @@ type IService interface {
 	GetChildren(path string) (children []string, err error)
 	// Delete 删除节点 如果 包含子节点 则先删除所有子节点
 	Delete(path string) (err error)
-	// WatchChildren 监听 子节点
+	// WatchChildren 监听 子节点 只监听当前节点下的子节点 NodeEventError 监听异常 NodeEventStopped zk客户端关闭 NodeEventAdded 节点新增 NodeEventDeleted 节点删除 NodeEventNodeNotFound 节点不存在
 	WatchChildren(path string, listen func(data *WatchChildrenListenData) (finish bool)) (err error)
 }

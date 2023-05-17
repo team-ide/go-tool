@@ -24,7 +24,10 @@ func (this_ *Service) init() (err error) {
 	return
 }
 
-func (this_ *Service) Stop() {
+func (this_ *Service) Close() {
+	if this_ == nil {
+		return
+	}
 
 }
 

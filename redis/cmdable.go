@@ -220,8 +220,8 @@ func (this_ *CmdService) Persist(key string, args ...Arg) (res bool, err error) 
 	return
 }
 
-// TTL 查看给定键距离过期还有多少秒
-func (this_ *CmdService) TTL(key string, args ...Arg) (res int64, err error) {
+// Ttl 查看给定键距离过期还有多少秒
+func (this_ *CmdService) Ttl(key string, args ...Arg) (res int64, err error) {
 	argCache := getArgCache(args...)
 	param := formatParam(argCache.Param)
 
@@ -278,7 +278,7 @@ func (this_ *CmdService) Set(key string, value string, args ...Arg) (err error) 
 	return
 }
 
-func (this_ *CmdService) SAdd(key string, value string, args ...Arg) (err error) {
+func (this_ *CmdService) SetAdd(key string, value string, args ...Arg) (err error) {
 	argCache := getArgCache(args...)
 	param := formatParam(argCache.Param)
 
@@ -292,7 +292,7 @@ func (this_ *CmdService) SAdd(key string, value string, args ...Arg) (err error)
 	return
 }
 
-func (this_ *CmdService) SRem(key string, value string, args ...Arg) (err error) {
+func (this_ *CmdService) SetRem(key string, value string, args ...Arg) (err error) {
 	argCache := getArgCache(args...)
 	param := formatParam(argCache.Param)
 
@@ -306,7 +306,7 @@ func (this_ *CmdService) SRem(key string, value string, args ...Arg) (err error)
 	return
 }
 
-func (this_ *CmdService) SCard(key string, args ...Arg) (res int64, err error) {
+func (this_ *CmdService) SetCard(key string, args ...Arg) (res int64, err error) {
 	argCache := getArgCache(args...)
 	param := formatParam(argCache.Param)
 
@@ -320,7 +320,7 @@ func (this_ *CmdService) SCard(key string, args ...Arg) (res int64, err error) {
 	return
 }
 
-func (this_ *CmdService) LPush(key string, value string, args ...Arg) (err error) {
+func (this_ *CmdService) ListPush(key string, value string, args ...Arg) (err error) {
 	argCache := getArgCache(args...)
 	param := formatParam(argCache.Param)
 
@@ -334,7 +334,7 @@ func (this_ *CmdService) LPush(key string, value string, args ...Arg) (err error
 	return
 }
 
-func (this_ *CmdService) LSet(key string, index int64, value string, args ...Arg) (err error) {
+func (this_ *CmdService) ListSet(key string, index int64, value string, args ...Arg) (err error) {
 	argCache := getArgCache(args...)
 	param := formatParam(argCache.Param)
 
@@ -348,7 +348,7 @@ func (this_ *CmdService) LSet(key string, index int64, value string, args ...Arg
 	return
 }
 
-func (this_ *CmdService) LRem(key string, count int64, value string, args ...Arg) (err error) {
+func (this_ *CmdService) ListRem(key string, count int64, value string, args ...Arg) (err error) {
 	argCache := getArgCache(args...)
 	param := formatParam(argCache.Param)
 
@@ -362,7 +362,7 @@ func (this_ *CmdService) LRem(key string, count int64, value string, args ...Arg
 	return
 }
 
-func (this_ *CmdService) RPush(key string, value string, args ...Arg) (err error) {
+func (this_ *CmdService) ListRPush(key string, value string, args ...Arg) (err error) {
 	argCache := getArgCache(args...)
 	param := formatParam(argCache.Param)
 
@@ -376,7 +376,7 @@ func (this_ *CmdService) RPush(key string, value string, args ...Arg) (err error
 	return
 }
 
-func (this_ *CmdService) HSet(key string, field string, value string, args ...Arg) (err error) {
+func (this_ *CmdService) HashSet(key string, field string, value string, args ...Arg) (err error) {
 	argCache := getArgCache(args...)
 	param := formatParam(argCache.Param)
 
@@ -390,7 +390,7 @@ func (this_ *CmdService) HSet(key string, field string, value string, args ...Ar
 	return
 }
 
-func (this_ *CmdService) HGet(key string, field string, args ...Arg) (value string, err error) {
+func (this_ *CmdService) HashGet(key string, field string, args ...Arg) (value string, err error) {
 	argCache := getArgCache(args...)
 	param := formatParam(argCache.Param)
 
@@ -409,7 +409,7 @@ func (this_ *CmdService) HGet(key string, field string, args ...Arg) (value stri
 	return
 }
 
-func (this_ *CmdService) HGetAll(key string, args ...Arg) (value map[string]string, err error) {
+func (this_ *CmdService) HashGetAll(key string, args ...Arg) (value map[string]string, err error) {
 	argCache := getArgCache(args...)
 	param := formatParam(argCache.Param)
 
@@ -428,7 +428,7 @@ func (this_ *CmdService) HGetAll(key string, args ...Arg) (value map[string]stri
 	return
 }
 
-func (this_ *CmdService) HDel(key string, field string, args ...Arg) (err error) {
+func (this_ *CmdService) HashDel(key string, field string, args ...Arg) (err error) {
 	argCache := getArgCache(args...)
 	param := formatParam(argCache.Param)
 
@@ -442,7 +442,7 @@ func (this_ *CmdService) HDel(key string, field string, args ...Arg) (err error)
 	return
 }
 
-func (this_ *CmdService) SetBit(key string, offset int64, value int, args ...Arg) (err error) {
+func (this_ *CmdService) BitSet(key string, offset int64, value int, args ...Arg) (err error) {
 	argCache := getArgCache(args...)
 	param := formatParam(argCache.Param)
 

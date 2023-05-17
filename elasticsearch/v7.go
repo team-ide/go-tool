@@ -29,6 +29,10 @@ func (this_ *V7Service) init() error {
 }
 
 func (this_ *V7Service) GetClient() (client *elastic.Client, err error) {
+	if this_ == nil {
+		err = errors.New("elasticsearch service is null")
+		return
+	}
 	this_.clientLock.Lock()
 	defer this_.clientLock.Unlock()
 	if this_.client != nil && this_.client.IsRunning() {
@@ -96,8 +100,8 @@ func (this_ *V7Service) GetClient() (client *elastic.Client, err error) {
 	return
 }
 
-func (this_ *V7Service) Stop() {
-	if this_.client != nil {
+func (this_ *V7Service) Close() {
+	if this_ != nil && this_.client != nil {
 		this_.client.Stop()
 		this_.client = nil
 	}
@@ -441,6 +445,25 @@ func (this_ *V7Service) Update(indexName string, id string, doc interface{}) (re
 	return
 }
 
+func (this_ *V7Service) UpdateNotWait(indexName string, id string, doc interface{}) (res *UpdateResponse, err error) {
+	client, err := this_.GetClient()
+	if err != nil {
+		return
+	}
+	//defer client.Stop()
+
+	doer := client.Update()
+	updateResponse, err := doer.Index(indexName).Id(id).Doc(doc).Do(context.Background())
+	if err != nil {
+		return
+	}
+	res = &UpdateResponse{
+		UpdateResponse: updateResponse,
+	}
+
+	return
+}
+
 type DeleteResponse struct {
 	*elastic.DeleteResponse
 }
@@ -454,6 +477,25 @@ func (this_ *V7Service) Delete(indexName string, id string) (res *DeleteResponse
 
 	doer := client.Delete()
 	deleteResponse, err := doer.Index(indexName).Id(id).Refresh("wait_for").Do(context.Background())
+	if err != nil {
+		return
+	}
+	res = &DeleteResponse{
+		DeleteResponse: deleteResponse,
+	}
+
+	return
+}
+
+func (this_ *V7Service) DeleteNotWait(indexName string, id string) (res *DeleteResponse, err error) {
+	client, err := this_.GetClient()
+	if err != nil {
+		return
+	}
+	//defer client.Stop()
+
+	doer := client.Delete()
+	deleteResponse, err := doer.Index(indexName).Id(id).Do(context.Background())
 	if err != nil {
 		return
 	}
