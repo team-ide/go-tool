@@ -6,7 +6,7 @@ import (
 
 func init() {
 
-	context_map.AddService(&context_map.ServiceInfo{
+	dbModule.Service = &context_map.ServiceInfo{
 		Name:    "dbService",
 		Comment: "",
 		FuncList: []*context_map.FuncInfo{
@@ -156,9 +156,9 @@ func init() {
 				Comment: "开始 同步",
 			},
 		},
-	})
+	}
 
-	context_map.AddService(&context_map.ServiceInfo{
+	elasticsearchModule.Service = &context_map.ServiceInfo{
 		Name:    "elasticsearchService",
 		Comment: "",
 		FuncList: []*context_map.FuncInfo{
@@ -244,9 +244,9 @@ func init() {
 				Comment: "索引别名",
 			},
 		},
-	})
+	}
 
-	context_map.AddService(&context_map.ServiceInfo{
+	kafkaModule.Service = &context_map.ServiceInfo{
 		Name:    "kafkaService",
 		Comment: "",
 		FuncList: []*context_map.FuncInfo{
@@ -344,9 +344,9 @@ func init() {
 				Comment: "获取 kafka 客户端",
 			},
 		},
-	})
+	}
 
-	context_map.AddService(&context_map.ServiceInfo{
+	redisModule.Service = &context_map.ServiceInfo{
 		Name:    "redisService",
 		Comment: "",
 		FuncList: []*context_map.FuncInfo{
@@ -456,9 +456,9 @@ func init() {
 				Comment: "在 bitmap 中 统计 所有 值",
 			},
 		},
-	})
+	}
 
-	context_map.AddService(&context_map.ServiceInfo{
+	zookeeperModule.Service = &context_map.ServiceInfo{
 		Name:    "zookeeperService",
 		Comment: "",
 		FuncList: []*context_map.FuncInfo{
@@ -524,6 +524,6 @@ func init() {
 				Comment: "监听 子节点 只监听当前节点下的子节点 NodeEventError 监听异常 NodeEventStopped zk客户端关闭 NodeEventAdded 节点新增 NodeEventDeleted 节点删除 NodeEventNodeNotFound 节点不存在",
 			},
 		},
-	})
+	}
 
 }

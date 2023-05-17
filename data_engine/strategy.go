@@ -160,7 +160,7 @@ func (this_ *StrategyTask) doStrategyData(strategyData *StrategyData) (err error
 		var startTime = time.Now()
 		data, err = this_.doStrategyDataFieldList(dataIndex, strategyData.IndexName, script, strategyData.FieldList)
 		var endTime = time.Now()
-		var useTime = util.GetTimeByTime(endTime) - util.GetTimeByTime(startTime)
+		var useTime = util.GetMilliByTime(endTime) - util.GetMilliByTime(startTime)
 		if err != nil {
 			strategyData.IncrDataErrorCount(1, useTime)
 			util.Logger.Error("doStrategyDataFieldList error", zap.Any("dataIndex", dataIndex), zap.Any("indexName", strategyData.IndexName), zap.Any("fieldList", strategyData.FieldList), zap.Error(err))

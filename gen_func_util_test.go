@@ -79,6 +79,10 @@ import (
 )
 
 func init() {
+	context_map.AddModule(&context_map.ModuleInfo{
+		Name:    "util",
+		Comment: "工具模块",
+		FuncList: []*context_map.FuncInfo{
 `
 	for _, funcInfo := range funcInfoList {
 		comment := funcInfo.Comment
@@ -89,15 +93,16 @@ func init() {
 			name = util.FirstToLower(name)
 		}
 		genContent += `
-	context_map.AddFunc(&context_map.FuncInfo{
-		Name:    "` + name + `",
-		Comment: "` + comment + `",
-		Func:    util.` + funcInfo.Name + `,
-	})
-`
+		{
+			Name:    "` + name + `",
+			Comment: "` + comment + `",
+			Func:    util.` + funcInfo.Name + `,
+		},`
 		fmt.Println(funcInfo.Name, ":", funcInfo.Comment)
 	}
 	genContent += `
+		},
+	})
 }`
 
 	f, err := os.Create(rootDir + "/javascript/func_util.go")

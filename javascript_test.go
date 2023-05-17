@@ -16,76 +16,82 @@ let config = {
 	address:"127.0.0.1:6379",
 	auth:"q7ZtCl^5S3",
 };
-start = getNowTime()
-let redisService = newRedisService(config);
-end = getNowTime()
-console.log("new redisService use:",(end-start))
+start = util.GetNowMilli()
+let redisService = redis.newService(config);
+end = util.GetNowMilli()
+logger.info("new redisService use:",(end-start))
 
 let key = "xx";
 
-start = getNowTime()
+start = util.GetNowMilli()
 res = redisService.get(key)
-end = getNowTime()
-console.log("redis get key:",key,",value:",res,",use:",(end-start))
+end = util.GetNowMilli()
+logger.info("redis get", logger.any("key",key), logger.any("value",res), logger.any("use",(end-start)))
 
 
-start = getNowTime()
-redisService.set(key,"这是一个UUID:"+getUUID())
-end = getNowTime()
-console.log("redis set key:",key,",use:",(end-start))
+start = util.GetNowMilli()
+redisService.set(key,"这是一个UUID:" + util.getUUID())
+end = util.GetNowMilli()
+logger.info("redis set", logger.any("key",key), logger.any("use",(end-start)))
 
-start = getNowTime()
+start = util.GetNowMilli()
 res = redisService.get(key)
-end = getNowTime()
-console.log("redis get key:",key,",value:",res,",use:",(end-start))
+end = util.GetNowMilli()
+logger.info("redis get", logger.any("key",key), logger.any("value",res), logger.any("use",(end-start)))
 
 config = {
 	address:"127.0.0.1:2181",
 };
-start = getNowTime()
-let zookeeperService = newZookeeperService(config);
-end = getNowTime()
-console.log("new zookeeperService use:",(end-start))
+start = util.GetNowMilli()
+let zookeeperService = zookeeper.newService(config);
+end = util.GetNowMilli()
+logger.info("new zookeeperService", logger.any("use",(end-start)))
 
 
 let path = "/xx";
 
-
-
-start = getNowTime()
+start = util.GetNowMilli()
 exists = zookeeperService.exists(path)
-end = getNowTime()
-console.log("zookeeper exists path:",path,",exists:",exists,",use:",(end-start))
+end = util.GetNowMilli()
+logger.info("zookeeper exists", logger.any("path",path), logger.any("exists",exists), logger.any("use",(end-start)))
 
 if(!exists){
-	start = getNowTime()
-	zookeeperService.create(path, "这是一个UUID:"+getUUID())
-	end = getNowTime()
-	console.log("zookeeper create path:",path,",use:",(end-start))
+	start = util.GetNowMilli()
+	zookeeperService.create(path, "这是一个UUID:" + util.getUUID())
+	end = util.GetNowMilli()
+	logger.info("zookeeper create", logger.any("path",path), logger.any("use",(end-start)))
 }
 
-start = getNowTime()
+start = util.GetNowMilli()
 res = zookeeperService.get(path)
-end = getNowTime()
-console.log("zookeeper get path:",path,",value:",res,",use:",(end-start))
+end = util.GetNowMilli()
+logger.info("zookeeper get", logger.any("path",path), logger.any("value", res), logger.any("use",(end-start)))
 
-wait = newWaitGroup()
+wait = util.newWaitGroup()
 wait.Add(1)
+let watchChildrenCount = 0
+start = util.GetNowMilli()
 zookeeperService.watchChildren(path, function(event){
-	console.log("watchChildren path:",path,",event:", objToJson(event))
+	watchChildrenCount++
+	logger.info("zookeeper watchChildren", logger.any("path",path), logger.any("event", util.objToJson(event)))
+	if(watchChildrenCount >= 2){
+		wait.Done();
+	}
 	return false;
 })
-console.log("zookeeper watchChildren path:",path,",use:",(end-start))
+end = util.GetNowMilli()
+logger.info("zookeeper watchChildren start", logger.any("path",path), logger.any("use",(end-start)))
 wait.Wait()
+end = util.GetNowMilli()
+logger.info("zookeeper watchChildren end", logger.any("path",path), logger.any("use",(end-start)))
 
-return res
 `
-	start := util.GetNowTime()
+	start := util.GetNowMilli()
 	res, err := javascript.RunScript(script, context)
 	if err != nil {
 		panic(err)
 	}
-	end := util.GetNowTime()
+	end := util.GetNowMilli()
 
 	fmt.Println("use:", end-start)
 	fmt.Println(res)

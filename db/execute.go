@@ -101,7 +101,7 @@ func (this_ *executeTask) execExecuteSQL(executeSql string,
 		var endTime = time.Now()
 		executeData["endTime"] = util.GetFormatByTime(endTime)
 		executeData["isEnd"] = true
-		executeData["useTime"] = util.GetTimeByTime(endTime) - util.GetTimeByTime(startTime)
+		executeData["useTime"] = util.GetMilliByTime(endTime) - util.GetMilliByTime(startTime)
 		if err != nil {
 			executeData["error"] = err.Error()
 			return
@@ -154,7 +154,7 @@ func (this_ *executeTask) execExecuteSQL(executeSql string,
 					if tV.IsZero() {
 						v = nil
 					} else {
-						v = util.GetTimeByTime(tV)
+						v = util.GetMilliByTime(tV)
 					}
 				default:
 					v = worker.GetSqlValue(columnTypes[index], data)
@@ -167,7 +167,7 @@ func (this_ *executeTask) execExecuteSQL(executeSql string,
 						if tV.IsZero() {
 							item[name] = nil
 						} else {
-							item[name] = util.GetTimeByTime(tV)
+							item[name] = util.GetMilliByTime(tV)
 						}
 					case float64:
 						if tV >= float64(9007199254740991) || tV <= float64(-9007199254740991) {

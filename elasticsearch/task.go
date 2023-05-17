@@ -110,7 +110,7 @@ func (this_ *Task) Statistics() {
 		this_.DoDataStatistics.DataAverage = fmt.Sprintf("%.2f", dataAverage)
 	}
 	this_.NowTime = time.Now()
-	this_.UseTime = util.GetTimeByTime(this_.NowTime) - util.GetTimeByTime(this_.StartTime)
+	this_.UseTime = util.GetMilliByTime(this_.NowTime) - util.GetMilliByTime(this_.StartTime)
 
 }
 
@@ -153,7 +153,7 @@ func (this_ *Task) Start() {
 			util.Logger.Error("任务执行异常", zap.Any("error", err))
 		}
 		this_.EndTime = time.Now()
-		this_.UseTime = util.GetTimeByTime(this_.EndTime) - util.GetTimeByTime(this_.StartTime)
+		this_.UseTime = util.GetMilliByTime(this_.EndTime) - util.GetMilliByTime(this_.StartTime)
 		this_.IsEnd = true
 	}()
 

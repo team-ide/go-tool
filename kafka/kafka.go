@@ -228,10 +228,10 @@ func (this_ *Service) Pull(groupId string, topics []string, PullSize int, PullTi
 			fmt.Println("group.Consume error:", err)
 		}
 	}()
-	startTime := util.GetNowTime()
+	startTime := util.GetNowMilli()
 	for {
 		time.Sleep(100 * time.Millisecond)
-		nowTime := util.GetNowTime()
+		nowTime := util.GetNowMilli()
 		if handler.appended || nowTime-startTime >= int64(PullTimeout) {
 			break
 		}

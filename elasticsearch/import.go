@@ -168,7 +168,7 @@ func (this_ *ImportTask) doThreadStrategy(waitGroupForStop *sync.WaitGroup, thre
 
 		_, err = this_.Service.BatchInsertNotWait(docs)
 		var endTime = time.Now()
-		var useTime = util.GetTimeByTime(endTime) - util.GetTimeByTime(startTime)
+		var useTime = util.GetMilliByTime(endTime) - util.GetMilliByTime(startTime)
 		if err != nil {
 			doDataStatistics.IncrDataErrorCount(size, useTime)
 			util.Logger.Error("BatchInsertNotWait error", zap.Any("size", size), zap.Any("useTime", useTime), zap.Error(err))

@@ -1,7 +1,6 @@
 package javascript
 
 import (
-	"fmt"
 	"github.com/dop251/goja"
 	"github.com/team-ide/go-tool/javascript/context_map"
 	"github.com/team-ide/go-tool/util"
@@ -11,22 +10,13 @@ import (
 func NewContext() map[string]interface{} {
 	baseContext := map[string]interface{}{}
 
-	baseContext["console"] = map[string]interface{}{
-		"log": func(args ...interface{}) {
-			util.Logger.Info(fmt.Sprint(args...))
-		},
-		"info": func(args ...interface{}) {
-			util.Logger.Info(fmt.Sprint(args...))
-		},
-		"warn": func(args ...interface{}) {
-			util.Logger.Warn(fmt.Sprint(args...))
-		},
-		"error": func(args ...interface{}) {
-			util.Logger.Error(fmt.Sprint(args...))
-		},
-	}
-	for _, funcInfo := range context_map.FuncList {
-		baseContext[funcInfo.Name] = funcInfo.Func
+	for _, module := range context_map.ModuleList {
+		data := map[string]interface{}{}
+
+		baseContext[module.Name] = data
+		for _, funcInfo := range module.FuncList {
+			data[funcInfo.Name] = funcInfo.Func
+		}
 	}
 
 	return baseContext

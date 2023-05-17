@@ -131,9 +131,9 @@ func TestUtil(t *testing.T) {
 	fmt.Println("ToPinYin", py)
 
 	fmt.Println("GetNow", GetNow())
-	fmt.Println("GetNowTime", GetNowTime())
+	fmt.Println("GetNowMilli", GetNowMilli())
 	fmt.Println("GetNowSecond", GetNowSecond())
-	fmt.Println("GetTimeByTime", GetTimeByTime(GetNow()))
+	fmt.Println("GetMilliByTime", GetMilliByTime(GetNow()))
 	fmt.Println("GetSecondByTime", GetSecondByTime(GetNow()))
 	fmt.Println("GetNowFormat", GetNowFormat())
 	fmt.Println("GetFormatByTime", GetFormatByTime(GetNow()))

@@ -7,26 +7,37 @@ func GetNow() time.Time {
 	return time.Now()
 }
 
-// GetNowTime 获取当前时间戳  到毫秒
-func GetNowTime() int64 {
-	return GetTimeByTime(time.Now())
+// GetNowNano 获取当前时间戳  到纳秒
+func GetNowNano() int64 {
+	return GetNanoByTime(time.Now())
+}
+
+// GetNowMilli 获取当前时间戳  到毫秒
+func GetNowMilli() int64 {
+	return GetMilliByTime(time.Now())
 }
 
 // GetNowSecond 获取当前时间戳 到秒
-func GetNowSecond() int64 {
+func GetNowSecond() int {
 	return GetSecondByTime(time.Now())
 }
 
-// GetTimeByTime 获取时间戳  到毫秒
+// GetNanoByTime 获取时间戳  到纳秒
 // @param v time.Time "时间"
-func GetTimeByTime(v time.Time) int64 {
-	return v.UnixNano() / 1e6
+func GetNanoByTime(v time.Time) int64 {
+	return v.UnixNano()
+}
+
+// GetMilliByTime 获取时间戳  到毫秒
+// @param v time.Time "时间"
+func GetMilliByTime(v time.Time) int64 {
+	return v.UnixMilli()
 }
 
 // GetSecondByTime 获取时间戳 到秒
 // @param v time.Time "时间"
-func GetSecondByTime(v time.Time) int64 {
-	return v.Unix()
+func GetSecondByTime(v time.Time) int {
+	return v.Second()
 }
 
 var (

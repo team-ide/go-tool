@@ -723,7 +723,7 @@ func (this_ *Service) TableData(param *Param, ownerName string, tableName string
 				if tV.IsZero() {
 					item[name] = nil
 				} else {
-					item[name] = util.GetTimeByTime(tV)
+					item[name] = util.GetMilliByTime(tV)
 				}
 			case float64:
 				if tV >= float64(9007199254740991) || tV <= float64(-9007199254740991) {

@@ -9,50 +9,85 @@ import (
 	"github.com/team-ide/go-tool/zookeeper"
 )
 
+var (
+	redisModule = &context_map.ModuleInfo{
+		Name:    "redis",
+		Comment: "Redis 模块",
+		FuncList: []*context_map.FuncInfo{
+			{
+				Name:    "newService",
+				Comment: "新建 Redis 服务",
+				Func:    redis.NewServiceScript,
+			}, {
+				Name:    "newParam",
+				Comment: "新建 Redis 参数",
+				Func:    redis.NewParam,
+			}, {
+				Name:    "newSizeArg",
+				Comment: "新建 Redis 参数",
+				Func:    redis.NewSizeArg,
+			}, {
+				Name:    "newStartArg",
+				Comment: "新建 Redis 参数",
+				Func:    redis.NewStartArg,
+			},
+		},
+	}
+
+	zookeeperModule = &context_map.ModuleInfo{
+		Name:    "zookeeper",
+		Comment: "Zookeeper 模块",
+		FuncList: []*context_map.FuncInfo{
+			{
+				Name:    "newService",
+				Comment: "新建 Zookeeper 服务",
+				Func:    zookeeper.NewServiceScript,
+			},
+		},
+	}
+
+	kafkaModule = &context_map.ModuleInfo{
+		Name:    "kafka",
+		Comment: "Kafka 模块",
+		FuncList: []*context_map.FuncInfo{
+			{
+				Name:    "newService",
+				Comment: "新建 Kafka 服务",
+				Func:    kafka.NewServiceScript,
+			},
+		},
+	}
+
+	elasticsearchModule = &context_map.ModuleInfo{
+		Name:    "elasticsearch",
+		Comment: "Elasticsearch 模块",
+		FuncList: []*context_map.FuncInfo{
+			{
+				Name:    "newService",
+				Comment: "新建 Elasticsearch 服务",
+				Func:    elasticsearch.NewServiceScript,
+			},
+		},
+	}
+
+	dbModule = &context_map.ModuleInfo{
+		Name:    "db",
+		Comment: "Db 模块",
+		FuncList: []*context_map.FuncInfo{
+			{
+				Name:    "newService",
+				Comment: "新建 Db 服务",
+				Func:    db.NewServiceScript,
+			},
+		},
+	}
+)
+
 func init() {
 
-	context_map.AddFunc(&context_map.FuncInfo{
-		Name:    "newRedisService",
-		Comment: "新建 Redis 服务",
-		Func:    redis.NewServiceScript,
-	})
-	context_map.AddFunc(&context_map.FuncInfo{
-		Name:    "newRedisParam",
-		Comment: "新建 Redis 参数",
-		Func:    redis.NewParam,
-	})
-	context_map.AddFunc(&context_map.FuncInfo{
-		Name:    "newRedisSizeArg",
-		Comment: "新建 Redis 参数",
-		Func:    redis.NewSizeArg,
-	})
-	context_map.AddFunc(&context_map.FuncInfo{
-		Name:    "newRedisStartArg",
-		Comment: "新建 Redis 参数",
-		Func:    redis.NewStartArg,
-	})
-
-	context_map.AddFunc(&context_map.FuncInfo{
-		Name:    "newZookeeperService",
-		Comment: "新建 Zookeeper 服务",
-		Func:    zookeeper.NewServiceScript,
-	})
-
-	context_map.AddFunc(&context_map.FuncInfo{
-		Name:    "newKafkaService",
-		Comment: "新建 Kafka 服务",
-		Func:    kafka.NewServiceScript,
-	})
-
-	context_map.AddFunc(&context_map.FuncInfo{
-		Name:    "newElasticsearchService",
-		Comment: "新建 Elasticsearch 服务",
-		Func:    elasticsearch.NewServiceScript,
-	})
-
-	context_map.AddFunc(&context_map.FuncInfo{
-		Name:    "newDbService",
-		Comment: "新建 Db 服务",
-		Func:    db.NewServiceScript,
-	})
+	context_map.AddModule(dbModule)
+	context_map.AddModule(redisModule)
+	context_map.AddModule(zookeeperModule)
+	context_map.AddModule(elasticsearchModule)
+	context_map.AddModule(kafkaModule)
 }

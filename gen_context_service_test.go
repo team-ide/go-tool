@@ -26,10 +26,12 @@ func TestGenContextService(t *testing.T) {
 		var lines []string
 		lines, err = util.ReadLine(utilDir + filename)
 		fmt.Println("---------------", filename, "---------------")
-		serviceName := filename[0:strings.Index(filename, "/")]
-		serviceName += "Service"
+		name := filename[0:strings.Index(filename, "/")]
+		serviceName := name + "Service"
+		moduleName := name + "Module"
 		serviceInfo := &context_map.ServiceInfo{
-			Name: serviceName,
+			Name:   serviceName,
+			Module: moduleName,
 		}
 		serviceList = append(serviceList, serviceInfo)
 		var isInIFace bool
@@ -109,7 +111,7 @@ func init() {
 			name = util.FirstToLower(name)
 		}
 		genContent += `
-	context_map.AddService(&context_map.ServiceInfo{
+	` + serviceInfo.Module + `.Service = &context_map.ServiceInfo{
 		Name:    "` + name + `",
 		Comment: "` + comment + `",
 		FuncList: []*context_map.FuncInfo{
@@ -132,7 +134,7 @@ func init() {
 
 		genContent += `
 		},
-	})
+	}
 `
 	}
 	genContent += `
