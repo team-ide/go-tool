@@ -72,3 +72,16 @@ func GetLogger() *zap.Logger {
 
 	return Logger
 }
+
+func FormatZapArgs(args ...interface{}) (msg []interface{}, fields []zap.Field) {
+	for _, arg := range args {
+		switch tV := arg.(type) {
+		case zap.Field:
+			fields = append(fields, tV)
+		default:
+			msg = append(msg, tV)
+		}
+	}
+
+	return
+}
