@@ -16,7 +16,7 @@ func init() {
 				Name:    "debug",
 				Comment: "输出 debug 级别日志",
 				Func: func(args ...interface{}) {
-					msg, fields := formatZapArgs(args...)
+					msg, fields := util.FormatZapArgs(args...)
 					util.Logger.Debug(fmt.Sprint(msg...), fields...)
 				},
 			},
@@ -24,7 +24,7 @@ func init() {
 				Name:    "info",
 				Comment: "输出 info 级别日志",
 				Func: func(args ...interface{}) {
-					msg, fields := formatZapArgs(args...)
+					msg, fields := util.FormatZapArgs(args...)
 					util.Logger.Info(fmt.Sprint(msg...), fields...)
 				},
 			},
@@ -32,7 +32,7 @@ func init() {
 				Name:    "warn",
 				Comment: "输出 warn 级别日志",
 				Func: func(args ...interface{}) {
-					msg, fields := formatZapArgs(args...)
+					msg, fields := util.FormatZapArgs(args...)
 					util.Logger.Warn(fmt.Sprint(msg...), fields...)
 				},
 			},
@@ -40,7 +40,7 @@ func init() {
 				Name:    "error",
 				Comment: "输出 error 级别日志",
 				Func: func(args ...interface{}) {
-					msg, fields := formatZapArgs(args...)
+					msg, fields := util.FormatZapArgs(args...)
 					util.Logger.Error(fmt.Sprint(msg...), fields...)
 				},
 			},
@@ -53,17 +53,4 @@ func init() {
 			},
 		},
 	})
-}
-
-func formatZapArgs(args ...interface{}) (msg []interface{}, fields []zap.Field) {
-	for _, arg := range args {
-		switch tV := arg.(type) {
-		case zap.Field:
-			fields = append(fields, tV)
-		default:
-			msg = append(msg, tV)
-		}
-	}
-
-	return
 }
