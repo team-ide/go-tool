@@ -79,6 +79,61 @@ var (
 				Comment: "新建 Db 服务",
 				Func:    db.NewServiceScript,
 			},
+			{
+				Name:    "toConfig",
+				Comment: "任意对象转为 Config 用于数据库连接等",
+				Func:    db.ToConfig,
+			},
+			{
+				Name:    "toOwnerModel",
+				Comment: "任意对象转为 OwnerModel 用于创建 数据库等",
+				Func:    db.ToOwnerModel,
+			},
+			{
+				Name:    "toTableModel",
+				Comment: "任意对象转为 TableModel 用于创建 表等",
+				Func:    db.ToTableModel,
+			},
+			{
+				Name:    "toColumnModel",
+				Comment: "任意对象转为 ColumnModel 用于创建 字段等",
+				Func:    db.ToColumnModel,
+			},
+			{
+				Name:    "toIndexModel",
+				Comment: "任意对象转为 IndexModel 用于创建 索引等",
+				Func:    db.ToIndexModel,
+			},
+			{
+				Name:    "toPrimaryKeyModel",
+				Comment: "任意对象转为 PrimaryKeyModel 用于创建 主键等",
+				Func:    db.ToPrimaryKeyModel,
+			},
+			{
+				Name:    "toParam",
+				Comment: "任意对象转为 Param 用于 建库、建表 配置参数等",
+				Func:    db.ToParam,
+			},
+			{
+				Name:    "toPage",
+				Comment: "任意对象转为 Page 用于 分页查询等",
+				Func:    db.ToPage,
+			},
+			{
+				Name:    "toTaskExportParam",
+				Comment: "任意对象转为 TaskExportParam 用于 导出任务",
+				Func:    db.ToTaskExportParam,
+			},
+			{
+				Name:    "toTaskImportParam",
+				Comment: "任意对象转为 TaskImportParam 用于 导入任务",
+				Func:    db.ToTaskImportParam,
+			},
+			{
+				Name:    "toTaskSyncParam",
+				Comment: "任意对象转为 TaskSyncParam 用于 同步任务",
+				Func:    db.ToTaskSyncParam,
+			},
 		},
 	}
 )

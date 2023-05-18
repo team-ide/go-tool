@@ -15,6 +15,11 @@ func NewContext() map[string]interface{} {
 
 		baseContext[module.Name] = data
 		for _, funcInfo := range module.FuncList {
+			if funcInfo.Name == "" {
+				continue
+			}
+			data[util.FirstToLower(funcInfo.Name)] = funcInfo.Func
+			data[util.FirstToUpper(funcInfo.Name)] = funcInfo.Func
 			data[funcInfo.Name] = funcInfo.Func
 		}
 	}

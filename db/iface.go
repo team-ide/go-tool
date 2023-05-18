@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"encoding/json"
 	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-dialect/worker"
 )
@@ -98,4 +99,234 @@ type IService interface {
 	StartImport(param *Param, importParam *worker.TaskImportParam) (task *worker.Task, err error)
 	// StartSync 开始 同步
 	StartSync(param *Param, syncParam *worker.TaskSyncParam) (task *worker.Task, err error)
+}
+
+func ToOwnerModel(data interface{}) (res *dialect.OwnerModel) {
+	res = &dialect.OwnerModel{}
+	var bs []byte
+	switch tV := data.(type) {
+	case dialect.OwnerModel:
+		res = &tV
+		return
+	case *dialect.OwnerModel:
+		res = tV
+		return
+	case string:
+		bs = []byte(tV)
+	case []byte:
+		bs = tV
+	default:
+		bs, _ = json.Marshal(data)
+	}
+	_ = json.Unmarshal(bs, res)
+	return
+}
+
+func ToTableModel(data interface{}) (res *dialect.TableModel) {
+	res = &dialect.TableModel{}
+	var bs []byte
+	switch tV := data.(type) {
+	case dialect.TableModel:
+		res = &tV
+		return
+	case *dialect.TableModel:
+		res = tV
+		return
+	case string:
+		bs = []byte(tV)
+	case []byte:
+		bs = tV
+	default:
+		bs, _ = json.Marshal(data)
+	}
+	_ = json.Unmarshal(bs, res)
+	return
+}
+
+func ToColumnModel(data interface{}) (res *dialect.ColumnModel) {
+	res = &dialect.ColumnModel{}
+	var bs []byte
+	switch tV := data.(type) {
+	case dialect.ColumnModel:
+		res = &tV
+		return
+	case *dialect.ColumnModel:
+		res = tV
+		return
+	case string:
+		bs = []byte(tV)
+	case []byte:
+		bs = tV
+	default:
+		bs, _ = json.Marshal(data)
+	}
+	_ = json.Unmarshal(bs, res)
+	return
+}
+
+func ToIndexModel(data interface{}) (res *dialect.IndexModel) {
+	res = &dialect.IndexModel{}
+	var bs []byte
+	switch tV := data.(type) {
+	case dialect.IndexModel:
+		res = &tV
+		return
+	case *dialect.IndexModel:
+		res = tV
+		return
+	case string:
+		bs = []byte(tV)
+	case []byte:
+		bs = tV
+	default:
+		bs, _ = json.Marshal(data)
+	}
+	_ = json.Unmarshal(bs, res)
+	return
+}
+
+func ToPrimaryKeyModel(data interface{}) (res *dialect.PrimaryKeyModel) {
+	res = &dialect.PrimaryKeyModel{}
+	var bs []byte
+	switch tV := data.(type) {
+	case dialect.PrimaryKeyModel:
+		res = &tV
+		return
+	case *dialect.PrimaryKeyModel:
+		res = tV
+		return
+	case string:
+		bs = []byte(tV)
+	case []byte:
+		bs = tV
+	default:
+		bs, _ = json.Marshal(data)
+	}
+	_ = json.Unmarshal(bs, res)
+	return
+}
+
+func ToPage(data interface{}) (res *worker.Page) {
+	res = &worker.Page{}
+	var bs []byte
+	switch tV := data.(type) {
+	case worker.Page:
+		res = &tV
+		return
+	case *worker.Page:
+		res = tV
+		return
+	case string:
+		bs = []byte(tV)
+	case []byte:
+		bs = tV
+	default:
+		bs, _ = json.Marshal(data)
+	}
+	_ = json.Unmarshal(bs, res)
+	return
+}
+
+func ToTaskExportParam(data interface{}) (res *worker.TaskExportParam) {
+	res = &worker.TaskExportParam{}
+	var bs []byte
+	switch tV := data.(type) {
+	case worker.TaskExportParam:
+		res = &tV
+		return
+	case *worker.TaskExportParam:
+		res = tV
+		return
+	case string:
+		bs = []byte(tV)
+	case []byte:
+		bs = tV
+	default:
+		bs, _ = json.Marshal(data)
+	}
+	_ = json.Unmarshal(bs, res)
+	return
+}
+func ToTaskImportParam(data interface{}) (res *worker.TaskImportParam) {
+	res = &worker.TaskImportParam{}
+	var bs []byte
+	switch tV := data.(type) {
+	case worker.TaskImportParam:
+		res = &tV
+		return
+	case *worker.TaskImportParam:
+		res = tV
+		return
+	case string:
+		bs = []byte(tV)
+	case []byte:
+		bs = tV
+	default:
+		bs, _ = json.Marshal(data)
+	}
+	_ = json.Unmarshal(bs, res)
+	return
+}
+
+func ToTaskSyncParam(data interface{}) (res *worker.TaskSyncParam) {
+	res = &worker.TaskSyncParam{}
+	var bs []byte
+	switch tV := data.(type) {
+	case worker.TaskSyncParam:
+		res = &tV
+		return
+	case *worker.TaskSyncParam:
+		res = tV
+		return
+	case string:
+		bs = []byte(tV)
+	case []byte:
+		bs = tV
+	default:
+		bs, _ = json.Marshal(data)
+	}
+	_ = json.Unmarshal(bs, res)
+	return
+}
+
+func ToConfig(data interface{}) (res *Config) {
+	res = &Config{}
+	var bs []byte
+	switch tV := data.(type) {
+	case Config:
+		res = &tV
+		return
+	case *Config:
+		res = tV
+		return
+	case string:
+		bs = []byte(tV)
+	case []byte:
+		bs = tV
+	default:
+		bs, _ = json.Marshal(data)
+	}
+	_ = json.Unmarshal(bs, res)
+	return
+}
+
+func ToParam(data interface{}) (res *Param) {
+	res = &Param{}
+	var bs []byte
+	switch tV := data.(type) {
+	case Param:
+		res = &tV
+		return
+	case *Param:
+		res = tV
+		return
+	case string:
+		bs = []byte(tV)
+	case []byte:
+		bs = tV
+	default:
+		bs, _ = json.Marshal(data)
+	}
+	_ = json.Unmarshal(bs, res)
+	return
 }
