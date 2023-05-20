@@ -12,7 +12,7 @@ type IService interface {
 	GetClient(args ...Arg) (client redis.Cmdable, err error)
 	// Info 获取 redis 信息
 	Info(args ...Arg) (res string, err error)
-	// Keys 模糊 搜索 key，如 `xx*` 搜索
+	// Keys 模糊 搜索 key，如 "xx*" 搜索
 	Keys(pattern string, args ...Arg) (keysResult *KeysResult, err error)
 	// Expire 设置 key 过期时间 让给定键在指定的秒数之后过期
 	Expire(key string, expire int64, args ...Arg) (res bool, err error)
