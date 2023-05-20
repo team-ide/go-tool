@@ -56,15 +56,19 @@ func TestGenContextService(t *testing.T) {
 			}
 
 			funcName := line[0:strings.Index(line, "(")]
-			var commandLines []string
-			var lastComment string
+			var comment string
 			var i = row - 1
 			for {
 				if !strings.HasPrefix(lines[i], "//") {
 					break
 				}
-				lastComment = lines[i]
-				commandLines = append(commandLines, lastComment)
+				str := lines[i]
+				str = strings.TrimSpace(str[2:])
+				if comment != "" {
+					comment = str + "\n" + comment
+				} else {
+					comment = str
+				}
 				i--
 			}
 			vv := []rune(funcName)
@@ -74,17 +78,14 @@ func TestGenContextService(t *testing.T) {
 			if vv[0] >= 97 && vv[0] <= 122 {
 				continue
 			}
-			var fS = "// " + funcName + " "
-			//fmt.Println("lastComment", lastComment, ",fS", fS)
-			if !strings.HasPrefix(lastComment, fS) {
+			fmt.Println(comment)
+			var fS = funcName + " "
+			if !strings.HasPrefix(comment, fS) {
 				continue
 			}
 			funcInfo := &context_map.FuncInfo{
 				Name:    funcName,
-				Comment: lastComment[len(fS):],
-			}
-			for i = len(commandLines) - 1; i >= 0; i-- {
-				fmt.Println(commandLines[i])
+				Comment: comment[len(fS):],
 			}
 			fmt.Println(serviceName, ".", funcName)
 			serviceInfo.FuncList = append(serviceInfo.FuncList, funcInfo)
@@ -104,7 +105,6 @@ func init() {
 `
 	for _, serviceInfo := range serviceList {
 		comment := serviceInfo.Comment
-		comment = strings.ReplaceAll(comment, `"`, `\"`)
 		name := serviceInfo.Name
 		vv := []rune(name)
 		if vv[1] >= 97 && vv[1] <= 122 {
@@ -113,12 +113,11 @@ func init() {
 		genContent += `
 	` + serviceInfo.Module + `.Service = &context_map.ServiceInfo{
 		Name:    "` + name + `",
-		Comment: "` + comment + `",
+		Comment: ` + "`" + comment + "`" + `,
 		FuncList: []*context_map.FuncInfo{
 `
 		for _, funcInfo := range serviceInfo.FuncList {
 			comment := funcInfo.Comment
-			comment = strings.ReplaceAll(comment, `"`, `\"`)
 			name := funcInfo.Name
 			vv := []rune(name)
 			if vv[1] >= 97 && vv[1] <= 122 {
@@ -127,7 +126,7 @@ func init() {
 			genContent += `
 			{
 				Name:    "` + name + `",
-				Comment: "` + comment + `",
+				Comment: ` + "`" + comment + "`" + `,
 			},`
 			fmt.Println(serviceInfo.Name, ".", funcInfo.Name, ":", funcInfo.Comment)
 		}

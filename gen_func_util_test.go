@@ -34,21 +34,18 @@ func TestGenFuncUtil(t *testing.T) {
 				continue
 			}
 			funcName := line[len("func "):strings.Index(line, "(")]
-			var commandLines []string
-			var startComment string
 			var comment string
 			var i = row - 1
 			for {
 				if !strings.HasPrefix(lines[i], "//") {
 					break
 				}
-				startComment = lines[i]
-				startComment = strings.TrimSpace(startComment[2:])
-				commandLines = append(commandLines, startComment)
+				str := lines[i]
+				str = strings.TrimSpace(str[2:])
 				if comment != "" {
-					comment = startComment + "\n" + comment
+					comment = str + "\n" + comment
 				} else {
-					comment = startComment
+					comment = str
 				}
 				i--
 			}
@@ -91,7 +88,7 @@ func init() {
 `
 	for _, funcInfo := range funcInfoList {
 		comment := funcInfo.Comment
-		comment = strings.ReplaceAll(comment, `"`, `\"`)
+		//comment = strings.ReplaceAll(comment, `"`, `\"`)
 		name := funcInfo.Name
 		vv := []rune(name)
 		if vv[1] >= 97 && vv[1] <= 122 {
