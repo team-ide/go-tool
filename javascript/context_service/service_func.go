@@ -365,7 +365,7 @@ func init() {
 			},
 			{
 				Name:    "keys",
-				Comment: `模糊 搜索 key，如 `xx*` 搜索`,
+				Comment: `模糊 搜索 key，如 "xx*" 搜索`,
 			},
 			{
 				Name:    "expire",
