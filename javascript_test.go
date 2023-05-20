@@ -14,7 +14,7 @@ func TestJavascriptService(t *testing.T) {
 	script := `
 let config = {
 	address:"127.0.0.1:6379",
-	auth:"q7ZtCl^5S3",
+	auth:"",
 };
 start = util.GetNowMilli()
 let redisService = redis.newService(config);
