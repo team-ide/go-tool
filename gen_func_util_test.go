@@ -35,14 +35,21 @@ func TestGenFuncUtil(t *testing.T) {
 			}
 			funcName := line[len("func "):strings.Index(line, "(")]
 			var commandLines []string
-			var lastComment string
+			var startComment string
+			var comment string
 			var i = row - 1
 			for {
 				if !strings.HasPrefix(lines[i], "//") {
 					break
 				}
-				lastComment = lines[i]
-				commandLines = append(commandLines, lastComment)
+				startComment = lines[i]
+				startComment = strings.TrimSpace(startComment[2:])
+				commandLines = append(commandLines, startComment)
+				if comment != "" {
+					comment = startComment + "\n" + comment
+				} else {
+					comment = startComment
+				}
 				i--
 			}
 			vv := []rune(funcName)
@@ -52,16 +59,14 @@ func TestGenFuncUtil(t *testing.T) {
 			if vv[0] >= 97 && vv[0] <= 122 {
 				continue
 			}
-			var fS = "// " + funcName + " "
-			if !strings.HasPrefix(lastComment, fS) {
+			fmt.Println(comment)
+			var fS = funcName + " "
+			if !strings.HasPrefix(comment, fS) {
 				continue
 			}
 			funcInfo := &context_map.FuncInfo{
 				Name:    funcName,
-				Comment: lastComment[len(fS):],
-			}
-			for i = len(commandLines) - 1; i >= 0; i-- {
-				fmt.Println(commandLines[i])
+				Comment: comment[len(fS):],
 			}
 			fmt.Println("funcName", funcName)
 			funcInfoList = append(funcInfoList, funcInfo)
@@ -95,7 +100,7 @@ func init() {
 		genContent += `
 		{
 			Name:    "` + name + `",
-			Comment: "` + comment + `",
+			Comment: ` + "`" + comment + "`" + `,
 			Func:    util.` + funcInfo.Name + `,
 		},`
 		fmt.Println(funcInfo.Name, ":", funcInfo.Comment)

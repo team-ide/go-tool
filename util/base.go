@@ -10,6 +10,7 @@ import (
 // IsEmpty 是否为nil或空字符串
 // @param v interface{} "传入任意值"
 // @return bool
+// IsEmpty(arg)
 func IsEmpty(v interface{}) bool {
 	if v == nil || v == "" {
 		return true
@@ -20,6 +21,7 @@ func IsEmpty(v interface{}) bool {
 // IsNotEmpty 是否不为nil或空字符串
 // @param v interface{} "传入任意值"
 // @return bool
+// IsNotEmpty(arg)
 func IsNotEmpty(v interface{}) bool {
 	return !IsEmpty(v)
 }
@@ -27,6 +29,7 @@ func IsNotEmpty(v interface{}) bool {
 // IsNull 是否为nil
 // @param v interface{} "传入任意值"
 // @return bool
+// IsNull(arg)
 func IsNull(v interface{}) bool {
 	if v == nil {
 		return true
@@ -37,6 +40,7 @@ func IsNull(v interface{}) bool {
 // IsNotNull 是否不为nil或空字符串
 // @param v interface{} "传入任意值"
 // @return bool
+// IsNotNull(arg)
 func IsNotNull(v interface{}) bool {
 	return !IsNull(v)
 }
@@ -44,6 +48,7 @@ func IsNotNull(v interface{}) bool {
 // IsTrue 是否为真 判断是true、"true"、1、"1"
 // @param v interface{} "传入任意值"
 // @return bool
+// IsTrue(arg)
 func IsTrue(v interface{}) (res bool) {
 	if v == true || v == "true" || v == 1 || v == "1" {
 		res = true
@@ -54,11 +59,13 @@ func IsTrue(v interface{}) (res bool) {
 // IsFalse 是否为否 判断不是true、"true"、1、"1"
 // @param v interface{} "传入任意值"
 // @return bool
+// IsFalse(arg)
 func IsFalse(v interface{}) (res bool) {
 	return !IsTrue(v)
 }
 
 // IntIndexOf 返回 某个值 在数组中的索引位置，未找到返回 -1
+// IntIndexOf([1,2,3], 2)
 func IntIndexOf(array []int, v int) (index int) {
 	index = -1
 	size := len(array)
@@ -72,6 +79,7 @@ func IntIndexOf(array []int, v int) (index int) {
 }
 
 // Int64IndexOf 返回 某个值 在数组中的索引位置，未找到返回 -1
+// Int64IndexOf([1,2,3], 2)
 func Int64IndexOf(array []int64, v int64) (index int) {
 	index = -1
 	size := len(array)
@@ -85,6 +93,7 @@ func Int64IndexOf(array []int64, v int64) (index int) {
 }
 
 // StringIndexOf 返回 某个值 在数组中的索引位置，未找到返回 -1
+// StringIndexOf(["a", "b", "c"], "d")
 func StringIndexOf(array []string, v string) (index int) {
 	index = -1
 	size := len(array)
@@ -98,6 +107,7 @@ func StringIndexOf(array []string, v string) (index int) {
 }
 
 // ArrayIndexOf 返回 某个值 在数组中的索引位置，未找到返回 -1
+// ArrayIndexOf(["a", "b", "c"], "d")
 func ArrayIndexOf(array interface{}, v interface{}) (index int) {
 	index = -1
 	vOf := reflect.ValueOf(array)
@@ -123,7 +133,6 @@ var (
 	tempDir = ""
 )
 
-// SetTempDir 设置临时目录
 func SetTempDir(dir string) {
 	tempDir = dir
 }
@@ -154,12 +163,19 @@ func GetTempDir() (dir string, err error) {
 	return
 }
 
-// NewWaitGroup 创建 WaitGroup
+// NewWaitGroup 创建 WaitGroup ，
+// obj = NewWaitGroup()
+// obj.Add(1)
+// obj.Done()
+// obj.Wait()
 func NewWaitGroup() *sync.WaitGroup {
 	return &sync.WaitGroup{}
 }
 
 // NewLocker 创建 Mutex Locker
+// obj = NewLocker()
+// obj.Lock()
+// obj.Unlock()
 func NewLocker() sync.Locker {
 	return &sync.Mutex{}
 }

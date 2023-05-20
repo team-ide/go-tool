@@ -15,9 +15,10 @@ var (
 		Comment: "Redis 模块",
 		FuncList: []*context_map.FuncInfo{
 			{
-				Name:    "newService",
-				Comment: "新建 Redis 服务",
-				Func:    redis.NewServiceScript,
+				Name: "newService",
+				Comment: `新建 Redis 服务
+redisService = redis.newService({address:"127.0.0.1:6379",auth:""})`,
+				Func: redis.NewServiceScript,
 			}, {
 				Name:    "newParam",
 				Comment: "新建 Redis 参数",
@@ -39,9 +40,10 @@ var (
 		Comment: "Zookeeper 模块",
 		FuncList: []*context_map.FuncInfo{
 			{
-				Name:    "newService",
-				Comment: "新建 Zookeeper 服务",
-				Func:    zookeeper.NewServiceScript,
+				Name: "newService",
+				Comment: `新建 Zookeeper 服务
+zookeeperService = zookeeper.newService({address:"127.0.0.1:2181"})`,
+				Func: zookeeper.NewServiceScript,
 			},
 		},
 	}
@@ -51,9 +53,10 @@ var (
 		Comment: "Kafka 模块",
 		FuncList: []*context_map.FuncInfo{
 			{
-				Name:    "newService",
-				Comment: "新建 Kafka 服务",
-				Func:    kafka.NewServiceScript,
+				Name: "newService",
+				Comment: `新建 Kafka 服务
+kafkaService = kafka.newService({address:"127.0.0.1:9092"})`,
+				Func: kafka.NewServiceScript,
 			},
 		},
 	}
@@ -63,9 +66,10 @@ var (
 		Comment: "Elasticsearch 模块",
 		FuncList: []*context_map.FuncInfo{
 			{
-				Name:    "newService",
-				Comment: "新建 Elasticsearch 服务",
-				Func:    elasticsearch.NewServiceScript,
+				Name: "newService",
+				Comment: `新建 Elasticsearch 服务
+elasticsearchService = elasticsearch.newService({url:"http://127.0.0.1:9200"})`,
+				Func: elasticsearch.NewServiceScript,
 			},
 		},
 	}
@@ -75,28 +79,29 @@ var (
 		Comment: "Db 模块",
 		FuncList: []*context_map.FuncInfo{
 			{
-				Name:    "newService",
-				Comment: "新建 Db 服务",
-				Func:    db.NewServiceScript,
+				Name: "newService",
+				Comment: `新建 Db 服务
+dbService = db.newService({host:"127.0.0.1", port: 3306, username: "root", password: "123456", database: "test_db"})`,
+				Func: db.NewServiceScript,
 			},
 			{
 				Name:    "toConfig",
-				Comment: "任意对象转为 Config 用于数据库连接等",
+				Comment: `任意对象转为 Config 用于数据库连接等`,
 				Func:    db.ToConfig,
 			},
 			{
 				Name:    "toOwnerModel",
-				Comment: "任意对象转为 OwnerModel 用于创建 数据库等",
+				Comment: `任意对象转为 OwnerModel 用于创建 数据库等`,
 				Func:    db.ToOwnerModel,
 			},
 			{
 				Name:    "toTableModel",
-				Comment: "任意对象转为 TableModel 用于创建 表等",
+				Comment: `任意对象转为 TableModel 用于创建 表等`,
 				Func:    db.ToTableModel,
 			},
 			{
 				Name:    "toColumnModel",
-				Comment: "任意对象转为 ColumnModel 用于创建 字段等",
+				Comment: `任意对象转为 ColumnModel 用于创建 字段等`,
 				Func:    db.ToColumnModel,
 			},
 			{

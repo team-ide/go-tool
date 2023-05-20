@@ -12,6 +12,7 @@ import (
 // FirstToUpper 字符首字母大写
 // @param str string "任意字符串"
 // @return string
+// FirstToUpper("abc")
 func FirstToUpper(str string) (res string) {
 	if str == "" {
 		return
@@ -24,6 +25,7 @@ func FirstToUpper(str string) (res string) {
 // FirstToLower 字符首字母小写
 // @param str string "任意字符串"
 // @return string
+// FirstToLower("Abc")
 func FirstToLower(str string) (res string) {
 	if str == "" {
 		return
@@ -34,6 +36,7 @@ func FirstToLower(str string) (res string) {
 }
 
 // Marshal 转换为大驼峰命名法则 首字母大写，“_” 忽略后大写
+// Marshal("abc_def")
 func Marshal(name string) string {
 	if name == "" {
 		return ""
@@ -57,6 +60,7 @@ func Marshal(name string) string {
 // GetStringValue 将传入的值转为字符串
 // @param value interface{} "任意值"
 // @return string
+// GetStringValue(arg)
 func GetStringValue(value interface{}) (valueString string) {
 	if value == nil {
 		return ""
@@ -111,6 +115,7 @@ func GetStringValue(value interface{}) (valueString string) {
 // ToPinYin 将姓名转为拼音
 // @param name string "姓名"
 // @return string
+// ToPinYin("张三")
 func ToPinYin(name string) (res string, err error) {
 	// InitialsInCapitals: 首字母大写, 不带音调
 	// WithoutTone: 全小写,不带音调
@@ -142,6 +147,7 @@ var (
 // @param minLen int "最小长度"
 // @param maxLen int "最大长度"
 // @return string
+// RandomString(2, 20)
 func RandomString(minLen int, maxLen int) (res string) {
 	size := minLen
 	if maxLen > minLen {
@@ -200,6 +206,7 @@ var (
 // RandomUserName 随机姓名
 // @param size int "名长度"
 // @return string
+// RandomUserName(2)
 func RandomUserName(size int) (res string) {
 
 	randomNum := 0
@@ -216,6 +223,7 @@ func RandomUserName(size int) (res string) {
 // input string 原字符串
 // padLength int 规定补齐后的字符串长度
 // padString string 自定义填充字符串
+// StrPadLeft("xx", 5, "0") 左侧补”0“达到5位长度
 func StrPadLeft(input string, padLength int, padString string) string {
 
 	output := ""
@@ -242,6 +250,7 @@ func StrPadLeft(input string, padLength int, padString string) string {
 // input string 原字符串
 // padLength int 规定补齐后的字符串长度
 // padString string 自定义填充字符串
+// StrPadRight("xx", 5, "0") 右侧补”0“达到5位长度
 func StrPadRight(input string, padLength int, padString string) string {
 
 	output := ""

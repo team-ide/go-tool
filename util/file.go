@@ -24,6 +24,7 @@ func GetRootDir() string {
 }
 
 // FormatPath 格式化路径
+// FormatPath("/x/x/xxx\xx\xx")
 func FormatPath(path string) string {
 
 	var abs string
@@ -36,6 +37,7 @@ func FormatPath(path string) string {
 }
 
 // GetAbsolutePath 获取路径觉得路径
+// GetAbsolutePath("/x/x/xxx\xx\xx")
 func GetAbsolutePath(path string) (absolutePath string) {
 	var abs string
 	abs, _ = filepath.Abs(path)
@@ -45,6 +47,7 @@ func GetAbsolutePath(path string) (absolutePath string) {
 }
 
 // PathExists 路径文件是否存在
+// PathExists("/x/x/xxx\xx\xx")
 func PathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
@@ -57,6 +60,7 @@ func PathExists(path string) (bool, error) {
 }
 
 // LoadDirFiles 加载目录下文件 读取文件内容（key为文件名为相对路径）
+// LoadDirFiles("/x/x/xxx\xx\xx")
 func LoadDirFiles(dir string) (fileMap map[string][]byte, err error) {
 	fileMap = map[string][]byte{}
 	var exist bool
@@ -99,6 +103,7 @@ func LoadDirFiles(dir string) (fileMap map[string][]byte, err error) {
 }
 
 // LoadDirFilenames 加载目录下文件（文件名为相对路径）
+// LoadDirFilenames("/x/x/xxx\xx\xx")
 func LoadDirFilenames(dir string) (filenames []string, err error) {
 	var exist bool
 	exist, err = PathExists(dir)
@@ -130,6 +135,7 @@ func LoadDirFilenames(dir string) (filenames []string, err error) {
 }
 
 // ReadFile 读取文件内容 返回 []byte
+// ReadFile("/x/x/xxx\xx\xx")
 func ReadFile(filename string) (bs []byte, err error) {
 	var f *os.File
 	var exists bool
@@ -154,6 +160,7 @@ func ReadFile(filename string) (bs []byte, err error) {
 }
 
 // ReadFileString 读取文件内容 返回字符串
+// ReadFileString("/x/x/xxx\xx\xx")
 func ReadFileString(filename string) (str string, err error) {
 	bs, err := ReadFile(filename)
 	if err != nil {
@@ -163,7 +170,14 @@ func ReadFileString(filename string) (str string, err error) {
 	return
 }
 
-// WriteFile 写入文件内容
+// StringToBytes 字符串转为 []byte
+// StringToBytes("这是文本")
+func StringToBytes(str string) []byte {
+	return []byte(str)
+}
+
+// WriteFile 写入文件内容,
+// WriteFile("/x/x/xxx\xx\xx", StringToBytes("这是文本"))
 func WriteFile(filename string, bs []byte) (err error) {
 	f, err := os.Create(filename)
 	if err != nil {
@@ -178,11 +192,13 @@ func WriteFile(filename string, bs []byte) (err error) {
 }
 
 // WriteFileString 写入文件内容
+// WriteFileString("/x/x/xxx\xx\xx", "这是文本")
 func WriteFileString(filename string, str string) (err error) {
 	return WriteFile(filename, []byte(str))
 }
 
 // ReadLine 逐行读取文件
+// ReadLine("/x/x/xxx\xx\xx")
 func ReadLine(filename string) (lines []string, err error) {
 	f, err := os.Open(filename)
 	if err != nil {
@@ -196,7 +212,7 @@ func ReadLine(filename string) (lines []string, err error) {
 		if err != nil {
 			if err == io.EOF { //读取结束，会报EOF
 				err = nil
-				return
+				break
 			}
 			return nil, err
 		}

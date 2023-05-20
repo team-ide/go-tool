@@ -14,7 +14,8 @@ import (
 // 公钥: 根据私钥生成
 //openssl rsa -in rsa_private_key.pem -pubout -out rsa_public_key.pem
 
-// RsaEncryptByKey RSA加密
+// RsaEncryptByKey RSA加密，返回 base64 字符
+// RsaEncryptByKey("这是需要加密的文本", "这是密钥")
 func RsaEncryptByKey(origData string, publicKey string) (res string, err error) {
 	bs, err := RsaEncrypt([]byte(origData), []byte(publicKey))
 	if err != nil {
@@ -26,9 +27,10 @@ func RsaEncryptByKey(origData string, publicKey string) (res string, err error) 
 }
 
 // RsaDecryptByKey RSA解密
-func RsaDecryptByKey(crypted string, privateKey string) (res string, err error) {
+// RsaDecryptByKey("这是加密后的文本", "这是密钥")
+func RsaDecryptByKey(decrypt string, privateKey string) (res string, err error) {
 	// 经过一次base64 否则 直接转字符串乱码
-	bs, err := base64.StdEncoding.DecodeString(crypted)
+	bs, err := base64.StdEncoding.DecodeString(decrypt)
 	if err != nil {
 		return
 	}
@@ -40,7 +42,6 @@ func RsaDecryptByKey(crypted string, privateKey string) (res string, err error) 
 	return
 }
 
-// RsaEncrypt 加密
 func RsaEncrypt(origData []byte, publicKey []byte) ([]byte, error) {
 	//解密pem格式的公钥
 	block, _ := pem.Decode(publicKey)
@@ -58,7 +59,6 @@ func RsaEncrypt(origData []byte, publicKey []byte) ([]byte, error) {
 	return rsa.EncryptPKCS1v15(rand.Reader, pub, origData)
 }
 
-// RsaDecrypt 解密
 func RsaDecrypt(ciphertext []byte, privateKey []byte) ([]byte, error) {
 	//解密
 	block, _ := pem.Decode(privateKey)

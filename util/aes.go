@@ -8,21 +8,23 @@ import (
 	"errors"
 )
 
-//AesEncryptCBCByKey AES加密,CBC
+// AesEncryptCBCByKey AES加密,CBC模式，返回 base64 字符
+// AesEncryptCBCByKey("这是需要加密的文本", "这是密钥")
 func AesEncryptCBCByKey(origData string, key string) (res string, err error) {
 	bs, err := AesCBCEncrypt([]byte(origData), []byte(key))
 	if err != nil {
 		return
 	}
-	// 经过一次base64 否则 直接转字符串乱码
+	// 经过一次 base64 否则 直接转字符串乱码
 	res = base64.StdEncoding.EncodeToString(bs)
 	return
 }
 
-//AesDecryptCBCByKey AES解密,CBC
-func AesDecryptCBCByKey(crypted string, key string) (res string, err error) {
+// AesDecryptCBCByKey AES解密,CBC模式
+// AesDecryptCBCByKey("这是加密后的文本", "这是密钥")
+func AesDecryptCBCByKey(encrypt string, key string) (res string, err error) {
 	// 经过一次base64 否则 直接转字符串乱码
-	bs, err := base64.StdEncoding.DecodeString(crypted)
+	bs, err := base64.StdEncoding.DecodeString(encrypt)
 	if err != nil {
 		return
 	}
@@ -34,7 +36,8 @@ func AesDecryptCBCByKey(crypted string, key string) (res string, err error) {
 	return
 }
 
-//AesEncryptECBByKey AES加密,ECB
+// AesEncryptECBByKey AES加密,ECB模式，返回 base64 字符
+// AesEncryptECBByKey("这是需要加密的文本", "这是密钥")
 func AesEncryptECBByKey(origData string, key string) (res string, err error) {
 	bs, err := AesECBEncrypt([]byte(origData), []byte(key))
 	if err != nil {
@@ -45,10 +48,11 @@ func AesEncryptECBByKey(origData string, key string) (res string, err error) {
 	return
 }
 
-//AesDecryptECBByKey AES解密,ECB
-func AesDecryptECBByKey(crypted string, key string) (res string, err error) {
+// AesDecryptECBByKey AES解密,ECB模式
+// AesDecryptECBByKey("这是加密后的文本", "这是密钥")
+func AesDecryptECBByKey(encrypt string, key string) (res string, err error) {
 	// 经过一次base64 否则 直接转字符串乱码
-	bs, err := base64.StdEncoding.DecodeString(crypted)
+	bs, err := base64.StdEncoding.DecodeString(encrypt)
 	if err != nil {
 		return
 	}
@@ -60,7 +64,6 @@ func AesDecryptECBByKey(crypted string, key string) (res string, err error) {
 	return
 }
 
-//AesECBEncrypt ECB模式加密
 func AesECBEncrypt(data, key []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -81,7 +84,6 @@ func AesECBEncrypt(data, key []byte) ([]byte, error) {
 	return out, nil
 }
 
-//AesCBCEncrypt CBC模式加密
 func AesCBCEncrypt(origData, key []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -103,7 +105,6 @@ func PKCS5Padding(ciphertext []byte, blockSize int) []byte {
 	return append(ciphertext, padtext...)
 }
 
-//AesECBDecrypt ECB模式解密
 func AesECBDecrypt(data, key []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -124,16 +125,15 @@ func AesECBDecrypt(data, key []byte) ([]byte, error) {
 	return out, nil
 }
 
-//AesCBCDecrypt CBC模式解密
-func AesCBCDecrypt(crypted, key []byte) ([]byte, error) {
+func AesCBCDecrypt(encrypt, key []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
 	blockMode := cipher.NewCBCDecrypter(block, key)
-	//origData := make([]byte, len(crypted))
-	origData := crypted
-	blockMode.CryptBlocks(origData, crypted)
+	//origData := make([]byte, len(encrypt))
+	origData := encrypt
+	blockMode.CryptBlocks(origData, encrypt)
 	//origData = PKCS5UnPadding(origData)
 	origData = PKCS5UnPadding(origData)
 	return origData, nil
@@ -141,6 +141,6 @@ func AesCBCDecrypt(crypted, key []byte) ([]byte, error) {
 
 func PKCS5UnPadding(origData []byte) []byte {
 	length := len(origData)
-	unpadding := int(origData[length-1])
-	return origData[:(length - unpadding)]
+	l := int(origData[length-1])
+	return origData[:(length - l)]
 }
