@@ -97,14 +97,24 @@ func (this_ *executeTask) execExecuteSQL(executeSql string,
 	executeData["sql"] = executeSql
 	executeData["startTime"] = util.GetFormatByTime(startTime)
 
+	// 如果 是 mysql 开启 profiling
+	if this_.dia.DialectType() == dialect.TypeMysql {
+		_, _ = exec("SET profiling = 1")
+	}
+
 	defer func() {
+
 		var endTime = time.Now()
 		executeData["endTime"] = util.GetFormatByTime(endTime)
 		executeData["isEnd"] = true
 		executeData["useTime"] = util.GetMilliByTime(endTime) - util.GetMilliByTime(startTime)
 		if err != nil {
 			executeData["error"] = err.Error()
-			return
+		}
+		// 如果 是 mysql 关闭 profiling
+		if this_.dia.DialectType() == dialect.TypeMysql {
+			executeData["profiling"], _ = queryProfiling(query)
+			_, _ = exec("SET profiling = 0")
 		}
 	}()
 
@@ -122,74 +132,15 @@ func (this_ *executeTask) execExecuteSQL(executeSql string,
 		defer func() {
 			_ = rows.Close()
 		}()
-		var columnTypes []*sql.ColumnType
-		columnTypes, err = rows.ColumnTypes()
+		var columnList []map[string]interface{}
+		var dataList []map[string]interface{}
+		columnList, dataList, err = RowsToListMap(rows)
 		if err != nil {
 			return
 		}
 
-		var columnList []map[string]interface{}
-		if len(columnTypes) > 0 {
-			for _, columnType := range columnTypes {
-				column := map[string]interface{}{}
-				column["name"] = columnType.Name()
-				column["type"] = columnType.DatabaseTypeName()
-				columnList = append(columnList, column)
-			}
-		}
 		executeData["columnList"] = columnList
-		var dataList []map[string]interface{}
-		for rows.Next() {
-			cache := worker.GetSqlValueCache(columnTypes) //临时存储每行数据
-			err = rows.Scan(cache...)
-			if err != nil {
-				return
-			}
-			item := make(map[string]interface{})
-			for index, data := range cache {
-				name := columnTypes[index].Name()
-				var v interface{}
-				switch tV := data.(type) {
-				case time.Time:
-					if tV.IsZero() {
-						v = nil
-					} else {
-						v = util.GetMilliByTime(tV)
-					}
-				default:
-					v = worker.GetSqlValue(columnTypes[index], data)
-				}
-				if v == nil {
-					item[name] = v
-				} else {
-					switch tV := v.(type) {
-					case time.Time:
-						if tV.IsZero() {
-							item[name] = nil
-						} else {
-							item[name] = util.GetMilliByTime(tV)
-						}
-					case float64:
-						if tV >= float64(9007199254740991) || tV <= float64(-9007199254740991) {
-							item[name] = fmt.Sprintf("%f", tV)
-						} else {
-							item[name] = tV
-						}
-					case int64:
-						if tV >= int64(9007199254740991) || tV <= int64(-9007199254740991) {
-							item[name] = fmt.Sprintf("%d", tV)
-						} else {
-							item[name] = tV
-						}
-					case int, int8, int16, int32:
-						item[name] = tV
-					default:
-						item[name] = fmt.Sprint(tV)
-					}
-				}
-			}
-			dataList = append(dataList, item)
-		}
+
 		executeData["dataList"] = dataList
 	} else if strings.HasPrefix(str, "insert") {
 		executeData["isInsert"] = true
@@ -225,5 +176,115 @@ func (this_ *executeTask) execExecuteSQL(executeSql string,
 		executeData["rowsAffected"], _ = result.RowsAffected()
 	}
 
+	return
+}
+
+func queryProfiling(query func(query string, args ...any) (*sql.Rows, error)) (profilingData map[string]interface{}, err error) {
+	profilingData = map[string]interface{}{}
+	var columnList []map[string]interface{}
+	var dataList []map[string]interface{}
+
+	// 查询
+	var rows *sql.Rows
+	rows, err = query("SHOW PROFILES")
+	if err != nil {
+		return
+	}
+	columnList, dataList, err = RowsToListMap(rows)
+	_ = rows.Close()
+	if err != nil {
+		return
+	}
+	profilingData["profilesColumnList"] = columnList
+	profilingData["profilesDataList"] = dataList
+
+	for _, data := range dataList {
+		if data == nil || data["Query_ID"] == nil {
+			continue
+		}
+
+		rows, err = query("SHOW PROFILE CPU, BLOCK IO FOR QUERY " + util.GetStringValue(data["Query_ID"]))
+		if err != nil {
+			continue
+		}
+		columnList, dataList, err = RowsToListMap(rows)
+		_ = rows.Close()
+		if err != nil {
+			return
+		}
+		data["profileColumnList"] = columnList
+		data["profileDataList"] = dataList
+
+	}
+
+	return
+}
+
+func RowsToListMap(rows *sql.Rows) (columnList []map[string]interface{}, dataList []map[string]interface{}, err error) {
+	var columnTypes []*sql.ColumnType
+	columnTypes, err = rows.ColumnTypes()
+	if err != nil {
+		return
+	}
+
+	if len(columnTypes) > 0 {
+		for _, columnType := range columnTypes {
+			column := map[string]interface{}{}
+			column["name"] = columnType.Name()
+			column["type"] = columnType.DatabaseTypeName()
+			columnList = append(columnList, column)
+		}
+	}
+	for rows.Next() {
+		cache := worker.GetSqlValueCache(columnTypes) //临时存储每行数据
+		err = rows.Scan(cache...)
+		if err != nil {
+			return
+		}
+		item := make(map[string]interface{})
+		for index, data := range cache {
+			name := columnTypes[index].Name()
+			var v interface{}
+			switch tV := data.(type) {
+			case time.Time:
+				if tV.IsZero() {
+					v = nil
+				} else {
+					v = util.GetMilliByTime(tV)
+				}
+			default:
+				v = worker.GetSqlValue(columnTypes[index], data)
+			}
+			if v == nil {
+				item[name] = v
+			} else {
+				switch tV := v.(type) {
+				case time.Time:
+					if tV.IsZero() {
+						item[name] = nil
+					} else {
+						item[name] = util.GetMilliByTime(tV)
+					}
+				case float64:
+					if tV >= float64(9007199254740991) || tV <= float64(-9007199254740991) {
+						item[name] = fmt.Sprintf("%f", tV)
+					} else {
+						item[name] = tV
+					}
+				case int64:
+					if tV >= int64(9007199254740991) || tV <= int64(-9007199254740991) {
+						item[name] = fmt.Sprintf("%d", tV)
+					} else {
+						item[name] = tV
+					}
+				case int, int8, int16, int32:
+					item[name] = tV
+				default:
+					item[name] = fmt.Sprint(tV)
+				}
+			}
+		}
+		dataList = append(dataList, item)
+	}
 	return
 }
