@@ -267,14 +267,23 @@ func ReadStructField(ctx context.Context, outProtocol thrift.TProtocol, field *F
 	return v, nil
 }
 
-func ReadMap(ctx context.Context, protocol thrift.TProtocol, keyType *FieldType, valueType *FieldType) (interface{}, error) {
-	res := map[interface{}]interface{}{}
+func ReadMap(ctx context.Context, protocol thrift.TProtocol, keyType *FieldType, valueType *FieldType) (res interface{}, err error) {
 	var keyTypeId thrift.TType
 	var valueTypeId thrift.TType
 	var size int
-	var err error
 	if keyTypeId, valueTypeId, size, err = protocol.ReadMapBegin(ctx); err != nil {
 		return nil, thrift.PrependError(fmt.Sprintf("%T read map begin error: ", keyType), err)
+	}
+	var doubleMap = map[float64]interface{}{}
+	var intMap = map[int64]interface{}{}
+	var stringMap = map[string]interface{}{}
+	switch keyTypeId {
+	case thrift.DOUBLE:
+		res = doubleMap
+	case thrift.BYTE, thrift.I16, thrift.I32, thrift.I64:
+		res = intMap
+	default:
+		res = stringMap
 	}
 	for i := 0; i < size; i++ {
 		var k interface{}
@@ -285,7 +294,15 @@ func ReadMap(ctx context.Context, protocol thrift.TProtocol, keyType *FieldType,
 		if v, err = ReadByType(ctx, protocol, valueType, valueTypeId); err != nil {
 			return nil, err
 		}
-		res[k] = v
+
+		switch keyTypeId {
+		case thrift.DOUBLE:
+			doubleMap[util.StringToFloat64(util.GetStringValue(k))] = v
+		case thrift.BYTE, thrift.I16, thrift.I32, thrift.I64:
+			intMap[util.StringToInt64(util.GetStringValue(k))] = v
+		default:
+			stringMap[util.GetStringValue(k)] = v
+		}
 	}
 	if err = protocol.ReadMapEnd(ctx); err != nil {
 		return nil, thrift.PrependError("read map end error: ", err)
