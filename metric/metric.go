@@ -13,7 +13,6 @@ func NewMetric() (res *Metric) {
 		countLocker:  &sync.Mutex{},
 		items:        &[]*Item{},
 		secondCounts: map[int]*Count{},
-		minuteCounts: map[int]*Count{},
 	}
 	return
 }
@@ -24,8 +23,15 @@ type Metric struct {
 	countLocker  sync.Locker
 	count        *Count
 	secondCounts map[int]*Count
-	minuteCounts map[int]*Count
 	countStart   bool
+	countSecond  int // 统计间隔秒 如 每秒统计 输入 1 默认 10 秒统计
+}
+
+// SetCountSecond  统计间隔秒 如 每秒统计 输入 1 默认 10 秒统计
+func (this_ *Metric) SetCountSecond(countSecond int) *Metric {
+	this_.countSecond = countSecond
+
+	return this_
 }
 
 func (this_ *Metric) NewItem(workerIndex int, startTime time.Time) (item *Item) {
@@ -84,10 +90,13 @@ func (this_ *Metric) StartCount() {
 func (this_ *Metric) doCount() {
 	items := this_.GetAndCleanItems()
 
-	this_.doCountByDuration(items, int64(time.Second), this_.secondCounts)
-	this_.doCountByDuration(items, int64(time.Minute), this_.minuteCounts)
+	countSecond := this_.countSecond
+	if countSecond <= 0 {
+		countSecond = 10
+	}
+	this_.doCountByDuration(items, int64(time.Second)*int64(countSecond), this_.secondCounts)
 
-	toCounts := this_.getCountsByMap(this_.minuteCounts)
+	toCounts := this_.getCountsByMap(this_.secondCounts)
 	if len(toCounts) > 0 {
 		this_.count = this_.doCountByCounts(toCounts)
 		if this_.count != nil {
@@ -106,12 +115,6 @@ func (this_ *Metric) GetCount() (count *Count) {
 func (this_ *Metric) GetSecondCounts() (counts []*Count) {
 
 	counts = this_.getCountsByMap(this_.secondCounts)
-	return
-}
-
-func (this_ *Metric) GetMinuteCounts() (counts []*Count) {
-
-	counts = this_.getCountsByMap(this_.minuteCounts)
 	return
 }
 
@@ -337,40 +340,29 @@ func (this_ *Count) full(useTimes *[]int) {
 	this_.WorkerTotalTime = make(map[int]int64)
 	this_.WorkerTotal = make(map[int]string)
 	for workerIndex, startTime := range this_.WorkerStartTime {
-		if this_.WorkerEndTime[workerIndex] == 0 {
-			continue
-		}
 		this_.WorkerTotalTime[workerIndex] = this_.WorkerEndTime[workerIndex] - startTime
 		this_.WorkerTotalTime[workerIndex] -= this_.WorkerLossTime[workerIndex]
 		this_.WorkerTotal[workerIndex] = strconv.FormatFloat(float64(this_.WorkerTotalTime[workerIndex])/millF, 'f', 2, 64)
 	}
 
-	if this_.TotalTime > 0 {
-		this_.Total = strconv.FormatFloat(float64(this_.TotalTime)/millF, 'f', 2, 64)
-	}
-	if this_.UseTime > 0 {
-		this_.Use = strconv.FormatFloat(float64(this_.UseTime)/millF, 'f', 2, 64)
-	}
+	this_.Total = strconv.FormatFloat(float64(this_.TotalTime)/millF, 'f', 2, 64)
+	this_.Use = strconv.FormatFloat(float64(this_.UseTime)/millF, 'f', 2, 64)
 	// 总次数
 	this_.Count = this_.SuccessCount + this_.ErrorCount
 	// 计算 TPS
-	if this_.TotalTime > 0 && this_.Count > 0 {
+	if this_.Count > 0 {
 		this_.TpsValue = float64(this_.Count) / (float64(this_.TotalTime) / secF)
 		this_.Tps = strconv.FormatFloat(this_.TpsValue, 'f', 2, 64)
 	}
 
 	// 计算 平均
-	if this_.UseTime > 0 && this_.Count > 0 {
+	if this_.Count > 0 {
 		this_.AvgValue = float64(this_.UseTime) / float64(this_.Count) / millF
 		this_.Avg = strconv.FormatFloat(this_.AvgValue, 'f', 2, 64)
 	}
 
-	if this_.MinUseTime > 0 {
-		this_.Min = strconv.FormatFloat(float64(this_.MinUseTime)/millF, 'f', 2, 64)
-	}
-	if this_.MaxUseTime > 0 {
-		this_.Max = strconv.FormatFloat(float64(this_.MaxUseTime)/millF, 'f', 2, 64)
-	}
+	this_.Min = strconv.FormatFloat(float64(this_.MinUseTime)/millF, 'f', 2, 64)
+	this_.Max = strconv.FormatFloat(float64(this_.MaxUseTime)/millF, 'f', 2, 64)
 
 	if itemSize > 0 {
 

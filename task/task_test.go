@@ -27,15 +27,8 @@ func TestTask(t *testing.T) {
 	bs, _ := json.Marshal(task.Metric.GetCount())
 	fmt.Println(string(bs))
 
-	fmt.Println("-----分钟统计 开始------")
-	cs := task.Metric.GetMinuteCounts()
-	for _, c := range cs {
-		fmt.Println("分钟时间：", util.TimeFormat(time.UnixMilli(c.StartTime/int64(time.Millisecond)), "2006-01-02 15:04"))
-		bs, _ := json.Marshal(c)
-		fmt.Println(string(bs))
-	}
 	fmt.Println("-----秒统计 开始------")
-	cs = task.Metric.GetSecondCounts()
+	cs := task.Metric.GetSecondCounts()
 	for _, c := range cs {
 		fmt.Println("秒时间：", util.TimeFormat(time.UnixMilli(c.StartTime/int64(time.Millisecond)), "2006-01-02 15:04:05"))
 		bs, _ := json.Marshal(c)
