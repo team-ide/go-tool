@@ -136,6 +136,8 @@ func (this_ *Task) runDo() {
 	}()
 	util.Logger.Info("任务执行 [runDo]", zap.Any("Key", this_.Key))
 
+	this_.Metric.StartCount()
+
 	this_.waitGroup.Add(this_.Worker)
 
 	// 主工作线程  如果配置单线程执行 则无需开启其它线程
@@ -151,8 +153,6 @@ func (this_ *Task) runDo() {
 		}()
 	}
 	rootWorker.work()
-
-	this_.Metric.StartCount()
 
 	this_.waitGroup.Wait()
 

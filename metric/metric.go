@@ -90,6 +90,9 @@ func (this_ *Metric) doCount() {
 	toCounts := this_.getCountsByMap(this_.minuteCounts)
 	if len(toCounts) > 0 {
 		this_.count = this_.doCountByCounts(toCounts)
+		if this_.count != nil {
+			this_.count.useTimes = &[]int{}
+		}
 	}
 	return
 }
