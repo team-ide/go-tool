@@ -40,7 +40,7 @@ func New(options *Options) (task *Task, err error) {
 		nextLocker:    &sync.Mutex{},
 		counterLocker: &sync.Mutex{},
 		waitGroup:     &sync.WaitGroup{},
-		Metric:        &metric.Metric{},
+		Metric:        metric.NewMetric(),
 	}
 
 	return
@@ -132,6 +132,7 @@ func (this_ *Task) runDo() {
 			this_.Errors = append(this_.Errors, err)
 			util.Logger.Error("runDo error", zap.Error(err))
 		}
+		this_.Metric.StopCount()
 	}()
 	util.Logger.Info("任务执行 [runDo]", zap.Any("Key", this_.Key))
 
@@ -150,6 +151,8 @@ func (this_ *Task) runDo() {
 		}()
 	}
 	rootWorker.work()
+
+	this_.Metric.StartCount()
 
 	this_.waitGroup.Wait()
 

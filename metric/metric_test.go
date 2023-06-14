@@ -12,7 +12,7 @@ import (
 
 func TestMetric(t *testing.T) {
 
-	metric := &Metric{}
+	metric := NewMetric()
 
 	wait := sync.WaitGroup{}
 
@@ -34,7 +34,7 @@ func TestMetric(t *testing.T) {
 				if num%120 == 0 {
 					err = errors.New("error execute")
 				}
-				item.Loss(int64(1000000 * loss))
+				item.Loss(1000000 * loss)
 				item.End(time.Now(), err)
 			}
 
@@ -43,22 +43,25 @@ func TestMetric(t *testing.T) {
 		}(i)
 	}
 
-	wait.Wait()
+	metric.StartCount()
 
-	count := metric.Count()
+	wait.Wait()
+	metric.StopCount()
+
+	count := metric.GetCount()
 	fmt.Println("-----总统计------")
 	bs, _ := json.Marshal(count)
 	fmt.Println(string(bs))
 
 	fmt.Println("-----分钟统计 开始------")
-	cs := metric.CountMinute()
+	cs := metric.GetMinuteCounts()
 	for _, c := range cs {
 		fmt.Println("分钟时间：", util.TimeFormat(time.UnixMilli(c.StartTime/int64(time.Millisecond)), "2006-01-02 15:04"))
 		bs, _ := json.Marshal(c)
 		fmt.Println(string(bs))
 	}
 	fmt.Println("-----秒统计 开始------")
-	cs = metric.CountSecond()
+	cs = metric.GetSecondCounts()
 	for _, c := range cs {
 		fmt.Println("秒时间：", util.TimeFormat(time.UnixMilli(c.StartTime/int64(time.Millisecond)), "2006-01-02 15:04:05"))
 		bs, _ := json.Marshal(c)

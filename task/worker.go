@@ -76,7 +76,7 @@ func (this_ *Worker) runExecutor(param *ExecutorParam) {
 			executeUse := param.ExecuteEndTime.UnixNano() - param.ExecuteStartTime.UnixNano()
 			item := this_.Metric.NewItem(param.WorkerIndex, param.StartTime)
 			item.Extend = param.Extend
-			item.Loss(allUse - executeUse)
+			item.Loss(int(allUse - executeUse))
 			item.End(param.EndTime, param.Error)
 		}
 	}()
