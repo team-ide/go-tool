@@ -76,7 +76,7 @@ type Task struct {
 
 	workerList []*Worker
 
-	Metric *metric.Metric
+	Metric *metric.Metric `json:"-"`
 }
 
 func (this_ *Task) Run() {

@@ -1,8 +1,6 @@
 package metric
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/team-ide/go-tool/util"
 	"sync"
@@ -16,49 +14,65 @@ func TestMetric(t *testing.T) {
 
 	wait := sync.WaitGroup{}
 
-	worker := 10
+	worker := 1000
 	wait.Add(worker)
+	var isStop bool
 
 	for i := 0; i < worker; i++ {
 		go func(workerIndex int) {
+			workerMetric := metric.NewWorkerMetric(workerIndex)
+			for !isStop {
+				//s := time.Now().UnixMilli()
+				item := workerMetric.NewItem(time.Now().UnixNano())
 
-			for dataIndex := 0; dataIndex < 100; dataIndex++ {
-				num := util.RandomInt(50, 200)
-				loss := util.RandomInt(10, 20)
-
-				item := metric.NewItem(workerIndex, time.Now())
-
-				fmt.Println("worker index:", workerIndex, ",data index:", dataIndex)
-				time.Sleep(time.Millisecond * time.Duration(num))
+				Wait(time.Microsecond * 1)
+				// 随机等待一段时间 模拟其它准备耗时
+				startTime := time.Now().UnixNano()
+				//fmt.Println("worker index:", workerIndex, ",data index:", dataIndex)
+				// 随机等等一段时间 模拟执行耗时
+				num := util.RandomInt(1, 5)
+				Wait(time.Microsecond * time.Duration(num))
 				var err error = nil
-				if num%120 == 0 {
-					err = errors.New("error execute")
-				}
-				item.Loss(1000000 * loss)
-				item.End(time.Now(), err)
+				useTime := int(time.Now().UnixNano() - startTime)
+
+				item.End(useTime, time.Now().UnixNano(), err)
+				//e := time.Now().UnixMilli()
+				//fmt.Println("num：", num, " 执行耗时：", useTime/1000000, "ms 总耗时：", e-s, "ms")
 			}
 
 			wait.Done()
 
 		}(i)
 	}
+	go func() {
+		time.Sleep(time.Minute * 10)
+		isStop = true
+	}()
 
+	metric.SetOnCount(func() {
+		outMetric(metric)
+	})
 	metric.StartCount()
-
 	wait.Wait()
 	metric.StopCount()
 
+}
+
+func outMetric(metric *Metric) {
+	var text string
 	count := metric.GetCount()
-	fmt.Println("-----总统计------")
-	bs, _ := json.Marshal(count)
-	fmt.Println(string(bs))
+	text = MarkdownTable([]*Count{count}, nil)
+	fmt.Println("-----总统计 信息------")
+	fmt.Println(text)
 
-	fmt.Println("-----秒统计 开始------")
+	fmt.Println("-----秒统计 信息------")
 	cs := metric.GetSecondCounts()
-	for _, c := range cs {
-		fmt.Println("秒时间：", util.TimeFormat(time.UnixMilli(c.StartTime/int64(time.Millisecond)), "2006-01-02 15:04:05"))
-		bs, _ := json.Marshal(c)
-		fmt.Println(string(bs))
-	}
+	text = MarkdownTable(cs, nil)
+	fmt.Println(text)
+}
 
+func Wait(d time.Duration) {
+	t1 := time.NewTicker(d)
+	<-t1.C
+	t1.Stop()
 }

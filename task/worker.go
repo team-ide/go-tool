@@ -3,6 +3,7 @@ package task
 import (
 	"errors"
 	"fmt"
+	"github.com/team-ide/go-tool/metric"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"time"
@@ -10,13 +11,15 @@ import (
 
 type Worker struct {
 	*Task
-	WorkerIndex int `json:"workerIndex"` // 执行线程编号
+	WorkerIndex  int `json:"workerIndex"` // 执行线程编号
+	workerMetric *metric.WorkerMetric
 }
 
 func NewWorker(workerIndex int, task *Task) (worker *Worker) {
 	worker = &Worker{
-		Task:        task,
-		WorkerIndex: workerIndex,
+		Task:         task,
+		WorkerIndex:  workerIndex,
+		workerMetric: task.Metric.NewWorkerMetric(workerIndex),
 	}
 	return
 }
@@ -53,6 +56,7 @@ func (this_ *Worker) executorDo(param *ExecutorParam, counter *int, start *time.
 
 func (this_ *Worker) runExecutor(param *ExecutorParam) {
 	var err error
+	var item *metric.Item
 	defer func() {
 		if e := recover(); e != nil {
 			err = errors.New(fmt.Sprintf("任务执行 [runExecutor] 异常:%s", e))
@@ -72,17 +76,15 @@ func (this_ *Worker) runExecutor(param *ExecutorParam) {
 		}
 
 		if !param.ExecuteEndTime.IsZero() {
-			allUse := param.EndTime.UnixNano() - param.StartTime.UnixNano()
-			executeUse := param.ExecuteEndTime.UnixNano() - param.ExecuteStartTime.UnixNano()
-			item := this_.Metric.NewItem(param.WorkerIndex, param.StartTime)
+			executeUse := int(param.ExecuteEndTime.UnixNano() - param.ExecuteStartTime.UnixNano())
 			item.Extend = param.Extend
-			item.Loss(int(allUse - executeUse))
-			item.End(param.EndTime, param.Error)
+			item.End(executeUse, param.EndTime.UnixNano(), param.Error)
 		}
 	}()
 
 	param.StartTime = time.Now()
 
+	item = this_.workerMetric.NewItem(param.StartTime.UnixNano())
 	err = this_.executorDo(param, &this_.ExecutorBeforeCount, &param.BeforeStartTime, &param.BeforeEndTime, this_.Executor.Before)
 
 	if err != nil {

@@ -3,12 +3,42 @@ package util
 import (
 	"math/rand"
 	"strconv"
+	"sync"
 	"time"
 )
 
+type RandForRandom struct {
+	rand *rand.Rand
+	lock sync.Locker
+}
+
+func NewRandForRandom() *RandForRandom {
+
+	return &RandForRandom{
+		//  设置随机数种子
+		rand: rand.New(rand.NewSource(time.Now().UnixNano())),
+		lock: &sync.Mutex{},
+	}
+}
+
+func (this_ *RandForRandom) RandomInt(min int, max int) (res int) {
+	this_.lock.Lock()
+	defer this_.lock.Unlock()
+
+	res = min + this_.rand.Intn(max-min+1)
+	return
+}
+
+func (this_ *RandForRandom) RandomInt64(min int64, max int64) (res int64) {
+	this_.lock.Lock()
+	defer this_.lock.Unlock()
+
+	res = min + this_.rand.Int63n(max-min+1)
+	return
+}
+
 var (
-	// RandForRandomInt 设置随机数种子
-	RandForRandomInt = rand.New(rand.NewSource(time.Now().UnixNano()))
+	RandForRandomInt = NewRandForRandom()
 )
 
 // RandomInt 获取随机数
@@ -17,8 +47,7 @@ var (
 // @return int "随机数"
 // RandomInt(1, 10)
 func RandomInt(min int, max int) (res int) {
-	res = min + RandForRandomInt.Intn(max-min+1)
-	return
+	return RandForRandomInt.RandomInt(min, max)
 }
 
 // RandomInt64 获取随机数
@@ -27,8 +56,7 @@ func RandomInt(min int, max int) (res int) {
 // @return int64 "随机数"
 // RandomInt64(1, 10)
 func RandomInt64(min int64, max int64) (res int64) {
-	res = min + RandForRandomInt.Int63n(max-min+1)
-	return
+	return RandForRandomInt.RandomInt64(min, max)
 }
 
 // StringToInt 字符串转 int
