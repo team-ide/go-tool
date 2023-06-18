@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/team-ide/go-tool/thrift/test/service"
+	"github.com/team-ide/go-tool/util"
 	"testing"
+	"time"
 )
 
 var (
@@ -84,6 +86,7 @@ func TestServiceClient(t *testing.T) {
 	fmt.Println("Send result:", res)
 	bs, _ := json.Marshal(res)
 	fmt.Println("Send result JSON:", string(bs))
+	time.Sleep(time.Second * 10)
 
 }
 
@@ -101,10 +104,11 @@ func (this_ *TestServiceImpl) Send(ctx context.Context, res *service.Request, b 
 		return
 	}
 	_r = &service.Response{}
-	fmt.Println("Server On Send res:", toJSON(res), ",b:", b)
-	_r.Field1 = res.Field1 + 1
-	_r.Field2 = res.Field2 + 1
-	fmt.Println("Server On Send _r:", toJSON(_r))
+	//fmt.Println("Server On Send res:", toJSON(res), ",b:", b)
+	_r.Field1 = res.Field1 + int8(util.RandomInt(100, 555))
+	_r.Field2 = res.Field2 + int16(util.RandomInt(100, 555))
+
+	//fmt.Println("Server On Send _r:", toJSON(_r))
 	return
 }
 

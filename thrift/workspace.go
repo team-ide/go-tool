@@ -1,7 +1,6 @@
 package thrift
 
 import (
-	"github.com/team-ide/go-interpreter/node"
 	"github.com/team-ide/go-interpreter/thrift"
 	"github.com/team-ide/go-tool/util"
 	"strings"
@@ -17,9 +16,9 @@ type ServiceInfo struct {
 func NewWorkspace(dir string) *Workspace {
 	formatDir := util.FormatPath(dir)
 	res := &Workspace{
-		dir:                dir,
-		formatDir:          formatDir,
-		treeCache:          util.NewSyncMap(),
+		dir:       dir,
+		formatDir: formatDir,
+		//treeCache:          util.NewSyncMap(),
 		structCache:        util.NewSyncMap(),
 		structCache_:       util.NewSyncMap(),
 		serviceCache:       util.NewSyncMap(),
@@ -41,9 +40,9 @@ type Workspace struct {
 	ignoreNames   []string
 	includeSubDir bool
 
-	errorCache         map[string]error
-	ServiceList        []*ServiceInfo
-	treeCache          *util.SyncMap
+	errorCache  map[string]error
+	ServiceList []*ServiceInfo
+	//treeCache          *util.SyncMap
 	structCache        *util.SyncMap
 	structCache_       *util.SyncMap
 	serviceCache       *util.SyncMap
@@ -85,17 +84,17 @@ func (this_ *Workspace) GetFormatDir() string {
 	return this_.formatDir
 }
 
-func (this_ *Workspace) GetTree(filename string) *node.Tree {
-	if res := this_.treeCache.Get(filename); res != nil {
-		return res.(*node.Tree)
-	}
-	return nil
-}
+//func (this_ *Workspace) GetTree(filename string) *node.Tree {
+//	if res := this_.treeCache.Get(filename); res != nil {
+//		return res.(*node.Tree)
+//	}
+//	return nil
+//}
 
-func (this_ *Workspace) SetTree(filename string, value *node.Tree) {
-	//fmt.Println("SetTree filename:", filename)
-	this_.treeCache.Set(filename, value)
-}
+//func (this_ *Workspace) SetTree(filename string, value *node.Tree) {
+//	//fmt.Println("SetTree filename:", filename)
+//	this_.treeCache.Set(filename, value)
+//}
 
 func (this_ *Workspace) GetStruct(filename string, name string) *thrift.StructStatement {
 	if res := this_.structCache.Get(filename + "-" + name); res != nil {

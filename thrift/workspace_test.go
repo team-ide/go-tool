@@ -7,6 +7,7 @@ import (
 	"github.com/team-ide/go-tool/util"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestWorkspace(t *testing.T) {
@@ -40,6 +41,14 @@ func TestWorkspace(t *testing.T) {
 	fmt.Println("Send result:", res)
 	bs, _ := json.Marshal(res)
 	fmt.Println("Send result JSON:", string(bs))
+
+	ws2 := NewWorkspace(dir)
+
+	ws2.Load()
+	ws3 := NewWorkspace(dir)
+
+	ws3.Load()
+	time.Sleep(time.Second * 10)
 }
 
 func TestSendMessageByServer(t *testing.T) {

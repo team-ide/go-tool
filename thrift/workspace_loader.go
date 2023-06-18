@@ -56,7 +56,7 @@ func (this_ *Workspace) loadByFilename(dir string, filename string) (err error) 
 	if tree == nil {
 		return
 	}
-	this_.SetTree(filename, tree)
+	//this_.SetTree(filename, tree)
 
 	for _, node := range tree.Children {
 
@@ -75,7 +75,7 @@ func (this_ *Workspace) loadByFilename(dir string, filename string) (err error) 
 	return
 }
 func (this_ *Workspace) Clean() {
-	this_.treeCache.Clean()
+	//this_.treeCache.Clean()
 	this_.structCache.Clean()
 	this_.structCache_.Clean()
 	this_.serviceCache.Clean()
