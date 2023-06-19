@@ -9,10 +9,10 @@ import (
 )
 
 var (
-	Logger *zap.Logger
+	Logger = NewDefaultLogger()
 )
 
-func init() {
+func NewDefaultLogger() *zap.Logger {
 
 	// 默认 日志 输出在 控制台
 	// 日志格式如下
@@ -41,7 +41,19 @@ func init() {
 			enc.AppendFloat64(float64(d) / float64(time.Second))
 		},
 		EncodeCaller: func(caller zapcore.EntryCaller, enc zapcore.PrimitiveArrayEncoder) {
-			enc.AppendString(caller.TrimmedPath())
+			str := caller.TrimmedPath()
+			method := caller.Function
+			dot := strings.LastIndex(method, ".")
+			if dot > 0 {
+				method = method[dot+1:]
+				index := strings.LastIndex(str, ":")
+				if index > 0 {
+					str = str[0:index] + ":" + method + str[index:]
+				} else {
+					str += ":" + method
+				}
+			}
+			enc.AppendString(str)
 		},
 		EncodeName: func(s string, enc zapcore.PrimitiveArrayEncoder) {
 			enc.AppendString(strings.ToUpper(s))
@@ -53,24 +65,42 @@ func init() {
 		zapcore.AddSync(os.Stdout),
 		zap.NewAtomicLevelAt(level),
 	)
-	Logger = zap.New(
+	logger := zap.New(
 		core,
-		// 表示 输出 文件名 以及 行号
-		zap.AddCaller(),
-		// 表示 输出 堆栈跟踪 传入 level 表示 在哪个级别下输出
-		zap.AddStacktrace(zapcore.ErrorLevel),
-		//zap.AddCallerSkip(0),
+		GetDefaultOptions(0)...,
 	)
 	//Logger.Debug("logger test debug", zap.Any("arg1", 1), zap.Any("arg2", "2"))
 	//Logger.Info("logger test info", zap.Any("arg1", 1), zap.Any("arg2", "2"))
 	//Logger.Warn("logger test warn", zap.Any("arg1", 1), zap.Any("arg2", "2"))
 	//Logger.Error("logger test error", zap.Any("arg1", 1), zap.Any("arg2", "2"))
+	return logger
 }
 
 // GetLogger 获取logger输出对象
 func GetLogger() *zap.Logger {
 
 	return Logger
+}
+
+func GetDefaultOptions(skip int) (options []zap.Option) {
+	options = append(options,
+		// 表示 输出 文件名 以及 行号
+		zap.AddCaller(),
+		// 表示 输出 堆栈跟踪 传入 level 表示 在哪个级别下输出
+		zap.AddStacktrace(zapcore.ErrorLevel),
+		zap.AddCallerSkip(skip),
+	)
+	return
+}
+
+// NewLoggerByCallerSkip 跳过的调用方数量
+// skip = 1 表示 输出的 文件名 行号等 为上层方法
+func NewLoggerByCallerSkip(skip int) *zap.Logger {
+	logger := zap.New(
+		Logger.Core(),
+		GetDefaultOptions(skip)...,
+	)
+	return logger
 }
 
 func FormatZapArgs(args ...interface{}) (msg []interface{}, fields []zap.Field) {

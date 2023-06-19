@@ -17,8 +17,20 @@ var ZKLogger zk.Logger = &defaultLogger{}
 
 type defaultLogger struct{}
 
+var (
+	logger *zap.Logger
+)
+
+func getLogger() *zap.Logger {
+	if logger == nil {
+		// 用于 输出 上层方法
+		logger = util.NewLoggerByCallerSkip(1)
+	}
+	return logger
+}
+
 func (*defaultLogger) Printf(format string, args ...interface{}) {
-	util.Logger.Info(fmt.Sprintf("zookeeper log:"+format, args...))
+	getLogger().Info(fmt.Sprintf("zookeeper log:"+format, args...))
 }
 
 // Service 注册处理器在线信息等

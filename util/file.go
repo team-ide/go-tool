@@ -10,12 +10,13 @@ import (
 )
 
 var (
-	rootDir string
+	rootDir = getRootDir()
 )
 
-func init() {
-	rootDir, _ = os.Getwd()
-	rootDir = FormatPath(rootDir)
+func getRootDir() string {
+	dir, _ := os.Getwd()
+	dir = FormatPath(dir)
+	return dir
 }
 
 // GetRootDir 获取当前程序根路径
