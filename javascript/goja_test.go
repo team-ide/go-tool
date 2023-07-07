@@ -2,6 +2,7 @@ package javascript
 
 import (
 	"fmt"
+	"github.com/team-ide/go-tool/util"
 	"testing"
 )
 
@@ -36,4 +37,19 @@ return content
 		panic(err)
 	}
 	fmt.Println(res)
+}
+
+func TestNumber(t *testing.T) {
+
+	context := NewContext()
+	script := `
+4611686027042965191 + 11
+`
+	res, err := Run(script, context)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(res)
+	fmt.Println(util.GetStringValue(res))
+	fmt.Println(util.StringToInt64(util.GetStringValue(res)))
 }

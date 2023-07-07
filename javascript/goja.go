@@ -1,6 +1,6 @@
 package javascript
 
-import "github.com/dop251/goja"
+import "github.com/team-ide/goja"
 
 func Run(str string, context map[string]interface{}) (res interface{}, err error) {
 	vm := goja.New()

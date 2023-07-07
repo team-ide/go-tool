@@ -88,3 +88,16 @@ func StringToFloat64(str string) float64 {
 	res, _ := strconv.ParseFloat(str, 64)
 	return res
 }
+
+// SumToString 将任意数相加，为防止精度丢失，可以传入数字字符串
+// SumToString("4611686027042965191", 11)
+func SumToString(nums ...interface{}) string {
+	var res int64
+	for _, num := range nums {
+		if num == nil || num == "" || num == 0 {
+			continue
+		}
+		res += StringToInt64(GetStringValue(num))
+	}
+	return strconv.FormatInt(res, 10)
+}

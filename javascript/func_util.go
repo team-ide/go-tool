@@ -260,6 +260,12 @@ UnlockByKey("user:1")`,
 			Func:    util.GetLogger,
 		},
 		{
+			Name:    "newLoggerByCallerSkip",
+			Comment: `跳过的调用方数量
+skip = 1 表示 输出的 文件名 行号等 为上层方法`,
+			Func:    util.NewLoggerByCallerSkip,
+		},
+		{
 			Name:    "getMD5",
 			Comment: `获取MD5字符串
 @param str string "需要MD5的字符串"
@@ -301,6 +307,12 @@ StringToInt64("11")`,
 			Comment: `字符串转 float64
 StringToFloat64("11.2")`,
 			Func:    util.StringToFloat64,
+		},
+		{
+			Name:    "sumToString",
+			Comment: `将任意数相加，为防止精度丢失，可以传入数字字符串
+SumToString("4611686027042965191", 11)`,
+			Func:    util.SumToString,
 		},
 		{
 			Name:    "rsaEncryptByKey",

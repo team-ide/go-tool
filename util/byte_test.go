@@ -8,6 +8,11 @@ import (
 	"testing"
 )
 
+func TestC(t *testing.T) {
+
+	fmt.Println("bs:", string([]byte{27, 91, 48, 109, 27}))
+
+}
 func TestByte(t *testing.T) {
 	var bs []byte
 	b := intToBytes(1937006964)

@@ -1,9 +1,9 @@
 package javascript
 
 import (
-	"github.com/dop251/goja"
 	"github.com/team-ide/go-tool/javascript/context_map"
 	"github.com/team-ide/go-tool/util"
+	"github.com/team-ide/goja"
 	"go.uber.org/zap"
 )
 

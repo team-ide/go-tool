@@ -6,7 +6,6 @@ require (
 	github.com/Chain-Zhang/pinyin v0.1.3
 	github.com/Shopify/sarama v1.38.1
 	github.com/apache/thrift v0.17.0
-	github.com/dop251/goja v0.0.0-20230427124612-428fc442ff5f
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.7.0
@@ -18,6 +17,7 @@ require (
 	github.com/team-ide/go-dialect v1.9.2
 	github.com/team-ide/go-driver v1.2.4
 	github.com/team-ide/go-interpreter v0.1.0
+	github.com/team-ide/goja v1.0.2
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.9.0
 )
@@ -31,6 +31,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dlclark/regexp2 v1.7.0 // indirect
+	github.com/dop251/goja v0.0.0-20230427124612-428fc442ff5f // indirect
 	github.com/eapache/go-resiliency v1.3.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230111030713-bf00bc1b83b6 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
