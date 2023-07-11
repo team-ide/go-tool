@@ -14,6 +14,7 @@ func MarkdownTableByCounts(counts []*Count) (content string) {
 
 type Options struct {
 	AddHtmlFormat bool
+	WarnUseTime   int64 // 超过该时间 出现警告  为毫秒数
 }
 
 func MarkdownTable(counts []*Count, options *Options) (content string) {
@@ -23,6 +24,12 @@ func MarkdownTable(counts []*Count, options *Options) (content string) {
 	content += fmt.Sprintf("|                 任务时间                   | 总/成功/失败    |  任务用时|  执行用时 | 累计用时 |TPS |Avg |Min |Max |T50 |T80 | T90 | T99 |  \n")
 	content += fmt.Sprintf("| :------: | :------: | :------: | :------: | :------: |:------: | :------: | :------: | :------: | :------: | :------: | :------: | :------: |  \n")
 
+	getTimeOut := func(v int64, s string) string {
+		if options.AddHtmlFormat && options.WarnUseTime > 0 && v >= options.WarnUseTime {
+			return fmt.Sprintf("<font color='red'>%s</font>", s)
+		}
+		return s
+	}
 	var s string
 	for _, count := range counts {
 
@@ -42,17 +49,17 @@ func MarkdownTable(counts []*Count, options *Options) (content string) {
 			s = " %d / %d / %d |"
 		}
 		content += fmt.Sprintf(s, count.Count, count.SuccessCount, count.ErrorCount)
-		content += fmt.Sprintf(" %s |", toTime(count.TotalTime/1000000))
-		content += fmt.Sprintf(" %s |", toTime(count.ExecuteTime/1000000))
-		content += fmt.Sprintf(" %s |", toTime(count.UseTime/1000000))
+		content += fmt.Sprintf(" %s |", ToTimeStr(count.TotalTime/1000000))
+		content += fmt.Sprintf(" %s |", ToTimeStr(count.ExecuteTime/1000000))
+		content += fmt.Sprintf(" %s |", ToTimeStr(count.UseTime/1000000))
 		content += fmt.Sprintf(" %s |", count.Tps)
-		content += fmt.Sprintf(" %s |", count.Avg)
-		content += fmt.Sprintf(" %s |", count.Min)
-		content += fmt.Sprintf(" %s |", count.Max)
-		content += fmt.Sprintf(" %s |", count.T50)
-		content += fmt.Sprintf(" %s |", count.T80)
-		content += fmt.Sprintf(" %s |", count.T90)
-		content += fmt.Sprintf(" %s |", count.T99)
+		content += fmt.Sprintf(" %s |", getTimeOut(int64(count.AvgValue), count.Avg))
+		content += fmt.Sprintf(" %s |", getTimeOut(int64(count.MinUseTime)/int64(time.Millisecond), count.Min))
+		content += fmt.Sprintf(" %s |", getTimeOut(int64(count.MaxUseTime)/int64(time.Millisecond), count.Max))
+		content += fmt.Sprintf(" %s |", getTimeOut(util.StringToInt64(count.T50), count.T50))
+		content += fmt.Sprintf(" %s |", getTimeOut(util.StringToInt64(count.T80), count.T80))
+		content += fmt.Sprintf(" %s |", getTimeOut(util.StringToInt64(count.T90), count.T90))
+		content += fmt.Sprintf(" %s |", getTimeOut(util.StringToInt64(count.T99), count.T99))
 		content += fmt.Sprintf("\n")
 	}
 	return
@@ -72,7 +79,7 @@ var (
 	}
 )
 
-func toTime(size int64) (v string) {
+func ToTimeStr(size int64) (v string) {
 
 	var timeV = size
 

@@ -205,6 +205,7 @@ func ReadLine(filename string) (lines []string, err error) {
 	if err != nil {
 		return
 	}
+	defer func() { _ = f.Close() }()
 	buf := bufio.NewReader(f)
 	var line string
 	for {

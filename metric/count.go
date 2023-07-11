@@ -6,24 +6,34 @@ import (
 	"time"
 )
 
+var (
+	defaultTime         = -99999
+	defaultTime64 int64 = -99999
+)
+
 func CountItems(itemList *[]*Item, countTop bool) (count *Count) {
-	count = &Count{}
+	count = &Count{
+		MinUseTime: defaultTime,
+		MaxUseTime: defaultTime,
+		StartTime:  defaultTime64,
+		EndTime:    defaultTime64,
+	}
 	useTimes := &[]int{}
 
 	for _, one := range *itemList {
 
-		if count.MinUseTime == 0 || one.UseTime < count.MinUseTime {
+		if count.MinUseTime == defaultTime || one.UseTime < count.MinUseTime {
 			count.MinUseTime = one.UseTime
 		}
 
-		if count.MaxUseTime == 0 || one.UseTime > count.MaxUseTime {
+		if count.MaxUseTime == defaultTime || one.UseTime > count.MaxUseTime {
 			count.MaxUseTime = one.UseTime
 		}
 
-		if count.StartTime == 0 || one.StartTime < count.StartTime {
+		if count.StartTime == defaultTime64 || one.StartTime < count.StartTime {
 			count.StartTime = one.StartTime
 		}
-		if count.EndTime == 0 || one.EndTime > count.EndTime {
+		if count.EndTime == defaultTime64 || one.EndTime > count.EndTime {
 			count.EndTime = one.EndTime
 		}
 
@@ -37,11 +47,16 @@ func CountItems(itemList *[]*Item, countTop bool) (count *Count) {
 			count.ErrorCount++
 		}
 	}
-
-	if count.StartTime == 0 {
+	if count.MinUseTime == defaultTime {
+		count.MinUseTime = 0
+	}
+	if count.MaxUseTime == defaultTime {
+		count.MaxUseTime = 0
+	}
+	if count.StartTime == defaultTime64 {
 		count.StartTime = time.Now().UnixNano()
 	}
-	if count.EndTime == 0 {
+	if count.EndTime == defaultTime64 {
 		count.EndTime = time.Now().UnixNano()
 	}
 	count.full(count.UseTime, useTimes)
@@ -49,23 +64,28 @@ func CountItems(itemList *[]*Item, countTop bool) (count *Count) {
 }
 
 func CountCounts(countList []*Count, countTop bool) (count *Count) {
-	count = &Count{}
+	count = &Count{
+		MinUseTime: defaultTime,
+		MaxUseTime: defaultTime,
+		StartTime:  defaultTime64,
+		EndTime:    defaultTime64,
+	}
 	useTimes := &[]int{}
 
 	for _, one := range countList {
 
-		if count.MinUseTime == 0 || one.MinUseTime < count.MinUseTime {
+		if count.MinUseTime == defaultTime || one.MinUseTime < count.MinUseTime {
 			count.MinUseTime = one.MinUseTime
 		}
 
-		if count.MaxUseTime == 0 || one.MinUseTime > count.MaxUseTime {
+		if count.MaxUseTime == defaultTime || one.MinUseTime > count.MaxUseTime {
 			count.MaxUseTime = one.MaxUseTime
 		}
 
-		if count.StartTime == 0 || one.StartTime < count.StartTime {
+		if count.StartTime == defaultTime64 || one.StartTime < count.StartTime {
 			count.StartTime = one.StartTime
 		}
-		if count.EndTime == 0 || one.EndTime > count.EndTime {
+		if count.EndTime == defaultTime64 || one.EndTime > count.EndTime {
 			count.EndTime = one.EndTime
 		}
 
@@ -77,10 +97,16 @@ func CountCounts(countList []*Count, countTop bool) (count *Count) {
 		count.SuccessCount += one.SuccessCount
 		count.ErrorCount += one.ErrorCount
 	}
-	if count.StartTime == 0 {
+	if count.MinUseTime == defaultTime {
+		count.MinUseTime = 0
+	}
+	if count.MaxUseTime == defaultTime {
+		count.MaxUseTime = 0
+	}
+	if count.StartTime == defaultTime64 {
 		count.StartTime = time.Now().UnixNano()
 	}
-	if count.EndTime == 0 {
+	if count.EndTime == defaultTime64 {
 		count.EndTime = time.Now().UnixNano()
 	}
 	count.full(count.UseTime, useTimes)
@@ -88,28 +114,33 @@ func CountCounts(countList []*Count, countTop bool) (count *Count) {
 }
 
 func WorkersCount(countList []*Count, countTop bool) (count *Count) {
-	count = &Count{}
+	count = &Count{
+		MinUseTime: defaultTime,
+		MaxUseTime: defaultTime,
+		StartTime:  defaultTime64,
+		EndTime:    defaultTime64,
+	}
 	useTimes := &[]int{}
 
-	var workerUseTime int64
+	var workerUseTime = defaultTime64
 	for _, one := range countList {
 
-		if count.MinUseTime == 0 || one.MinUseTime < count.MinUseTime {
+		if count.MinUseTime == defaultTime || one.MinUseTime < count.MinUseTime {
 			count.MinUseTime = one.MinUseTime
 		}
 
-		if count.MaxUseTime == 0 || one.MinUseTime > count.MaxUseTime {
+		if count.MaxUseTime == defaultTime || one.MinUseTime > count.MaxUseTime {
 			count.MaxUseTime = one.MaxUseTime
 		}
 
-		if count.StartTime == 0 || one.StartTime < count.StartTime {
+		if count.StartTime == defaultTime64 || one.StartTime < count.StartTime {
 			count.StartTime = one.StartTime
 		}
-		if count.EndTime == 0 || one.EndTime > count.EndTime {
+		if count.EndTime == defaultTime64 || one.EndTime > count.EndTime {
 			count.EndTime = one.EndTime
 		}
 
-		if workerUseTime == 0 || one.UseTime > workerUseTime {
+		if workerUseTime == defaultTime64 || one.UseTime > workerUseTime {
 			workerUseTime = one.UseTime
 		}
 		count.UseTime += one.UseTime
@@ -120,10 +151,19 @@ func WorkersCount(countList []*Count, countTop bool) (count *Count) {
 		count.SuccessCount += one.SuccessCount
 		count.ErrorCount += one.ErrorCount
 	}
-	if count.StartTime == 0 {
+	if count.MinUseTime == defaultTime {
+		count.MinUseTime = 0
+	}
+	if count.MaxUseTime == defaultTime {
+		count.MaxUseTime = 0
+	}
+	if workerUseTime == defaultTime64 {
+		workerUseTime = 0
+	}
+	if count.StartTime == defaultTime64 {
 		count.StartTime = time.Now().UnixNano()
 	}
-	if count.EndTime == 0 {
+	if count.EndTime == defaultTime64 {
 		count.EndTime = time.Now().UnixNano()
 	}
 	count.full(workerUseTime, useTimes)
@@ -178,7 +218,7 @@ func (this_ *Count) full(executeTime int64, useTimes *[]int) {
 	this_.Count = this_.SuccessCount + this_.ErrorCount
 	// 计算 TPS
 	if executeTime > 0 {
-		this_.TpsValue = float64(this_.Count) / (float64(executeTime) / secF)
+		this_.TpsValue = float64(this_.Count) / (float64(this_.TotalTime) / secF)
 	}
 	this_.Tps = strconv.FormatFloat(this_.TpsValue, 'f', 2, 64)
 

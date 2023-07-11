@@ -81,7 +81,7 @@ func (this_ *Metric) StopCount() {
 	this_.countStart = false
 
 	time.Sleep(time.Millisecond * 100)
-	this_.doCount()
+	this_.DoCount()
 	return
 }
 
@@ -98,13 +98,13 @@ func (this_ *Metric) StartCount() {
 				break
 			}
 			// 1 秒进行一次统计
-			this_.doCount()
+			this_.DoCount()
 		}
 	}()
 	return
 }
 
-func (this_ *Metric) doCount() {
+func (this_ *Metric) DoCount() {
 	this_.countLocker.Lock()
 	defer this_.countLocker.Unlock()
 

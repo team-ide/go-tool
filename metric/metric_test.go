@@ -9,7 +9,6 @@ import (
 )
 
 func TestMetric(t *testing.T) {
-
 	metric := NewMetric()
 
 	wait := sync.WaitGroup{}
@@ -34,7 +33,9 @@ func TestMetric(t *testing.T) {
 				Wait(time.Microsecond * time.Duration(num))
 				var err error = nil
 				useTime := int(time.Now().UnixNano() - startTime)
-
+				if util.RandomInt(1, 50) == 5 {
+					useTime = 0
+				}
 				item.End(useTime, time.Now().UnixNano(), err)
 				//e := time.Now().UnixMilli()
 				//fmt.Println("num：", num, " 执行耗时：", useTime/1000000, "ms 总耗时：", e-s, "ms")
