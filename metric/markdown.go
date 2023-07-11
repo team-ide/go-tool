@@ -24,8 +24,8 @@ func MarkdownTable(counts []*Count, options *Options) (content string) {
 	content += fmt.Sprintf("|                 任务时间                   | 总/成功/失败    |  任务用时|  执行用时 | 累计用时 |TPS |Avg |Min |Max |T50 |T80 | T90 | T99 |  \n")
 	content += fmt.Sprintf("| :------: | :------: | :------: | :------: | :------: |:------: | :------: | :------: | :------: | :------: | :------: | :------: | :------: |  \n")
 
-	getTimeOut := func(v int64, s string) string {
-		if options.AddHtmlFormat && options.WarnUseTime > 0 && v >= options.WarnUseTime {
+	getTimeOut := func(v float64, s string) string {
+		if options.AddHtmlFormat && options.WarnUseTime > 0 && int64(v) >= options.WarnUseTime {
 			return fmt.Sprintf("<font color='red'>%s</font>", s)
 		}
 		return s
@@ -53,13 +53,13 @@ func MarkdownTable(counts []*Count, options *Options) (content string) {
 		content += fmt.Sprintf(" %s |", ToTimeStr(count.ExecuteTime/1000000))
 		content += fmt.Sprintf(" %s |", ToTimeStr(count.UseTime/1000000))
 		content += fmt.Sprintf(" %s |", count.Tps)
-		content += fmt.Sprintf(" %s |", getTimeOut(int64(count.AvgValue), count.Avg))
-		content += fmt.Sprintf(" %s |", getTimeOut(int64(count.MinUseTime)/int64(time.Millisecond), count.Min))
-		content += fmt.Sprintf(" %s |", getTimeOut(int64(count.MaxUseTime)/int64(time.Millisecond), count.Max))
-		content += fmt.Sprintf(" %s |", getTimeOut(util.StringToInt64(count.T50), count.T50))
-		content += fmt.Sprintf(" %s |", getTimeOut(util.StringToInt64(count.T80), count.T80))
-		content += fmt.Sprintf(" %s |", getTimeOut(util.StringToInt64(count.T90), count.T90))
-		content += fmt.Sprintf(" %s |", getTimeOut(util.StringToInt64(count.T99), count.T99))
+		content += fmt.Sprintf(" %s |", getTimeOut(float64(count.AvgValue), count.Avg))
+		content += fmt.Sprintf(" %s |", getTimeOut(float64(count.MinUseTime)/float64(time.Millisecond), count.Min))
+		content += fmt.Sprintf(" %s |", getTimeOut(float64(count.MaxUseTime)/float64(time.Millisecond), count.Max))
+		content += fmt.Sprintf(" %s |", getTimeOut(util.StringToFloat64(count.T50), count.T50))
+		content += fmt.Sprintf(" %s |", getTimeOut(util.StringToFloat64(count.T80), count.T80))
+		content += fmt.Sprintf(" %s |", getTimeOut(util.StringToFloat64(count.T90), count.T90))
+		content += fmt.Sprintf(" %s |", getTimeOut(util.StringToFloat64(count.T99), count.T99))
 		content += fmt.Sprintf("\n")
 	}
 	return
