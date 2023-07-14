@@ -22,19 +22,24 @@ func CountItems(itemList *[]*Item, countTop bool) (count *Count) {
 
 	for _, one := range *itemList {
 
-		if count.MinUseTime == defaultTime || one.UseTime < count.MinUseTime {
-			count.MinUseTime = one.UseTime
+		if one.UseTime > 0 {
+			if count.MinUseTime == defaultTime || one.UseTime < count.MinUseTime {
+				count.MinUseTime = one.UseTime
+			}
+			if count.MaxUseTime == defaultTime || one.UseTime > count.MaxUseTime {
+				count.MaxUseTime = one.UseTime
+			}
 		}
 
-		if count.MaxUseTime == defaultTime || one.UseTime > count.MaxUseTime {
-			count.MaxUseTime = one.UseTime
+		if one.StartTime > 0 {
+			if count.StartTime == defaultTime64 || one.StartTime < count.StartTime {
+				count.StartTime = one.StartTime
+			}
 		}
-
-		if count.StartTime == defaultTime64 || one.StartTime < count.StartTime {
-			count.StartTime = one.StartTime
-		}
-		if count.EndTime == defaultTime64 || one.EndTime > count.EndTime {
-			count.EndTime = one.EndTime
+		if one.EndTime > 0 {
+			if count.EndTime == defaultTime64 || one.EndTime > count.EndTime {
+				count.EndTime = one.EndTime
+			}
 		}
 
 		count.UseTime += int64(one.UseTime)
@@ -74,19 +79,27 @@ func CountCounts(countList []*Count, countTop bool) (count *Count) {
 
 	for _, one := range countList {
 
-		if count.MinUseTime == defaultTime || one.MinUseTime < count.MinUseTime {
-			count.MinUseTime = one.MinUseTime
+		if one.MinUseTime > 0 {
+			if count.MinUseTime == defaultTime || one.MinUseTime < count.MinUseTime {
+				count.MinUseTime = one.MinUseTime
+			}
 		}
 
-		if count.MaxUseTime == defaultTime || one.MinUseTime > count.MaxUseTime {
-			count.MaxUseTime = one.MaxUseTime
+		if one.MaxUseTime > 0 {
+			if count.MaxUseTime == defaultTime || one.MaxUseTime > count.MaxUseTime {
+				count.MaxUseTime = one.MaxUseTime
+			}
 		}
 
-		if count.StartTime == defaultTime64 || one.StartTime < count.StartTime {
-			count.StartTime = one.StartTime
+		if one.StartTime > 0 {
+			if count.StartTime == defaultTime64 || one.StartTime < count.StartTime {
+				count.StartTime = one.StartTime
+			}
 		}
-		if count.EndTime == defaultTime64 || one.EndTime > count.EndTime {
-			count.EndTime = one.EndTime
+		if one.EndTime > 0 {
+			if count.EndTime == defaultTime64 || one.EndTime > count.EndTime {
+				count.EndTime = one.EndTime
+			}
 		}
 
 		count.UseTime += one.UseTime
@@ -125,23 +138,33 @@ func WorkersCount(countList []*Count, countTop bool) (count *Count) {
 	var workerUseTime = defaultTime64
 	for _, one := range countList {
 
-		if count.MinUseTime == defaultTime || one.MinUseTime < count.MinUseTime {
-			count.MinUseTime = one.MinUseTime
+		if one.MinUseTime > 0 {
+			if count.MinUseTime == defaultTime || one.MinUseTime < count.MinUseTime {
+				count.MinUseTime = one.MinUseTime
+			}
 		}
 
-		if count.MaxUseTime == defaultTime || one.MinUseTime > count.MaxUseTime {
-			count.MaxUseTime = one.MaxUseTime
+		if one.MaxUseTime > 0 {
+			if count.MaxUseTime == defaultTime || one.MaxUseTime > count.MaxUseTime {
+				count.MaxUseTime = one.MaxUseTime
+			}
 		}
 
-		if count.StartTime == defaultTime64 || one.StartTime < count.StartTime {
-			count.StartTime = one.StartTime
+		if one.StartTime > 0 {
+			if count.StartTime == defaultTime64 || one.StartTime < count.StartTime {
+				count.StartTime = one.StartTime
+			}
 		}
-		if count.EndTime == defaultTime64 || one.EndTime > count.EndTime {
-			count.EndTime = one.EndTime
+		if one.EndTime > 0 {
+			if count.EndTime == defaultTime64 || one.EndTime > count.EndTime {
+				count.EndTime = one.EndTime
+			}
 		}
 
-		if workerUseTime == defaultTime64 || one.UseTime > workerUseTime {
-			workerUseTime = one.UseTime
+		if one.UseTime > 0 {
+			if workerUseTime == defaultTime64 || one.UseTime > workerUseTime {
+				workerUseTime = one.UseTime
+			}
 		}
 		count.UseTime += one.UseTime
 		if countTop {
