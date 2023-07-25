@@ -83,7 +83,7 @@ func (this_ *Service) init() (err error) {
 	if this_.Dialect == nil {
 		this_.Dialect = this_.databaseType.dia
 	}
-	this_.db, err = this_.databaseType.newDb(this_.config)
+	this_.db, err = this_.databaseType.NewDb(this_.config)
 	if err != nil {
 		return
 	}
@@ -1095,6 +1095,6 @@ func newWorkDb(databaseType *DatabaseType, config Config, username string, passw
 		config.Schema = ownerName
 		break
 	}
-	workDb, err = databaseType.newDb(&config)
+	workDb, err = databaseType.NewDb(&config)
 	return
 }
