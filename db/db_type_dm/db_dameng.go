@@ -1,15 +1,16 @@
-package db
+package db_type_dm
 
 import (
 	"database/sql"
 	"github.com/team-ide/go-driver/db_dm"
+	"github.com/team-ide/go-tool/db"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 )
 
 func init() {
-	err := addDatabaseType(&DatabaseType{
-		newDb: func(config *Config) (db *sql.DB, err error) {
+	err := db.AddDatabaseType(&db.DatabaseType{
+		NewDb: func(config *db.Config) (db *sql.DB, err error) {
 			dsn := db_dm.GetDSN(config.Username, config.Password, config.Host, config.Port)
 			if config.Schema != "" {
 				dsn += "&schema=" + config.Schema
@@ -18,7 +19,7 @@ func init() {
 			return
 		},
 		DialectName: db_dm.GetDialect(),
-		matches:     []string{"DaMeng", "dm"},
+		Matches:     []string{"DaMeng", "dm"},
 	})
 	if err != nil {
 		util.Logger.Error("init DaMeng db error", zap.Error(err))

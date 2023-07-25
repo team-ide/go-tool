@@ -29,13 +29,13 @@ func NewDefaultLogger() *zap.Logger {
 		MessageKey:    "msg",
 		StacktraceKey: "S",
 		//FunctionKey:      "F",
-		ConsoleSeparator: "] [",
-		LineEnding:       "]\n",
+		ConsoleSeparator: " ",
+		LineEnding:       "\n",
 		EncodeTime: func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-			enc.AppendString("[" + t.Format("2006-01-02 15:04:05.000"))
+			enc.AppendString(t.Format("2006-01-02 15:04:05.000"))
 		},
 		EncodeLevel: func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
-			enc.AppendString(StrPadRight(strings.ToUpper(l.String()), 5, " "))
+			enc.AppendString(strings.ToUpper(l.String()))
 		},
 		EncodeDuration: func(d time.Duration, enc zapcore.PrimitiveArrayEncoder) {
 			enc.AppendFloat64(float64(d) / float64(time.Second))

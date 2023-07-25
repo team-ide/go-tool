@@ -1,23 +1,24 @@
 //go:build !darwin
 
-package db
+package db_type_gbase
 
 import (
 	"database/sql"
 	"github.com/team-ide/go-driver/db_gbase"
+	"github.com/team-ide/go-tool/db"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 )
 
 func init() {
-	err := addDatabaseType(&DatabaseType{
-		newDb: func(config *Config) (db *sql.DB, err error) {
+	err := db.AddDatabaseType(&db.DatabaseType{
+		NewDb: func(config *db.Config) (db *sql.DB, err error) {
 			dsn := config.OdbcDsn
 			db, err = db_gbase.Open(dsn)
 			return
 		},
 		DialectName: db_gbase.GetDialect(),
-		matches:     []string{"gbase"},
+		Matches:     []string{"gbase"},
 	})
 	if err != nil {
 		util.Logger.Error("init GBase db error", zap.Error(err))

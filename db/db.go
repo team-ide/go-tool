@@ -9,9 +9,9 @@ import (
 
 type DatabaseType struct {
 	DialectName string `json:"dialectName"`
-	newDb       func(config *Config) (db *sql.DB, err error)
+	NewDb       func(config *Config) (db *sql.DB, err error)
 	dia         dialect.Dialect
-	matches     []string
+	Matches     []string
 }
 
 func (this_ *DatabaseType) init() (err error) {
@@ -26,7 +26,7 @@ var (
 	DatabaseTypes []*DatabaseType
 )
 
-func addDatabaseType(databaseType *DatabaseType) (err error) {
+func AddDatabaseType(databaseType *DatabaseType) (err error) {
 	err = databaseType.init()
 	if err != nil {
 		return
@@ -40,7 +40,7 @@ func GetDatabaseType(databaseType string) *DatabaseType {
 		if strings.EqualFold(databaseType, one.DialectName) {
 			return one
 		}
-		for _, match := range one.matches {
+		for _, match := range one.Matches {
 			if strings.EqualFold(databaseType, match) {
 				return one
 			}

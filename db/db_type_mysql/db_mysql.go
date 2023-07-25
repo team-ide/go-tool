@@ -1,4 +1,4 @@
-package db
+package db_type_mysql
 
 import (
 	"context"
@@ -6,14 +6,15 @@ import (
 	"fmt"
 	"github.com/go-sql-driver/mysql"
 	"github.com/team-ide/go-driver/db_mysql"
+	"github.com/team-ide/go-tool/db"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"net"
 )
 
 func init() {
-	err := addDatabaseType(&DatabaseType{
-		newDb: func(config *Config) (db *sql.DB, err error) {
+	err := db.AddDatabaseType(&db.DatabaseType{
+		NewDb: func(config *db.Config) (db *sql.DB, err error) {
 			dsn := db_mysql.GetDSN(config.Username, config.Password, config.Host, config.Port, config.Database)
 			if config.SSHClient != nil {
 				// 填写注册的mysql网络
@@ -29,7 +30,7 @@ func init() {
 			return
 		},
 		DialectName: db_mysql.GetDialect(),
-		matches:     []string{"mysql"},
+		Matches:     []string{"mysql"},
 	})
 	if err != nil {
 		util.Logger.Error("init mysql db error", zap.Error(err))
