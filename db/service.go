@@ -31,6 +31,7 @@ type Config struct {
 	MaxOpenConn  int         `json:"maxOpenConn,omitempty"`
 	DatabasePath string      `json:"databasePath,omitempty"`
 	SSHClient    *ssh.Client `json:"-"`
+	Dsn          string      `json:"dsn,omitempty"`
 }
 
 // New 创建 db客户端

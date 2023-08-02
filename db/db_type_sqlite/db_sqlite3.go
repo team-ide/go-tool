@@ -11,7 +11,10 @@ import (
 func init() {
 	err := db.AddDatabaseType(&db.DatabaseType{
 		NewDb: func(config *db.Config) (db *sql.DB, err error) {
-			dsn := db_sqlite3.GetDSN(config.DatabasePath)
+			dsn := config.Dsn
+			if dsn == "" {
+				dsn = "file:" + config.DatabasePath + "?cache=shared"
+			}
 			db, err = db_sqlite3.Open(dsn)
 			return
 		},
