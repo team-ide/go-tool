@@ -29,6 +29,14 @@ func (this_ *WorkerMetric) NewItem(startTime int64) (item *Item) {
 	return
 }
 
+func (this_ *WorkerMetric) AddItem(item *Item) {
+	var second = int(item.StartTime / Second)
+	if this_.secondItem == nil || second != this_.secondItem.second {
+		this_.secondItem = this_.newSecondItem(second)
+	}
+	this_.secondItem.addItem(item)
+	return
+}
 func (this_ *WorkerMetric) newSecondItem(second int) (secondItem *SecondItem) {
 	secondItem = &SecondItem{
 		second:      second,

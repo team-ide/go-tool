@@ -34,6 +34,15 @@ func (this_ *SecondItem) newItem(startTime int64) (item *Item) {
 	this_.itemNewSize++
 	return
 }
+func (this_ *SecondItem) addItem(item *Item) {
+	this_.itemsLocker.Lock()
+	defer this_.itemsLocker.Unlock()
+
+	this_.itemNewSize++
+	this_.itemEndSize++
+	*this_.items = append(*this_.items, item)
+	return
+}
 func (this_ *SecondItem) endItem(item *Item) {
 	this_.itemsLocker.Lock()
 	defer this_.itemsLocker.Unlock()
