@@ -14,8 +14,8 @@ require (
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/shopspring/decimal v1.3.1
 	github.com/tealeg/xlsx v1.0.5
-	github.com/team-ide/go-dialect v1.9.4
-	github.com/team-ide/go-driver v1.2.7
+	github.com/team-ide/go-dialect v1.9.5
+	github.com/team-ide/go-driver v1.2.8
 	github.com/team-ide/go-interpreter v0.1.0
 	github.com/team-ide/goja v1.0.2
 	go.uber.org/zap v1.24.0
