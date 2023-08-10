@@ -8,10 +8,10 @@ import (
 )
 
 type DatabaseType struct {
-	DialectName string `json:"dialectName"`
-	NewDb       func(config *Config) (db *sql.DB, err error)
+	DialectName string                                       `json:"dialectName"`
+	NewDb       func(config *Config) (db *sql.DB, err error) `json:"-"`
 	dia         dialect.Dialect
-	Matches     []string
+	Matches     []string `json:"-"`
 }
 
 func (this_ *DatabaseType) init() (err error) {
