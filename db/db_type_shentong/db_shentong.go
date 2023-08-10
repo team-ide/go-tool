@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func init() {
+func initDatabase() {
 	err := db.AddDatabaseType(&db.DatabaseType{
 		NewDb: func(config *db.Config) (db *sql.DB, err error) {
 			dsn := db_shentong.GetDSN(config.Username, config.Password, config.Host, config.Port, config.DbName)
