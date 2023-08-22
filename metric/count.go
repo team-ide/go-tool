@@ -194,6 +194,7 @@ func WorkersCount(countList []*Count, countTop bool) (count *Count) {
 }
 
 type Count struct {
+	Name         string  `json:"name"`
 	StartTime    int64   `json:"startTime"` // 纳秒
 	EndTime      int64   `json:"endTime"`   // 纳秒
 	Count        int     `json:"count"`
