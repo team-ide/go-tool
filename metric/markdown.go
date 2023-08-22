@@ -35,9 +35,9 @@ var (
 		Label: "任务时间",
 		GetCol: func(count *Count, options *Options) (res string) {
 			if options.AddHtmlFormat {
-				res = " %s <br>-<br> %s |"
+				res = " %s <br>-<br> %s"
 			} else {
-				res = " %s - %s |"
+				res = " %s - %s"
 			}
 			res = fmt.Sprintf(res,
 				util.TimeFormat(time.UnixMilli(count.StartTime/int64(time.Millisecond)), "2006-01-02 15:04:05.000"),
@@ -50,9 +50,9 @@ var (
 		Label: "总/成功/失败",
 		GetCol: func(count *Count, options *Options) (res string) {
 			if options.AddHtmlFormat {
-				res = " %d <br> <font color='green'>%d</font> <br> <font color='red'>%d</font> |"
+				res = "%d <br> <font color='green'>%d</font> <br> <font color='red'>%d</font>"
 			} else {
-				res = " %d / %d / %d |"
+				res = "%d / %d / %d"
 			}
 			res = fmt.Sprintf(res, count.Count, count.SuccessCount, count.ErrorCount)
 			return
@@ -135,7 +135,8 @@ var (
 			return
 		},
 	}
-	defaultColumns = []*TableColumn{TableColumnTime,
+	defaultColumns = []*TableColumn{
+		TableColumnTime,
 		TableColumnCount,
 		TableColumnTotalTime,
 		TableColumnTps,
