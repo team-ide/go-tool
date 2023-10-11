@@ -36,23 +36,31 @@ func GetValueByType(valueType reflect.Type, data interface{}) (res interface{}, 
 		res = &sV
 	case bool:
 		sV := GetStringValue(data)
-		res, err = strconv.ParseBool(sV)
+		if sV != "" {
+			res, err = strconv.ParseBool(sV)
+		}
 		break
 	case *bool:
 		sV := GetStringValue(data)
 		var b bool
-		b, err = strconv.ParseBool(sV)
-		if err != nil {
-			return
+		if sV != "" {
+			b, err = strconv.ParseBool(sV)
+			if err != nil {
+				return
+			}
 		}
 		res = &b
 	case int, uint, int8, uint8, int16, uint16, int32, uint32, int64, uint64, float32, float64:
 		sV := GetStringValue(data)
-		err = json.Unmarshal([]byte(sV), &res)
+		if sV != "" {
+			err = json.Unmarshal([]byte(sV), &res)
+		}
 		break
 	default:
 		sV := GetStringValue(data)
-		err = json.Unmarshal([]byte(sV), &res)
+		if sV != "" {
+			err = json.Unmarshal([]byte(sV), &res)
+		}
 		break
 	}
 	if !isPtr {
