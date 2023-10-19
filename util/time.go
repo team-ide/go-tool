@@ -22,7 +22,7 @@ func GetNowMilli() int64 {
 
 // GetNowSecond 获取当前时间戳 到秒
 // GetNowSecond()
-func GetNowSecond() int {
+func GetNowSecond() int64 {
 	return GetSecondByTime(time.Now())
 }
 
@@ -43,8 +43,8 @@ func GetMilliByTime(v time.Time) int64 {
 // GetSecondByTime 获取时间戳 到秒
 // @param v time.Time "时间"
 // GetSecondByTime(time)
-func GetSecondByTime(v time.Time) int {
-	return v.Second()
+func GetSecondByTime(v time.Time) int64 {
+	return v.Unix()
 }
 
 var (
