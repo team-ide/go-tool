@@ -23,6 +23,7 @@ func Usage() {
   flag.PrintDefaults()
   fmt.Fprintln(os.Stderr, "\nFunctions:")
   fmt.Fprintln(os.Stderr, "  Response send(Request res, i8 b)")
+  fmt.Fprintln(os.Stderr, "  string setUserKey(i64 userid, string key, string value, string sessionId)")
   fmt.Fprintln(os.Stderr)
   os.Exit(0)
 }
@@ -149,31 +150,51 @@ func main() {
       fmt.Fprintln(os.Stderr, "Send requires 2 args")
       flag.Usage()
     }
-    arg5 := flag.Arg(1)
-    mbTrans6 := thrift.NewTMemoryBufferLen(len(arg5))
-    defer mbTrans6.Close()
-    _, err7 := mbTrans6.WriteString(arg5)
-    if err7 != nil {
-      Usage()
-      return
-    }
-    factory8 := thrift.NewTJSONProtocolFactory()
-    jsProt9 := factory8.GetProtocol(mbTrans6)
-    argvalue0 := service.NewRequest()
-    err10 := argvalue0.Read(context.Background(), jsProt9)
+    arg8 := flag.Arg(1)
+    mbTrans9 := thrift.NewTMemoryBufferLen(len(arg8))
+    defer mbTrans9.Close()
+    _, err10 := mbTrans9.WriteString(arg8)
     if err10 != nil {
       Usage()
       return
     }
+    factory11 := thrift.NewTJSONProtocolFactory()
+    jsProt12 := factory11.GetProtocol(mbTrans9)
+    argvalue0 := service.NewRequest()
+    err13 := argvalue0.Read(context.Background(), jsProt12)
+    if err13 != nil {
+      Usage()
+      return
+    }
     value0 := argvalue0
-    tmp1, err11 := (strconv.Atoi(flag.Arg(2)))
-    if err11 != nil {
+    tmp1, err14 := (strconv.Atoi(flag.Arg(2)))
+    if err14 != nil {
       Usage()
       return
     }
     argvalue1 := int8(tmp1)
     value1 := argvalue1
     fmt.Print(client.Send(context.Background(), value0, value1))
+    fmt.Print("\n")
+    break
+  case "setUserKey":
+    if flag.NArg() - 1 != 4 {
+      fmt.Fprintln(os.Stderr, "SetUserKey requires 4 args")
+      flag.Usage()
+    }
+    argvalue0, err15 := (strconv.ParseInt(flag.Arg(1), 10, 64))
+    if err15 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    argvalue2 := []byte(flag.Arg(3))
+    value2 := argvalue2
+    argvalue3 := flag.Arg(4)
+    value3 := argvalue3
+    fmt.Print(client.SetUserKey(context.Background(), value0, value1, value2, value3))
     fmt.Print("\n")
     break
   case "":

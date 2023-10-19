@@ -90,6 +90,63 @@ func TestServiceClient(t *testing.T) {
 
 }
 
+func TestServiceClientSetUserKey(t *testing.T) {
+	client, err := NewServiceClientByAddress(testServiceAddress)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		_ = client.TTransport.Close()
+	}()
+	fmt.Println("service client create success")
+	param := &MethodParam{
+		Name: "setUserKey",
+	}
+	param.ArgFields = append(param.ArgFields, &Field{
+		Name: "userid",
+		Num:  1,
+		Type: &FieldType{
+			TypeId: thrift.I64,
+		},
+	})
+	param.ArgFields = append(param.ArgFields, &Field{
+		Name: "key",
+		Num:  2,
+		Type: &FieldType{
+			TypeId: thrift.STRING,
+		},
+	})
+	param.ArgFields = append(param.ArgFields, &Field{
+		Name: "value",
+		Num:  3,
+		Type: &FieldType{
+			TypeId: BINARY,
+		},
+	})
+	param.ArgFields = append(param.ArgFields, &Field{
+		Name: "sessionId",
+		Num:  4,
+		Type: &FieldType{
+			TypeId: thrift.STRING,
+		},
+	})
+	param.Args = append(param.Args, 1, "2", "3", "4")
+
+	param.ResultType = &FieldType{
+		TypeId: BINARY,
+	}
+
+	res, err := client.Send(context.Background(), param)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Send result:", res)
+	bs, _ := json.Marshal(res)
+	fmt.Println("Send result JSON:", string(bs))
+	time.Sleep(time.Second * 10)
+
+}
+
 type TestServiceImpl struct {
 	thrift.TProcessor
 }
@@ -109,6 +166,15 @@ func (this_ *TestServiceImpl) Send(ctx context.Context, res *service.Request, b 
 	_r.Field2 = res.Field2 + int16(util.RandomInt(100, 555))
 	time.Sleep(time.Millisecond * 1)
 	//fmt.Println("Server On Send _r:", toJSON(_r))
+	return
+}
+
+func (this_ *TestServiceImpl) SetUserKey(ctx context.Context, userid int64, key string, value []byte, sessionId string) (_r []byte, _err error) {
+	fmt.Println("userid:", userid)
+	fmt.Println("key:", key)
+	fmt.Println("value:", value)
+	fmt.Println("sessionId:", sessionId)
+	_r = []byte("SetUserKey Success")
 	return
 }
 

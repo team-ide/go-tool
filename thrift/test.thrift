@@ -13,5 +13,6 @@ struct Response {
 }
 service TestService {
   Response send(1:Request res,2:i8 b)
+  binary setUserKey(1: i64 userid, 2: string key, 3: binary value,4: string sessionId)
 
 }

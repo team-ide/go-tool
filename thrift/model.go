@@ -61,7 +61,11 @@ func WriteStructFields(ctx context.Context, protocol thrift.TProtocol, name stri
 func WriteStructField(ctx context.Context, protocol thrift.TProtocol, field *Field, value interface{}) error {
 	//fmt.Println("WriteStructField field:", toJSON(field), ",value:", toJSON(value))
 	var err error
-	if err = protocol.WriteFieldBegin(ctx, field.Name, field.Type.TypeId, field.Num); err != nil {
+	typeId := field.Type.TypeId
+	if typeId == BINARY {
+		typeId = thrift.STRING
+	}
+	if err = protocol.WriteFieldBegin(ctx, field.Name, typeId, field.Num); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error", field), err)
 	}
 	err = WriteByType(ctx, protocol, field.Type, value)
@@ -128,6 +132,10 @@ func WriteList(ctx context.Context, protocol thrift.TProtocol, listType *FieldTy
 	return nil
 }
 
+var (
+	BINARY thrift.TType = 18 // 兼容 thrift.BINARY 类型 即  []byte
+)
+
 func WriteByType(ctx context.Context, protocol thrift.TProtocol, fieldType *FieldType, value interface{}) (err error) {
 
 	switch fieldType.TypeId {
@@ -144,6 +152,8 @@ func WriteByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Fiel
 	case thrift.I64:
 		err = protocol.WriteI64(ctx, getInt64(value))
 	case thrift.STRING:
+		err = protocol.WriteString(ctx, getString(value))
+	case BINARY: // 兼容 thrift.BINARY 类型 即  []byte
 		err = protocol.WriteString(ctx, getString(value))
 	case thrift.STRUCT:
 		data, ok := value.(map[string]interface{})
@@ -379,6 +389,13 @@ func ReadByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Field
 		res, err = protocol.ReadI64(ctx)
 	case thrift.STRING:
 		res, err = protocol.ReadString(ctx)
+	case BINARY:
+		res, err = protocol.ReadString(ctx)
+		if res != nil {
+			res = []byte(getString(res))
+		} else {
+			res = []byte{}
+		}
 	case thrift.STRUCT:
 		var fields []*Field
 		if fieldType != nil && fieldType.structObj != nil {

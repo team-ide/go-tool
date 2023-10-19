@@ -11,12 +11,13 @@ require (
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/go-zookeeper/zk v1.0.3
 	github.com/google/uuid v1.3.0
+	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/shopspring/decimal v1.3.1
 	github.com/tealeg/xlsx v1.0.5
 	github.com/team-ide/go-dialect v1.9.8
 	github.com/team-ide/go-driver v1.3.1
-	github.com/team-ide/go-interpreter v0.1.0
+	github.com/team-ide/go-interpreter v0.1.1
 	github.com/team-ide/goja v1.0.2
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.9.0
@@ -64,8 +65,6 @@ require (
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/lib/pq v1.10.7 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/makiuchi-d/gozxing v0.1.1 // indirect
-	github.com/maruel/rs v1.1.0 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mattn/go-sqlite3 v1.14.16 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -74,9 +73,7 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
-	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
-	github.com/tuotoo/qrcode v0.0.0-20220425170535-52ccc2bebf5d // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
@@ -88,5 +85,4 @@ require (
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	rsc.io/qr v0.2.0 // indirect
 )
