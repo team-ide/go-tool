@@ -12,12 +12,16 @@ import (
 	"time"
 )
 
+type ExecuteOptions struct {
+	SelectDataMax int `json:"selectDataMax"`
+}
 type executeTask struct {
 	config       Config
 	databaseType *DatabaseType
 	dia          dialect.Dialect
 	*Param
 	ownerName string
+	*ExecuteOptions
 }
 
 func (this_ *executeTask) run(sqlContent string) (executeList []map[string]interface{}, errStr string, err error) {
@@ -135,7 +139,7 @@ func (this_ *executeTask) execExecuteSQL(executeSql string,
 		}()
 		var columnList []map[string]interface{}
 		var dataList []map[string]interface{}
-		columnList, dataList, err = RowsToListMap(rows)
+		columnList, dataList, err = RowsToListMap(rows, this_.SelectDataMax)
 		if err != nil {
 			return
 		}
@@ -191,7 +195,7 @@ func queryProfiling(query func(query string, args ...any) (*sql.Rows, error)) (p
 	if err != nil {
 		return
 	}
-	columnList, dataList, err = RowsToListMap(rows)
+	columnList, dataList, err = RowsToListMap(rows, 0)
 	_ = rows.Close()
 	if err != nil {
 		return
@@ -208,7 +212,7 @@ func queryProfiling(query func(query string, args ...any) (*sql.Rows, error)) (p
 		if err != nil {
 			continue
 		}
-		columnList, dataList, err = RowsToListMap(rows)
+		columnList, dataList, err = RowsToListMap(rows, 0)
 		_ = rows.Close()
 		if err != nil {
 			return
@@ -221,7 +225,7 @@ func queryProfiling(query func(query string, args ...any) (*sql.Rows, error)) (p
 	return
 }
 
-func RowsToListMap(rows *sql.Rows) (columnList []map[string]interface{}, dataList []map[string]interface{}, err error) {
+func RowsToListMap(rows *sql.Rows, selectDataMax int) (columnList []map[string]interface{}, dataList []map[string]interface{}, err error) {
 	var columnTypes []*sql.ColumnType
 	columnTypes, err = rows.ColumnTypes()
 	if err != nil {
@@ -236,7 +240,12 @@ func RowsToListMap(rows *sql.Rows) (columnList []map[string]interface{}, dataLis
 			columnList = append(columnList, column)
 		}
 	}
+	var size int
 	for rows.Next() {
+		if selectDataMax > 0 && size >= selectDataMax {
+			break
+		}
+		size++
 		cache := worker.GetSqlValueCache(columnTypes) //临时存储每行数据
 		err = rows.Scan(cache...)
 		if err != nil {

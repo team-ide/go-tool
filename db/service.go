@@ -762,14 +762,18 @@ func (this_ *Service) GetTargetDialect(param *Param) (dia dialect.Dialect) {
 	return this_.Dialect
 }
 
-func (this_ *Service) ExecuteSQL(param *Param, ownerName string, sqlContent string) (executeList []map[string]interface{}, errStr string, err error) {
+func (this_ *Service) ExecuteSQL(param *Param, ownerName string, sqlContent string, options *ExecuteOptions) (executeList []map[string]interface{}, errStr string, err error) {
 
+	if options == nil {
+		options = &ExecuteOptions{}
+	}
 	task := &executeTask{
-		config:       *this_.config,
-		databaseType: this_.databaseType,
-		dia:          this_.GetTargetDialect(param),
-		ownerName:    ownerName,
-		Param:        param,
+		ExecuteOptions: options,
+		config:         *this_.config,
+		databaseType:   this_.databaseType,
+		dia:            this_.GetTargetDialect(param),
+		ownerName:      ownerName,
+		Param:          param,
 	}
 	executeList, errStr, err = task.run(sqlContent)
 	return

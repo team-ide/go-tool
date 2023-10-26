@@ -91,7 +91,7 @@ type IService interface {
 	GetTargetDialect(param *Param) (dia dialect.Dialect)
 
 	// ExecuteSQL 执行某段 SQL
-	ExecuteSQL(param *Param, ownerName string, sqlContent string) (executeList []map[string]interface{}, errStr string, err error)
+	ExecuteSQL(param *Param, ownerName string, sqlContent string, options *ExecuteOptions) (executeList []map[string]interface{}, errStr string, err error)
 
 	// StartExport 开始 导出
 	StartExport(param *Param, exportParam *worker.TaskExportParam) (task *worker.Task, err error)
