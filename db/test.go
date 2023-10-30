@@ -1,11 +1,14 @@
 package db
 
 import (
+	"database/sql"
 	"errors"
 	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-tool/javascript"
 	"github.com/team-ide/go-tool/task"
+	"github.com/team-ide/go-tool/util"
 	"github.com/team-ide/goja"
+	"go.uber.org/zap"
 	"regexp"
 	"strings"
 	"sync"
@@ -21,15 +24,27 @@ type TestTaskOptions struct {
 	UpdateWhereData map[string]interface{} `json:"updateWhereData"`
 	DeleteData      map[string]interface{} `json:"deleteData"`
 
+	Username  string `json:"username,omitempty"`
+	Password  string `json:"password,omitempty"`
 	IsBatch   bool   `json:"isBatch,omitempty"`
 	BatchSize int    `json:"batchSize,omitempty"`
 	TestType  string `json:"testType,omitempty"`
 }
 
-func NewTestTask(task *task.Task, options *TestTaskOptions) (testTask *TestTask) {
+func (this_ *Service) NewTestTask(task *task.Task, options *TestTaskOptions) (testTask *TestTask, err error) {
 	testTask = &TestTask{
 		Task:            task,
 		TestTaskOptions: options,
+	}
+	var config = *this_.config
+	testTask.workDb, err = newWorkDb(this_.databaseType, config, options.Username, options.Password, options.OwnerName)
+	if err != nil {
+		util.Logger.Error("NewTestTask new db pool error", zap.Error(err))
+		return
+	}
+	testTask.dia = this_.GetTargetDialect(options.Param)
+	task.OnStop = func() {
+		_ = testTask.workDb.Close()
 	}
 	return
 }
@@ -37,11 +52,12 @@ func NewTestTask(task *task.Task, options *TestTaskOptions) (testTask *TestTask)
 type TestTask struct {
 	*task.Task
 	*TestTaskOptions
+	workDb *sql.DB
+	dia    dialect.Dialect
 }
 
 type TestExecutor struct {
 	task            *TestTask
-	dbService       IService
 	workerParam     map[int]*TestWorkerParam
 	workerParamLock sync.Mutex
 }
@@ -173,7 +189,7 @@ func (this_ *TestWorkerParam) appendSql(param *task.ExecutorParam, dataIndex int
 		if err != nil || insertData == nil {
 			return
 		}
-		sqlList, valuesList, _, _, err = this_.dbService.GetDialect().DataListInsertSql(
+		sqlList, valuesList, _, _, err = this_.task.dia.DataListInsertSql(
 			this_.task.Param.ParamModel, this_.task.OwnerName, this_.task.TableName, this_.task.ColumnList,
 			[]map[string]interface{}{insertData},
 		)
@@ -192,7 +208,7 @@ func (this_ *TestWorkerParam) appendSql(param *task.ExecutorParam, dataIndex int
 		if err != nil || updateWhereData == nil {
 			return
 		}
-		sqlList, valuesList, err = this_.dbService.GetDialect().DataListUpdateSql(
+		sqlList, valuesList, err = this_.task.dia.DataListUpdateSql(
 			this_.task.Param.ParamModel, this_.task.OwnerName, this_.task.TableName, this_.task.ColumnList,
 			[]map[string]interface{}{updateData}, []map[string]interface{}{updateWhereData},
 		)
@@ -206,7 +222,7 @@ func (this_ *TestWorkerParam) appendSql(param *task.ExecutorParam, dataIndex int
 		if err != nil || deleteData == nil {
 			return
 		}
-		sqlList, valuesList, err = this_.dbService.GetDialect().DataListDeleteSql(
+		sqlList, valuesList, err = this_.task.dia.DataListDeleteSql(
 			this_.task.Param.ParamModel, this_.task.OwnerName, this_.task.TableName, this_.task.ColumnList,
 			[]map[string]interface{}{deleteData},
 		)
@@ -263,8 +279,16 @@ func (this_ *TestExecutor) Execute(param *task.ExecutorParam) (err error) {
 
 	workerParam := param.Extend.(*TestWorkerParam)
 
-	if len(workerParam.sqlList) > 0 {
-		_, err = this_.dbService.Execs(workerParam.sqlList, workerParam.sqlParamsList)
+	var sqlSize = len(workerParam.sqlList)
+	var sqlParamsSize = len(workerParam.sqlParamsList)
+	if sqlSize > 0 {
+		if sqlSize != sqlParamsSize {
+			err = errors.New("sql size not equal to sql params size")
+			return
+		}
+		for i := 0; i < sqlSize; i++ {
+			_, err = this_.task.workDb.Exec(workerParam.sqlList[i], workerParam.sqlParamsList[i]...)
+		}
 	}
 
 	return
