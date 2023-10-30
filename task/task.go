@@ -61,7 +61,7 @@ type Task struct {
 	IsStart bool `json:"isStart"` // IsStart 是否启动
 	IsEnd   bool `json:"isEnd"`   // IsEnd 是否结束
 
-	getNextCount int // 调用 getNext 次数
+	nextIndex int // 调用 getNext
 
 	nextLocker    sync.Locker
 	counterLocker sync.Locker
@@ -158,7 +158,7 @@ func (this_ *Task) runDo() {
 
 }
 
-func (this_ *Task) getNext() (index int) {
+func (this_ *Task) GetNextIndex() (index int) {
 	this_.nextLocker.Lock()
 	defer this_.nextLocker.Unlock()
 
@@ -171,10 +171,9 @@ func (this_ *Task) getNext() (index int) {
 	// 如果 设置 执行次数 则 判断
 	if this_.Frequency > 0 {
 		// getNext 计数 大于等于 总次数 则 不在执行
-		if this_.getNextCount >= this_.Frequency {
+		if this_.nextIndex >= this_.Frequency {
 			return
 		}
-
 	} else if this_.Duration > 0 { // 如果设置 执行时长 则判断
 		nowMilli := time.Now().UnixMilli()
 		startMilli := this_.StartTime.UnixMilli()
@@ -185,9 +184,8 @@ func (this_ *Task) getNext() (index int) {
 		}
 
 	}
-	this_.getNextCount++
-
-	index = this_.getNextCount - 1
+	index = this_.nextIndex
+	this_.nextIndex++
 
 	return
 }

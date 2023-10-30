@@ -29,7 +29,7 @@ func (this_ *Worker) work() {
 		this_.waitGroup.Done()
 	}()
 	for {
-		index := this_.getNext()
+		index := this_.GetNextIndex()
 		// 索引 小于0 表示结束
 		if index < 0 {
 			break
