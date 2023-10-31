@@ -10,25 +10,19 @@ import (
 	"github.com/team-ide/goja"
 	"go.uber.org/zap"
 	"regexp"
-	"strings"
 	"sync"
 )
 
 type TestTaskOptions struct {
 	*Param
-	OwnerName       string                 `json:"ownerName"`
-	TableName       string                 `json:"tableName"`
-	ColumnList      []*dialect.ColumnModel `json:"columnList"`
-	InsertData      map[string]interface{} `json:"insertData"`
-	UpdateData      map[string]interface{} `json:"updateData"`
-	UpdateWhereData map[string]interface{} `json:"updateWhereData"`
-	DeleteData      map[string]interface{} `json:"deleteData"`
+	OwnerName string `json:"ownerName"`
+	TableName string `json:"tableName"`
 
 	Username      string                                                `json:"username,omitempty"`
 	Password      string                                                `json:"password,omitempty"`
 	IsBatch       bool                                                  `json:"isBatch,omitempty"`
 	BatchSize     int                                                   `json:"batchSize,omitempty"`
-	TestType      string                                                `json:"testType,omitempty"`
+	TestSql       string                                                `json:"testSql,omitempty"`
 	GetNextIndex  func() (nextIndex int)                                `json:"-"`
 	FormatSqlList func(sqlList *[]string, sqlArgsList *[][]interface{}) `json:"-"`
 	OnExec        func(sqlList *[]string, sqlArgsList *[][]interface{}) `json:"-"`
@@ -129,7 +123,7 @@ func (this_ *TestWorkerParam) getScriptValue(param *task.ExecutorParam, dataInde
 	return
 }
 
-func (this_ *TestWorkerParam) GetStringArg(param *task.ExecutorParam, dataIndex int, arg string) (res interface{}, err error) {
+func (this_ *TestWorkerParam) GetStringArg(param *task.ExecutorParam, dataIndex int, arg string) (res string, err error) {
 	if arg == "" {
 		res = ""
 		return
@@ -157,28 +151,6 @@ func (this_ *TestWorkerParam) GetStringArg(param *task.ExecutorParam, dataIndex 
 	res = text
 	return
 }
-func (this_ *TestWorkerParam) getData(param *task.ExecutorParam, dataIndex int, templateData map[string]interface{}) (data map[string]interface{}, err error) {
-	if templateData == nil {
-		return
-	}
-	data = map[string]interface{}{}
-	for k, v := range templateData {
-		putV := v
-		if v != nil {
-			switch tV := v.(type) {
-			case string:
-				putV, err = this_.GetStringArg(param, dataIndex, tV)
-				if err != nil {
-					return
-				}
-				break
-			}
-		}
-		data[k] = putV
-	}
-
-	return
-}
 
 func (this_ *TestWorkerParam) appendSql(param *task.ExecutorParam, dataIndex int) (err error) {
 
@@ -187,55 +159,11 @@ func (this_ *TestWorkerParam) appendSql(param *task.ExecutorParam, dataIndex int
 
 	var sqlList []string
 	var valuesList [][]interface{}
-	switch strings.ToLower(this_.TestType) {
-	case "insert":
-		var insertData map[string]interface{}
-		insertData, err = this_.getData(param, dataIndex, this_.InsertData)
-		if err != nil || insertData == nil {
-			return
-		}
-		sqlList, valuesList, _, _, err = this_.dia.DataListInsertSql(
-			this_.Param.ParamModel, this_.OwnerName, this_.TableName, this_.ColumnList,
-			[]map[string]interface{}{insertData},
-		)
-		if err != nil {
-			return
-		}
-		break
-	case "update":
-		var updateData map[string]interface{}
-		updateData, err = this_.getData(param, dataIndex, this_.UpdateData)
-		if err != nil || updateData == nil {
-			return
-		}
-		var updateWhereData map[string]interface{}
-		updateWhereData, err = this_.getData(param, dataIndex, this_.UpdateWhereData)
-		if err != nil || updateWhereData == nil {
-			return
-		}
-		sqlList, valuesList, err = this_.dia.DataListUpdateSql(
-			this_.Param.ParamModel, this_.OwnerName, this_.TableName, this_.ColumnList,
-			[]map[string]interface{}{updateData}, []map[string]interface{}{updateWhereData},
-		)
-		if err != nil {
-			return
-		}
-		break
-	case "delete":
-		var deleteData map[string]interface{}
-		deleteData, err = this_.getData(param, dataIndex, this_.DeleteData)
-		if err != nil || deleteData == nil {
-			return
-		}
-		sqlList, valuesList, err = this_.dia.DataListDeleteSql(
-			this_.Param.ParamModel, this_.OwnerName, this_.TableName, this_.ColumnList,
-			[]map[string]interface{}{deleteData},
-		)
-		if err != nil {
-			return
-		}
-		break
+	testSql, err := this_.GetStringArg(param, dataIndex, this_.TestSql)
+	if err != nil {
+		return
 	}
+	sqlList = append(sqlList, testSql)
 	if this_.FormatSqlList != nil {
 		this_.FormatSqlList(&sqlList, &valuesList)
 	}
