@@ -17,7 +17,6 @@ import (
 type TestTaskOptions struct {
 	*Param
 	OwnerName string `json:"ownerName"`
-	TableName string `json:"tableName"`
 
 	Username      string                                                `json:"username,omitempty"`
 	Password      string                                                `json:"password,omitempty"`
@@ -105,10 +104,6 @@ func (this_ *TestExecutor) getWorkerParam(workerIndex int) (res *TestWorkerParam
 		if err != nil {
 			return
 		}
-		err = res.runtime.Set("tableName", this_.TableName)
-		if err != nil {
-			return
-		}
 		this_.workerParam[workerIndex] = res
 	}
 	return
@@ -134,7 +129,7 @@ func (this_ *TestWorkerParam) GetStringArg(param *task.ExecutorParam, arg string
 	var re *regexp.Regexp
 	re, _ = regexp.Compile(`[$]+{(.+?)}`)
 	indexList := re.FindAllIndex([]byte(arg), -1)
-	var lastIndex int = 0
+	var lastIndex = 0
 	for _, indexes := range indexList {
 		text += arg[lastIndex:indexes[0]]
 
@@ -202,6 +197,7 @@ func (this_ *TestWorkerParam) appendSql(param *task.ExecutorParam, dataIndex int
 		return
 	}
 	sqlList = append(sqlList, testSql)
+	valuesList = append(valuesList, []interface{}{})
 	if this_.FormatSqlList != nil {
 		this_.FormatSqlList(&sqlList, &valuesList)
 	}
