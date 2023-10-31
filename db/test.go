@@ -24,42 +24,39 @@ type TestTaskOptions struct {
 	UpdateWhereData map[string]interface{} `json:"updateWhereData"`
 	DeleteData      map[string]interface{} `json:"deleteData"`
 
-	Username  string `json:"username,omitempty"`
-	Password  string `json:"password,omitempty"`
-	IsBatch   bool   `json:"isBatch,omitempty"`
-	BatchSize int    `json:"batchSize,omitempty"`
-	TestType  string `json:"testType,omitempty"`
+	Username     string `json:"username,omitempty"`
+	Password     string `json:"password,omitempty"`
+	IsBatch      bool   `json:"isBatch,omitempty"`
+	BatchSize    int    `json:"batchSize,omitempty"`
+	TestType     string `json:"testType,omitempty"`
+	GetNextIndex func() (nextIndex int)
 }
 
-func (this_ *Service) NewTestTask(task *task.Task, options *TestTaskOptions) (testTask *TestTask, err error) {
-	testTask = &TestTask{
-		Task:            task,
+func (this_ *Service) NewTestExecutor(options *TestTaskOptions) (testExecutor *TestExecutor, err error) {
+	testExecutor = &TestExecutor{
 		TestTaskOptions: options,
+		workerParam:     make(map[int]*TestWorkerParam),
 	}
 	var config = *this_.config
-	testTask.workDb, err = newWorkDb(this_.databaseType, config, options.Username, options.Password, options.OwnerName)
+	testExecutor.workDb, err = newWorkDb(this_.databaseType, config, options.Username, options.Password, options.OwnerName)
 	if err != nil {
 		util.Logger.Error("NewTestTask new db pool error", zap.Error(err))
 		return
 	}
-	testTask.dia = this_.GetTargetDialect(options.Param)
-	task.OnStop = func() {
-		_ = testTask.workDb.Close()
-	}
+	testExecutor.dia = this_.GetTargetDialect(options.Param)
 	return
 }
 
 type TestTask struct {
-	*task.Task
-	*TestTaskOptions
-	workDb *sql.DB
-	dia    dialect.Dialect
 }
 
 type TestExecutor struct {
 	task            *TestTask
 	workerParam     map[int]*TestWorkerParam
 	workerParamLock sync.Mutex
+	*TestTaskOptions
+	workDb *sql.DB
+	dia    dialect.Dialect
 }
 
 type TestWorkerParam struct {
@@ -70,6 +67,12 @@ type TestWorkerParam struct {
 
 	runtime       *goja.Runtime
 	scriptContext map[string]interface{}
+}
+
+func (this_ *TestExecutor) Close() {
+	if this_.workDb != nil {
+		_ = this_.workDb.Close()
+	}
 }
 
 func (this_ *TestExecutor) getWorkerParam(workerIndex int) (res *TestWorkerParam, err error) {
@@ -95,11 +98,11 @@ func (this_ *TestExecutor) getWorkerParam(workerIndex int) (res *TestWorkerParam
 		if err != nil {
 			return
 		}
-		err = res.runtime.Set("ownerName", this_.task.OwnerName)
+		err = res.runtime.Set("ownerName", this_.OwnerName)
 		if err != nil {
 			return
 		}
-		err = res.runtime.Set("tableName", this_.task.TableName)
+		err = res.runtime.Set("tableName", this_.TableName)
 		if err != nil {
 			return
 		}
@@ -182,15 +185,15 @@ func (this_ *TestWorkerParam) appendSql(param *task.ExecutorParam, dataIndex int
 
 	var sqlList []string
 	var valuesList [][]interface{}
-	switch strings.ToLower(this_.task.TestType) {
+	switch strings.ToLower(this_.TestType) {
 	case "insert":
 		var insertData map[string]interface{}
-		insertData, err = this_.getData(param, dataIndex, this_.task.InsertData)
+		insertData, err = this_.getData(param, dataIndex, this_.InsertData)
 		if err != nil || insertData == nil {
 			return
 		}
-		sqlList, valuesList, _, _, err = this_.task.dia.DataListInsertSql(
-			this_.task.Param.ParamModel, this_.task.OwnerName, this_.task.TableName, this_.task.ColumnList,
+		sqlList, valuesList, _, _, err = this_.dia.DataListInsertSql(
+			this_.Param.ParamModel, this_.OwnerName, this_.TableName, this_.ColumnList,
 			[]map[string]interface{}{insertData},
 		)
 		if err != nil {
@@ -199,17 +202,17 @@ func (this_ *TestWorkerParam) appendSql(param *task.ExecutorParam, dataIndex int
 		break
 	case "update":
 		var updateData map[string]interface{}
-		updateData, err = this_.getData(param, dataIndex, this_.task.UpdateData)
+		updateData, err = this_.getData(param, dataIndex, this_.UpdateData)
 		if err != nil || updateData == nil {
 			return
 		}
 		var updateWhereData map[string]interface{}
-		updateWhereData, err = this_.getData(param, dataIndex, this_.task.UpdateWhereData)
+		updateWhereData, err = this_.getData(param, dataIndex, this_.UpdateWhereData)
 		if err != nil || updateWhereData == nil {
 			return
 		}
-		sqlList, valuesList, err = this_.task.dia.DataListUpdateSql(
-			this_.task.Param.ParamModel, this_.task.OwnerName, this_.task.TableName, this_.task.ColumnList,
+		sqlList, valuesList, err = this_.dia.DataListUpdateSql(
+			this_.Param.ParamModel, this_.OwnerName, this_.TableName, this_.ColumnList,
 			[]map[string]interface{}{updateData}, []map[string]interface{}{updateWhereData},
 		)
 		if err != nil {
@@ -218,12 +221,12 @@ func (this_ *TestWorkerParam) appendSql(param *task.ExecutorParam, dataIndex int
 		break
 	case "delete":
 		var deleteData map[string]interface{}
-		deleteData, err = this_.getData(param, dataIndex, this_.task.DeleteData)
+		deleteData, err = this_.getData(param, dataIndex, this_.DeleteData)
 		if err != nil || deleteData == nil {
 			return
 		}
-		sqlList, valuesList, err = this_.task.dia.DataListDeleteSql(
-			this_.task.Param.ParamModel, this_.task.OwnerName, this_.task.TableName, this_.task.ColumnList,
+		sqlList, valuesList, err = this_.dia.DataListDeleteSql(
+			this_.Param.ParamModel, this_.OwnerName, this_.TableName, this_.ColumnList,
 			[]map[string]interface{}{deleteData},
 		)
 		if err != nil {
@@ -249,14 +252,14 @@ func (this_ *TestExecutor) initParam(param *task.ExecutorParam) (err error) {
 	param.Extend = workerParam
 
 	var genSize = 1
-	if this_.task.IsBatch {
-		genSize = this_.task.BatchSize
+	if this_.IsBatch {
+		genSize = this_.BatchSize
 	}
 	if genSize <= 0 {
 		return
 	}
 	for i := 0; i < genSize; i++ {
-		dataIndex := this_.task.GetNextIndex()
+		dataIndex := this_.GetNextIndex()
 		if dataIndex < 0 {
 			break
 		}
@@ -287,7 +290,7 @@ func (this_ *TestExecutor) Execute(param *task.ExecutorParam) (err error) {
 			return
 		}
 		for i := 0; i < sqlSize; i++ {
-			_, err = this_.task.workDb.Exec(workerParam.sqlList[i], workerParam.sqlParamsList[i]...)
+			_, err = this_.workDb.Exec(workerParam.sqlList[i], workerParam.sqlParamsList[i]...)
 		}
 	}
 
