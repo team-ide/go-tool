@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-dialect/worker"
-	"github.com/team-ide/go-tool/task"
 )
 
 type IService interface {
@@ -101,8 +100,8 @@ type IService interface {
 	// StartSync 开始 同步
 	StartSync(param *Param, syncParam *worker.TaskSyncParam) (task *worker.Task, err error)
 
-	// NewTestTask 新建测试任务
-	NewTestTask(task *task.Task, options *TestTaskOptions) (testTask *TestTask, err error)
+	// NewTestExecutor 新建测试任务
+	NewTestExecutor(options *TestTaskOptions) (testExecutor *TestExecutor, err error)
 }
 
 func ToOwnerModel(data interface{}) (res *dialect.OwnerModel) {
