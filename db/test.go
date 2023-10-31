@@ -24,12 +24,14 @@ type TestTaskOptions struct {
 	UpdateWhereData map[string]interface{} `json:"updateWhereData"`
 	DeleteData      map[string]interface{} `json:"deleteData"`
 
-	Username     string `json:"username,omitempty"`
-	Password     string `json:"password,omitempty"`
-	IsBatch      bool   `json:"isBatch,omitempty"`
-	BatchSize    int    `json:"batchSize,omitempty"`
-	TestType     string `json:"testType,omitempty"`
-	GetNextIndex func() (nextIndex int)
+	Username      string                                                `json:"username,omitempty"`
+	Password      string                                                `json:"password,omitempty"`
+	IsBatch       bool                                                  `json:"isBatch,omitempty"`
+	BatchSize     int                                                   `json:"batchSize,omitempty"`
+	TestType      string                                                `json:"testType,omitempty"`
+	GetNextIndex  func() (nextIndex int)                                `json:"-"`
+	FormatSqlList func(sqlList *[]string, sqlArgsList *[][]interface{}) `json:"-"`
+	OnExec        func(sqlList *[]string, sqlArgsList *[][]interface{}) `json:"-"`
 }
 
 func (this_ *Service) NewTestExecutor(options *TestTaskOptions) (testExecutor *TestExecutor, err error) {
@@ -234,6 +236,9 @@ func (this_ *TestWorkerParam) appendSql(param *task.ExecutorParam, dataIndex int
 		}
 		break
 	}
+	if this_.FormatSqlList != nil {
+		this_.FormatSqlList(&sqlList, &valuesList)
+	}
 
 	this_.sqlList = append(this_.sqlList, sqlList...)
 	this_.sqlParamsList = append(this_.sqlParamsList, valuesList...)
@@ -288,6 +293,9 @@ func (this_ *TestExecutor) Execute(param *task.ExecutorParam) (err error) {
 		if sqlSize != sqlParamsSize {
 			err = errors.New("sql size not equal to sql params size")
 			return
+		}
+		if this_.OnExec != nil {
+			this_.OnExec(&workerParam.sqlList, &workerParam.sqlParamsList)
 		}
 		for i := 0; i < sqlSize; i++ {
 			_, err = this_.workDb.Exec(workerParam.sqlList[i], workerParam.sqlParamsList[i]...)
