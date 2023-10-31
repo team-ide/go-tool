@@ -159,10 +159,15 @@ func (this_ *Task) runDo() {
 }
 
 func (this_ *Task) GetNextIndex() (index int) {
-	this_.nextLocker.Lock()
-	defer this_.nextLocker.Unlock()
 
 	index = -1 // 返回 -1 表示结束
+
+	// 如果已经停止
+	if this_.IsStopped() {
+		return
+	}
+	this_.nextLocker.Lock()
+	defer this_.nextLocker.Unlock()
 
 	// 如果已经停止
 	if this_.IsStopped() {
