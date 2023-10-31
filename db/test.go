@@ -10,6 +10,7 @@ import (
 	"github.com/team-ide/goja"
 	"go.uber.org/zap"
 	"regexp"
+	"strings"
 	"sync"
 )
 
@@ -26,6 +27,12 @@ type TestTaskOptions struct {
 	GetNextIndex  func() (nextIndex int)                                `json:"-"`
 	FormatSqlList func(sqlList *[]string, sqlArgsList *[][]interface{}) `json:"-"`
 	OnExec        func(sqlList *[]string, sqlArgsList *[][]interface{}) `json:"-"`
+	ScriptVars    []*ScriptVar                                          `json:"scriptVars,omitempty"`
+}
+
+type ScriptVar struct {
+	Name  string      `json:"name,omitempty"`
+	Value interface{} `json:"value,omitempty"`
 }
 
 func (this_ *Service) NewTestExecutor(options *TestTaskOptions) (testExecutor *TestExecutor, err error) {
@@ -107,12 +114,7 @@ func (this_ *TestExecutor) getWorkerParam(workerIndex int) (res *TestWorkerParam
 	return
 }
 
-func (this_ *TestWorkerParam) getScriptValue(param *task.ExecutorParam, dataIndex int, script string) (res string, err error) {
-
-	err = this_.runtime.Set("index", dataIndex)
-	if err != nil {
-		return
-	}
+func (this_ *TestWorkerParam) getScriptValue(param *task.ExecutorParam, script string) (res string, err error) {
 
 	v, err := this_.runtime.RunString(script)
 	if err != nil {
@@ -123,7 +125,7 @@ func (this_ *TestWorkerParam) getScriptValue(param *task.ExecutorParam, dataInde
 	return
 }
 
-func (this_ *TestWorkerParam) GetStringArg(param *task.ExecutorParam, dataIndex int, arg string) (res string, err error) {
+func (this_ *TestWorkerParam) GetStringArg(param *task.ExecutorParam, arg string) (res string, err error) {
 	if arg == "" {
 		res = ""
 		return
@@ -140,7 +142,7 @@ func (this_ *TestWorkerParam) GetStringArg(param *task.ExecutorParam, dataIndex 
 
 		script := arg[indexes[0]+2 : indexes[1]-1]
 		v := ""
-		v, err = this_.getScriptValue(param, dataIndex, script)
+		v, err = this_.getScriptValue(param, script)
 		if err != nil {
 			return
 		}
@@ -157,9 +159,45 @@ func (this_ *TestWorkerParam) appendSql(param *task.ExecutorParam, dataIndex int
 	this_.lock.Lock()
 	defer this_.lock.Unlock()
 
+	err = this_.runtime.Set("index", dataIndex)
+	if err != nil {
+		return
+	}
+	var v interface{}
+	for _, one := range this_.ScriptVars {
+		if one.Name == "" || one.Value == nil {
+			continue
+		}
+		v = one.Value
+		switch script := v.(type) {
+		case string:
+			if strings.Count(script, "${") == 1 && strings.HasPrefix(script, "${") && strings.HasSuffix(script, "}") {
+				script = script[2 : len(script)-1]
+				var sV goja.Value
+				sV, err = this_.runtime.RunString(script)
+				if err != nil {
+					err = errors.New("get script [" + script + "] value error:" + err.Error())
+					return
+				}
+				v = sV.Export()
+			} else {
+
+				v, err = this_.GetStringArg(param, script)
+				if err != nil {
+					return
+				}
+			}
+			break
+		}
+		err = this_.runtime.Set(one.Name, v)
+		if err != nil {
+			return
+		}
+	}
+
 	var sqlList []string
 	var valuesList [][]interface{}
-	testSql, err := this_.GetStringArg(param, dataIndex, this_.TestSql)
+	testSql, err := this_.GetStringArg(param, this_.TestSql)
 	if err != nil {
 		return
 	}
