@@ -263,7 +263,11 @@ func (this_ *TestExecutor) initParam(param *task.ExecutorParam) (err error) {
 	if genSize <= 0 {
 		return
 	}
-	for i := 0; i < genSize; i++ {
+	err = workerParam.appendSql(param, param.Index)
+	if err != nil {
+		return
+	}
+	for i := 1; i < genSize; i++ {
 		dataIndex := this_.GetNextIndex()
 		if dataIndex < 0 {
 			break
@@ -287,15 +291,15 @@ func (this_ *TestExecutor) Execute(param *task.ExecutorParam) (err error) {
 
 	workerParam := param.Extend.(*TestWorkerParam)
 
+	if this_.OnExec != nil {
+		this_.OnExec(&workerParam.sqlList, &workerParam.sqlParamsList)
+	}
 	var sqlSize = len(workerParam.sqlList)
 	var sqlParamsSize = len(workerParam.sqlParamsList)
 	if sqlSize > 0 {
 		if sqlSize != sqlParamsSize {
 			err = errors.New("sql size not equal to sql params size")
 			return
-		}
-		if this_.OnExec != nil {
-			this_.OnExec(&workerParam.sqlList, &workerParam.sqlParamsList)
 		}
 		for i := 0; i < sqlSize; i++ {
 			_, err = this_.workDb.Exec(workerParam.sqlList[i], workerParam.sqlParamsList[i]...)
