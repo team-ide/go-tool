@@ -23,7 +23,6 @@ type TestTaskOptions struct {
 	IsBatch       bool                                                  `json:"isBatch,omitempty"`
 	BatchSize     int                                                   `json:"batchSize,omitempty"`
 	TestSql       string                                                `json:"testSql,omitempty"`
-	GetNextIndex  func() (nextIndex int)                                `json:"-"`
 	FormatSqlList func(sqlList *[]string, sqlArgsList *[][]interface{}) `json:"-"`
 	OnExec        func(sqlList *[]string, sqlArgsList *[][]interface{}) `json:"-"`
 	ScriptVars    []*ScriptVar                                          `json:"scriptVars,omitempty"`
@@ -57,8 +56,20 @@ type TestExecutor struct {
 	workerParam     map[int]*TestWorkerParam
 	workerParamLock sync.Mutex
 	*TestTaskOptions
-	workDb *sql.DB
-	dia    dialect.Dialect
+	workDb        *sql.DB
+	dia           dialect.Dialect
+	nextIndex     int
+	nextIndexLock sync.Mutex
+}
+
+func (this_ *TestExecutor) GetNextIndex() (index int) {
+	this_.nextIndexLock.Lock()
+	defer this_.nextIndexLock.Unlock()
+
+	index = this_.nextIndex
+	this_.nextIndex++
+
+	return
 }
 
 type TestWorkerParam struct {
@@ -155,7 +166,11 @@ func (this_ *TestWorkerParam) appendSql(param *task.ExecutorParam, dataIndex int
 	this_.lock.Lock()
 	defer this_.lock.Unlock()
 
-	err = this_.runtime.Set("index", dataIndex)
+	err = this_.runtime.Set("index", param.Index)
+	if err != nil {
+		return
+	}
+	err = this_.runtime.Set("dataIndex", dataIndex)
 	if err != nil {
 		return
 	}
@@ -234,11 +249,7 @@ func (this_ *TestExecutor) initParam(param *task.ExecutorParam) (err error) {
 	if genSize <= 0 {
 		return
 	}
-	err = workerParam.appendSql(param, param.Index)
-	if err != nil {
-		return
-	}
-	for i := 1; i < genSize; i++ {
+	for i := 0; i < genSize; i++ {
 		dataIndex := this_.GetNextIndex()
 		if dataIndex < 0 {
 			break

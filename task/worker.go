@@ -82,7 +82,7 @@ func (this_ *Worker) runExecutor(param *ExecutorParam) {
 		}
 
 		if this_.OnExecute != nil {
-			go this_.OnExecute(param)
+			this_.OnExecute(param)
 		}
 	}()
 
