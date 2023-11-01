@@ -1061,8 +1061,8 @@ func sortName(name string, size int) (res string) {
 }
 
 func newWorkDb(databaseType *DatabaseType, config Config, username string, password string, ownerName string) (workDb *sql.DB, err error) {
-	config.MaxIdleConn = 2
-	config.MaxIdleConn = 2
+	config.MaxIdleConn = 3
+	config.MaxOpenConn = 3
 	if username != "" {
 		config.Username = username
 	}

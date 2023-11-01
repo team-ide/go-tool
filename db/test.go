@@ -26,6 +26,8 @@ type TestTaskOptions struct {
 	FormatSqlList func(sqlList *[]string, sqlArgsList *[][]interface{}) `json:"-"`
 	OnExec        func(sqlList *[]string, sqlArgsList *[][]interface{}) `json:"-"`
 	ScriptVars    []*ScriptVar                                          `json:"scriptVars,omitempty"`
+	MaxIdleConn   int                                                   `json:"maxIdleConn,omitempty"`
+	MaxOpenConn   int                                                   `json:"maxOpenConn,omitempty"`
 }
 
 type ScriptVar struct {
@@ -43,6 +45,12 @@ func (this_ *Service) NewTestExecutor(options *TestTaskOptions) (testExecutor *T
 	if err != nil {
 		util.Logger.Error("NewTestTask new db pool error", zap.Error(err))
 		return
+	}
+	if options.MaxIdleConn > 0 {
+		testExecutor.workDb.SetMaxIdleConns(options.MaxIdleConn)
+	}
+	if options.MaxOpenConn > 0 {
+		testExecutor.workDb.SetMaxOpenConns(options.MaxOpenConn)
 	}
 	testExecutor.dia = this_.GetTargetDialect(options.Param)
 	return
@@ -74,9 +82,9 @@ func (this_ *TestExecutor) GetNextIndex() (index int) {
 
 type TestWorkerParam struct {
 	*TestExecutor
-	sqlList       []string
-	sqlParamsList [][]interface{}
-	lock          sync.Mutex
+	SqlList     []string
+	SqlArgsList [][]interface{}
+	lock        sync.Mutex
 
 	runtime       *goja.Runtime
 	scriptContext map[string]interface{}
@@ -226,8 +234,8 @@ func (this_ *TestWorkerParam) appendSql(param *task.ExecutorParam, dataIndex int
 		this_.FormatSqlList(&sqlList, &valuesList)
 	}
 
-	this_.sqlList = append(this_.sqlList, sqlList...)
-	this_.sqlParamsList = append(this_.sqlParamsList, valuesList...)
+	this_.SqlList = append(this_.SqlList, sqlList...)
+	this_.SqlArgsList = append(this_.SqlArgsList, valuesList...)
 
 	return
 }
@@ -237,8 +245,8 @@ func (this_ *TestExecutor) initParam(param *task.ExecutorParam) (err error) {
 	if err != nil {
 		return
 	}
-	workerParam.sqlParamsList = [][]interface{}{}
-	workerParam.sqlList = []string{}
+	workerParam.SqlList = []string{}
+	workerParam.SqlArgsList = [][]interface{}{}
 
 	param.Extend = workerParam
 
@@ -274,12 +282,12 @@ func (this_ *TestExecutor) Execute(param *task.ExecutorParam) (err error) {
 	workerParam := param.Extend.(*TestWorkerParam)
 
 	if this_.OnExec != nil {
-		this_.OnExec(&workerParam.sqlList, &workerParam.sqlParamsList)
+		this_.OnExec(&workerParam.SqlList, &workerParam.SqlArgsList)
 	}
-	var sqlSize = len(workerParam.sqlList)
-	var sqlParamsSize = len(workerParam.sqlParamsList)
+	var sqlSize = len(workerParam.SqlList)
+	var sqlArgsSize = len(workerParam.SqlArgsList)
 	if sqlSize > 0 {
-		if sqlSize != sqlParamsSize {
+		if sqlSize != sqlArgsSize {
 			err = errors.New("sql size not equal to sql params size")
 			return
 		}
@@ -288,7 +296,7 @@ func (this_ *TestExecutor) Execute(param *task.ExecutorParam) (err error) {
 
 			for i := 0; i < sqlSize; i++ {
 				var rows *sql.Rows
-				rows, err = this_.workDb.Query(workerParam.sqlList[i], workerParam.sqlParamsList[i]...)
+				rows, err = this_.workDb.Query(workerParam.SqlList[i], workerParam.SqlArgsList[i]...)
 				if err != nil {
 					return
 				}
@@ -310,7 +318,7 @@ func (this_ *TestExecutor) Execute(param *task.ExecutorParam) (err error) {
 				}
 			}()
 			for i := 0; i < sqlSize; i++ {
-				_, err = tx.Exec(workerParam.sqlList[i], workerParam.sqlParamsList[i]...)
+				_, err = tx.Exec(workerParam.SqlList[i], workerParam.SqlArgsList[i]...)
 				if err != nil {
 					return
 				}
