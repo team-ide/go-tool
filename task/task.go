@@ -53,9 +53,10 @@ type Task struct {
 	EndTime   time.Time `json:"endTime"`
 	Errors    []error   `json:"errors"`
 
-	OnStart func() `json:"-"` // DoStart 执行开始
-	OnEnd   func() `json:"-"` // DoEnd 执行结束
-	OnStop  func() `json:"-"`
+	OnStart   func()                     `json:"-"` // DoStart 执行开始
+	OnEnd     func()                     `json:"-"` // DoEnd 执行结束
+	OnStop    func()                     `json:"-"`
+	OnExecute func(param *ExecutorParam) `json:"-"`
 
 	isStop  bool // isStop 是否需要停止
 	IsStart bool `json:"isStart"` // IsStart 是否启动

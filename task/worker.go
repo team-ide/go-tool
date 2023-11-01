@@ -80,6 +80,10 @@ func (this_ *Worker) runExecutor(param *ExecutorParam) {
 			item.Extend = param.Extend
 			item.End(executeUse, param.EndTime.UnixNano(), param.Error)
 		}
+
+		if this_.OnExecute != nil {
+			go this_.OnExecute(param)
+		}
 	}()
 
 	param.StartTime = time.Now()
