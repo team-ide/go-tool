@@ -207,6 +207,18 @@ fSrc: 文件字节流（就用前面几个字节）`,
 			Func:    util.GetFileType,
 		},
 		{
+			Name:    "nextId",
+			Comment: `新建一个ID生成器，传入生成器ID
+NextId() 获取一个 雪花片算法的 ID 其中 workerId 为 默认 0`,
+			Func:    util.NextId,
+		},
+		{
+			Name:    "newIdWorker",
+			Comment: `新建一个 雪花片算法 ID生成器，传入生成器ID
+NewIdWorker(1)`,
+			Func:    util.NewIdWorker,
+		},
+		{
 			Name:    "getIpFromAddr",
 			Comment: `获取当前IP`,
 			Func:    util.GetIpFromAddr,
