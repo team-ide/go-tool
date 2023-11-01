@@ -69,6 +69,7 @@ type TestWorkerParam struct {
 
 	runtime       *goja.Runtime
 	scriptContext map[string]interface{}
+	isSelect      bool
 }
 
 func (this_ *TestExecutor) Close() {
@@ -196,6 +197,14 @@ func (this_ *TestWorkerParam) appendSql(param *task.ExecutorParam, dataIndex int
 	if err != nil {
 		return
 	}
+
+	if strings.HasPrefix(testSql, "select") ||
+		strings.HasPrefix(testSql, "show") ||
+		strings.HasPrefix(testSql, "desc") ||
+		strings.HasPrefix(testSql, "explain") {
+		this_.isSelect = true
+	}
+
 	sqlList = append(sqlList, testSql)
 	valuesList = append(valuesList, []interface{}{})
 	if this_.FormatSqlList != nil {
@@ -263,9 +272,40 @@ func (this_ *TestExecutor) Execute(param *task.ExecutorParam) (err error) {
 			err = errors.New("sql size not equal to sql params size")
 			return
 		}
-		for i := 0; i < sqlSize; i++ {
-			_, err = this_.workDb.Exec(workerParam.sqlList[i], workerParam.sqlParamsList[i]...)
+
+		if workerParam.isSelect {
+
+			for i := 0; i < sqlSize; i++ {
+				var rows *sql.Rows
+				rows, err = this_.workDb.Query(workerParam.sqlList[i], workerParam.sqlParamsList[i]...)
+				if err != nil {
+					return
+				}
+				if rows != nil {
+					_ = rows.Close()
+				}
+			}
+		} else {
+			var tx *sql.Tx
+			tx, err = this_.workDb.Begin()
+			if err != nil {
+				return
+			}
+			defer func() {
+				if err != nil {
+					_ = tx.Rollback()
+				} else {
+					err = tx.Commit()
+				}
+			}()
+			for i := 0; i < sqlSize; i++ {
+				_, err = tx.Exec(workerParam.sqlList[i], workerParam.sqlParamsList[i]...)
+				if err != nil {
+					return
+				}
+			}
 		}
+
 	}
 
 	return
