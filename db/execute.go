@@ -74,24 +74,17 @@ func (this_ *executeTask) run(sqlContent string) (executeList []map[string]inter
 			return conn.ExecContext(cxt, query, args...)
 		}
 	}
-	sqlList := this_.dia.SqlSplit(sqlContent)
 	defer func() {
 		// 如果 是 mysql 关闭 profiling
 		if this_.dia.DialectType() == dialect.TypeMysql {
-			profilingList, _ := queryProfiling(query)
 			_, _ = exec("SET profiling = 0")
-			size := len(executeList)
-			if len(profilingList) == size {
-				for i := 0; i < size; i++ {
-					executeList[i]["profiling"] = profilingList[i]
-				}
-			}
 		}
 	}()
 	// 如果 是 mysql 开启 profiling
 	if this_.dia.DialectType() == dialect.TypeMysql {
 		_, _ = exec("SET profiling = 1")
 	}
+	sqlList := this_.dia.SqlSplit(sqlContent)
 	for _, executeSql := range sqlList {
 		executeData, err = this_.execExecuteSQL(executeSql, query, exec)
 		executeList = append(executeList, executeData)
@@ -126,6 +119,12 @@ func (this_ *executeTask) execExecuteSQL(executeSql string,
 		executeData["useTime"] = util.GetMilliByTime(endTime) - util.GetMilliByTime(startTime)
 		if err != nil {
 			executeData["error"] = err.Error()
+		}
+
+		// 如果 是 mysql 关闭 profiling
+		if this_.dia.DialectType() == dialect.TypeMysql {
+			executeData["profiling"], _ = queryProfiling(query)
+			_, _ = exec("SET profiling = 0")
 		}
 	}()
 
@@ -193,8 +192,9 @@ func (this_ *executeTask) execExecuteSQL(executeSql string,
 	return
 }
 
-func queryProfiling(query func(query string, args ...any) (*sql.Rows, error)) (dataList []map[string]interface{}, err error) {
+func queryProfiling(query func(query string, args ...any) (*sql.Rows, error)) (profiling map[string]interface{}, err error) {
 
+	var dataList []map[string]interface{}
 	// 查询
 	var rows *sql.Rows
 	rows, err = query("SHOW PROFILES")
@@ -206,27 +206,29 @@ func queryProfiling(query func(query string, args ...any) (*sql.Rows, error)) (d
 	if err != nil {
 		return
 	}
+	if len(dataList) == 0 {
+		return
+	}
+	data := dataList[len(dataList)-1]
 
 	var columnList []map[string]interface{}
-	for _, data := range dataList {
-		if data == nil || data["Query_ID"] == nil {
-			continue
-		}
-
-		rows, err = query("SHOW PROFILE CPU, BLOCK IO FOR QUERY " + util.GetStringValue(data["Query_ID"]))
-		if err != nil {
-			continue
-		}
-		_, columnList, dataList, err = RowsToListMap(rows, 0)
-		_ = rows.Close()
-		if err != nil {
-			return
-		}
-		data["columnList"] = columnList
-		data["profileDataList"] = dataList
-
+	if data == nil || data["Query_ID"] == nil {
+		return
 	}
 
+	rows, err = query("SHOW PROFILE ALL FOR QUERY " + util.GetStringValue(data["Query_ID"]))
+	if err != nil {
+		return
+	}
+	_, columnList, dataList, err = RowsToListMap(rows, 0)
+	_ = rows.Close()
+	if err != nil {
+		return
+	}
+	data["columnList"] = columnList
+	data["profileDataList"] = dataList
+
+	profiling = data
 	return
 }
 
