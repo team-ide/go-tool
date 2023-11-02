@@ -85,8 +85,9 @@ func (this_ *executeTask) run(sqlContent string) (executeList []map[string]inter
 		_, _ = exec("SET profiling = 1")
 	}
 	sqlList := this_.dia.SqlSplit(sqlContent)
+	var lastQueryID int
 	for _, executeSql := range sqlList {
-		executeData, err = this_.execExecuteSQL(executeSql, query, exec)
+		lastQueryID, executeData, err = this_.execExecuteSQL(lastQueryID, executeSql, query, exec)
 		executeList = append(executeList, executeData)
 		if err != nil {
 			util.Logger.Error("ExecuteSQL execExecuteSQL error", zap.Any("executeSql", executeSql), zap.Error(err))
@@ -101,10 +102,10 @@ func (this_ *executeTask) run(sqlContent string) (executeList []map[string]inter
 	return
 }
 
-func (this_ *executeTask) execExecuteSQL(executeSql string,
+func (this_ *executeTask) execExecuteSQL(lastQueryID int, executeSql string,
 	query func(query string, args ...any) (*sql.Rows, error),
 	exec func(query string, args ...any) (sql.Result, error),
-) (executeData map[string]interface{}, err error) {
+) (queryID int, executeData map[string]interface{}, err error) {
 
 	executeData = map[string]interface{}{}
 	var startTime = util.GetNow()
@@ -123,7 +124,7 @@ func (this_ *executeTask) execExecuteSQL(executeSql string,
 
 		// 如果 是 mysql 关闭 profiling
 		if this_.dia.DialectType() == dialect.TypeMysql {
-			executeData["profiling"], _ = queryProfiling(query)
+			queryID, executeData["profiling"], _ = queryProfiling(lastQueryID, query)
 			_, _ = exec("SET profiling = 0")
 		}
 	}()
@@ -192,7 +193,7 @@ func (this_ *executeTask) execExecuteSQL(executeSql string,
 	return
 }
 
-func queryProfiling(query func(query string, args ...any) (*sql.Rows, error)) (profiling map[string]interface{}, err error) {
+func queryProfiling(lastQueryID int, query func(query string, args ...any) (*sql.Rows, error)) (queryID int, profiling map[string]interface{}, err error) {
 
 	var dataList []map[string]interface{}
 	// 查询
@@ -213,6 +214,11 @@ func queryProfiling(query func(query string, args ...any) (*sql.Rows, error)) (p
 
 	var columnList []map[string]interface{}
 	if data == nil || data["Query_ID"] == nil {
+		return
+	}
+
+	if lastQueryID >= util.StringToInt(util.GetStringValue(data["Query_ID"])) {
+		queryID = lastQueryID
 		return
 	}
 
