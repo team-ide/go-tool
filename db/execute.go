@@ -107,6 +107,7 @@ func (this_ *executeTask) execExecuteSQL(lastQueryID int, executeSql string,
 	exec func(query string, args ...any) (sql.Result, error),
 ) (queryID int, executeData map[string]interface{}, err error) {
 
+	queryID = lastQueryID
 	executeData = map[string]interface{}{}
 	var startTime = util.GetNow()
 	executeData["sql"] = executeSql
@@ -194,7 +195,7 @@ func (this_ *executeTask) execExecuteSQL(lastQueryID int, executeSql string,
 }
 
 func queryProfiling(lastQueryID int, query func(query string, args ...any) (*sql.Rows, error)) (queryID int, profiling map[string]interface{}, err error) {
-
+	queryID = lastQueryID
 	var dataList []map[string]interface{}
 	// 查询
 	var rows *sql.Rows
@@ -210,7 +211,17 @@ func queryProfiling(lastQueryID int, query func(query string, args ...any) (*sql
 	if len(dataList) == 0 {
 		return
 	}
-	data := dataList[len(dataList)-1]
+
+	var data map[string]interface{}
+	for _, one := range dataList {
+		if one["Query_ID"] == nil {
+			continue
+		}
+		if lastQueryID < util.StringToInt(util.GetStringValue(one["Query_ID"])) {
+			data = one
+			break
+		}
+	}
 
 	var columnList []map[string]interface{}
 	if data == nil || data["Query_ID"] == nil {
