@@ -217,7 +217,9 @@ func queryProfiling(lastQueryID int, query func(query string, args ...any) (*sql
 		if one["Query_ID"] == nil {
 			continue
 		}
-		if lastQueryID < util.StringToInt(util.GetStringValue(one["Query_ID"])) {
+		id := util.StringToInt(util.GetStringValue(one["Query_ID"]))
+		if lastQueryID < id {
+			queryID = id
 			data = one
 			break
 		}
@@ -225,11 +227,6 @@ func queryProfiling(lastQueryID int, query func(query string, args ...any) (*sql
 
 	var columnList []map[string]interface{}
 	if data == nil || data["Query_ID"] == nil {
-		return
-	}
-
-	if lastQueryID >= util.StringToInt(util.GetStringValue(data["Query_ID"])) {
-		queryID = lastQueryID
 		return
 	}
 
