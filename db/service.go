@@ -836,14 +836,27 @@ func (this_ *Service) StartExport(param *Param, exportParam *worker.TaskExportPa
 				_ = os.RemoveAll(exportDir)
 				return
 			}
-			err = util.Zip(exportDir, exportDir+".zip")
-			if err != nil {
-				util.Logger.Error("export file zip error", zap.Any("exportDir", exportDir), zap.Error(err))
-				return
+			if exportParam.IsDataListExport {
+				fs, _ := os.ReadDir(exportDir)
+				for _, f := range fs {
+					if f.IsDir() {
+						continue
+					}
+					if strings.HasPrefix(f.Name(), "数据列表导出") {
+						task_.Extend["dirPath"] = exportDir
+						task_.Extend["downloadPath"] = exportDir + "/" + f.Name()
+					}
+				}
+			} else {
+				err = util.Zip(exportDir, exportDir+".zip")
+				if err != nil {
+					util.Logger.Error("export file zip error", zap.Any("exportDir", exportDir), zap.Error(err))
+					return
+				}
+				task_.Extend["dirPath"] = exportDir
+				task_.Extend["zipPath"] = exportDir + ".zip"
+				task_.Extend["downloadPath"] = downloadPath + ".zip"
 			}
-			task_.Extend["dirPath"] = exportDir
-			task_.Extend["zipPath"] = exportDir + ".zip"
-			task_.Extend["downloadPath"] = downloadPath + ".zip"
 		}()
 		err = task_.Start()
 		if err != nil {
