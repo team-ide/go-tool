@@ -126,7 +126,6 @@ func (this_ *executeTask) execExecuteSQL(lastQueryID int, executeSql string,
 		// 如果 是 mysql 关闭 profiling
 		if this_.dia.DialectType() == dialect.TypeMysql {
 			queryID, executeData["profiling"], _ = queryProfiling(lastQueryID, query)
-			_, _ = exec("SET profiling = 0")
 		}
 	}()
 
@@ -211,6 +210,7 @@ func queryProfiling(lastQueryID int, query func(query string, args ...any) (*sql
 	if len(dataList) == 0 {
 		return
 	}
+	//util.Logger.Debug("SHOW PROFILES", zap.Any("lastQueryID", lastQueryID), zap.Any("PROFILES", dataList))
 
 	var data map[string]interface{}
 	for _, one := range dataList {
