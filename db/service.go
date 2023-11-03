@@ -844,7 +844,7 @@ func (this_ *Service) StartExport(param *Param, exportParam *worker.TaskExportPa
 					}
 					if strings.HasPrefix(f.Name(), "数据列表导出") {
 						task_.Extend["dirPath"] = exportDir
-						task_.Extend["downloadPath"] = exportDir + "/" + f.Name()
+						task_.Extend["downloadPath"] = downloadPath + "/" + f.Name()
 					}
 				}
 			} else {
