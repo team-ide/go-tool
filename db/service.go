@@ -114,6 +114,9 @@ func (this_ *Service) Close() {
 	if this_ != nil && this_.db != nil {
 		_ = this_.db.Close()
 	}
+	if this_ != nil && this_.config != nil && this_.config.SSHClient != nil {
+		_ = this_.config.SSHClient.Close()
+	}
 	return
 }
 

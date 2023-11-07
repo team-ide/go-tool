@@ -1,12 +1,11 @@
-package db_type_kingbase
+package db_type_postgresql
 
 import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
-	"fmt"
-	"github.com/team-ide/go-driver/db_kingbase_v8r6"
-	"github.com/team-ide/go-driver/driver/kingbase/v8r6/kingbase.com/gokb"
+	"github.com/lib/pq"
+	"github.com/team-ide/go-driver/db_postgresql"
 	"github.com/team-ide/go-tool/db"
 	"github.com/team-ide/go-tool/db/db_dialer"
 	"github.com/team-ide/go-tool/util"
@@ -15,26 +14,23 @@ import (
 )
 
 func init() {
-
 	err := db.AddDatabaseType(&db.DatabaseType{
 		NewDb: func(config *db.Config) (db *sql.DB, err error) {
-			dsn := fmt.Sprintf("kingbase://%s:%s@%s:%d/%s?sslmode=disable", config.Username, config.Password, config.Host, config.Port, config.DbName)
-			if config.Schema != "" {
-				dsn += "&search_path=" + config.Schema
-			}
+			dsn := db_postgresql.GetDSN(config.Username, config.Password, config.Host, config.Port, config.DbName)
+
 			if config.SSHClient != nil {
 				db = sql.OpenDB(NewDialerConnector(config.SSHClient, dsn))
 			} else {
-				db, err = db_kingbase_v8r6.Open(dsn)
+				db, err = db_postgresql.Open(dsn)
 			}
 			return
 		},
-		DialectName: db_kingbase_v8r6.GetDialect(),
-		Matches:     []string{"KingBase", "kb"},
+		DialectName: db_postgresql.GetDialect(),
+		Matches:     []string{"postgresql", "ps"},
 	})
 	if err != nil {
-		util.Logger.Error("init KingBase db error", zap.Error(err))
-		panic("init KingBase db error:" + err.Error())
+		util.Logger.Error("init postgresql db error", zap.Error(err))
+		panic("init postgresql db error:" + err.Error())
 	}
 }
 
@@ -44,9 +40,9 @@ type DialerDriver struct {
 
 func (d *DialerDriver) Open(dsn string) (driver.Conn, error) {
 	if d.SSHClient != nil {
-		return gokb.DialOpen(db_dialer.NewSSHDialer(d.SSHClient), dsn)
+		return pq.DialOpen(db_dialer.NewSSHDialer(d.SSHClient), dsn)
 	}
-	return gokb.Open(dsn)
+	return pq.Open(dsn)
 }
 
 func NewDialerConnector(SSHClient *ssh.Client, dsn string) *DialerConnector {

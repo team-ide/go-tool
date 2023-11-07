@@ -16,11 +16,11 @@ type SSHClientDialer struct {
 	sshClient *ssh.Client
 }
 
-func (d SSHClientDialer) Dial(network, address string) (net.Conn, error) {
+func (d *SSHClientDialer) Dial(network, address string) (net.Conn, error) {
 	return d.sshClient.Dial(network, address)
 }
 
-func (d SSHClientDialer) DialTimeout(network, address string, timeout time.Duration) (net.Conn, error) {
+func (d *SSHClientDialer) DialTimeout(network, address string, timeout time.Duration) (net.Conn, error) {
 	//_, cancel := context.WithTimeout(context.Background(), timeout)
 	//defer cancel()
 	return d.Dial(network, address)
