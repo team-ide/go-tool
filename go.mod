@@ -3,6 +3,7 @@ module github.com/team-ide/go-tool
 go 1.18
 
 require (
+	gitee.com/opengauss/openGauss-connector-go-pq v1.0.4
 	github.com/Chain-Zhang/pinyin v0.1.3
 	github.com/Shopify/sarama v1.38.1
 	github.com/apache/thrift v0.17.0
@@ -11,11 +12,12 @@ require (
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/go-zookeeper/zk v1.0.3
 	github.com/google/uuid v1.3.0
+	github.com/lib/pq v1.10.7
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/shopspring/decimal v1.3.1
 	github.com/tealeg/xlsx v1.0.5
-	github.com/team-ide/go-dialect v1.9.11
+	github.com/team-ide/go-dialect v1.9.13
 	github.com/team-ide/go-driver v1.3.1
 	github.com/team-ide/go-interpreter v0.1.1
 	github.com/team-ide/goja v1.0.2
@@ -25,7 +27,6 @@ require (
 
 require (
 	gitee.com/chunanyong/dm v1.8.10 // indirect
-	gitee.com/opengauss/openGauss-connector-go-pq v1.0.4 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
@@ -63,7 +64,6 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
-	github.com/lib/pq v1.10.7 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mattn/go-sqlite3 v1.14.16 // indirect

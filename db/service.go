@@ -839,18 +839,27 @@ func (this_ *Service) StartExport(param *Param, exportParam *worker.TaskExportPa
 				_ = os.RemoveAll(exportDir)
 				return
 			}
-			if exportParam.IsDataListExport {
-				fs, _ := os.ReadDir(exportDir)
-				for _, f := range fs {
-					if f.IsDir() {
-						continue
-					}
-					if strings.HasPrefix(f.Name(), "数据列表导出") {
-						task_.Extend["dirPath"] = exportDir
-						task_.Extend["downloadPath"] = downloadPath + "/" + f.Name()
-					}
+			fs, _ := os.ReadDir(exportDir)
+			var find bool
+			for _, f := range fs {
+				if f.IsDir() {
+					continue
 				}
-			} else {
+				if strings.HasPrefix(f.Name(), "数据列表导出") {
+					task_.Extend["dirPath"] = exportDir
+					task_.Extend["downloadPath"] = downloadPath + "/" + f.Name()
+					find = true
+					break
+				}
+				if strings.HasPrefix(f.Name(), "database.sql") {
+					task_.Extend["dirPath"] = exportDir
+					task_.Extend["downloadPath"] = downloadPath + "/" + f.Name()
+					find = true
+					break
+				}
+			}
+
+			if !find {
 				err = util.Zip(exportDir, exportDir+".zip")
 				if err != nil {
 					util.Logger.Error("export file zip error", zap.Any("exportDir", exportDir), zap.Error(err))
