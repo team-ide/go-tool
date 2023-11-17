@@ -79,6 +79,16 @@ func StringToInt64(str string) int64 {
 	return res
 }
 
+// StringToUint64 字符串转 uint64
+// StringToUint64("11")
+func StringToUint64(str string) uint64 {
+	if str == "" {
+		return 0
+	}
+	res, _ := strconv.ParseUint(str, 10, 64)
+	return res
+}
+
 // StringToFloat64 字符串转 float64
 // StringToFloat64("11.2")
 func StringToFloat64(str string) float64 {

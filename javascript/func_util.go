@@ -315,6 +315,12 @@ StringToInt64("11")`,
 			Func:    util.StringToInt64,
 		},
 		{
+			Name:    "stringToUint64",
+			Comment: `字符串转 uint64
+StringToUint64("11")`,
+			Func:    util.StringToUint64,
+		},
+		{
 			Name:    "stringToFloat64",
 			Comment: `字符串转 float64
 StringToFloat64("11.2")`,
