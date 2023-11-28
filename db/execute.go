@@ -13,7 +13,8 @@ import (
 )
 
 type ExecuteOptions struct {
-	SelectDataMax int `json:"selectDataMax"`
+	SelectDataMax int  `json:"selectDataMax"`
+	OpenProfiling bool `json:"openProfiling"`
 }
 type executeTask struct {
 	config       Config
@@ -76,12 +77,12 @@ func (this_ *executeTask) run(sqlContent string) (executeList []map[string]inter
 	}
 	defer func() {
 		// 如果 是 mysql 关闭 profiling
-		if this_.dia.DialectType() == dialect.TypeMysql {
+		if this_.dia.DialectType() == dialect.TypeMysql && this_.OpenProfiling {
 			_, _ = exec("SET profiling = 0")
 		}
 	}()
 	// 如果 是 mysql 开启 profiling
-	if this_.dia.DialectType() == dialect.TypeMysql {
+	if this_.dia.DialectType() == dialect.TypeMysql && this_.OpenProfiling {
 		_, _ = exec("SET profiling = 1")
 	}
 	sqlList := this_.dia.SqlSplit(sqlContent)
@@ -124,7 +125,7 @@ func (this_ *executeTask) execExecuteSQL(lastQueryID int, executeSql string,
 		}
 
 		// 如果 是 mysql 关闭 profiling
-		if this_.dia.DialectType() == dialect.TypeMysql {
+		if this_.dia.DialectType() == dialect.TypeMysql && this_.OpenProfiling {
 			queryID, executeData["profiling"], _ = queryProfiling(lastQueryID, query)
 		}
 	}()
