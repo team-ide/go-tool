@@ -280,6 +280,14 @@ func (this_ *Service) QueryMapPage(sql string, args []interface{}, page *worker.
 }
 
 func (this_ *Service) Info() (res interface{}, err error) {
+	data := map[string]interface{}{}
+	res = data
+	data["type"] = this_.config.Type
+	data["database"] = this_.config.Database
+	data["dbName"] = this_.config.DbName
+	data["username"] = this_.config.Username
+	data["dialectType"] = this_.DialectType().Name
+
 	return
 }
 
