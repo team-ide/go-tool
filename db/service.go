@@ -34,6 +34,11 @@ type Config struct {
 	DatabasePath string      `json:"databasePath,omitempty"`
 	SSHClient    *ssh.Client `json:"-"`
 	Dsn          string      `json:"dsn,omitempty"`
+
+	TlsConfig     string `json:"tlsConfig,omitempty"`
+	TlsRootCert   string `json:"tlsRootCert,omitempty"`
+	TlsClientCert string `json:"tlsClientCert,omitempty"`
+	TlsClientKey  string `json:"tlsClientKey,omitempty"`
 }
 
 // New 创建 db客户端
@@ -773,15 +778,15 @@ func (this_ *Service) TableData(param *Param, ownerName string, tableName string
 }
 
 func Convert(src string) (string, error) {
-	gbk, err := charmap.ISO8859_1.NewEncoder().Bytes([]byte(src))
+	latin1, err := charmap.ISO8859_1.NewEncoder().Bytes([]byte(src))
 	if err != nil {
 		return "", err
 	}
-	latin1, err := simplifiedchinese.GBK.NewDecoder().Bytes(gbk)
+	gbk, err := simplifiedchinese.GBK.NewDecoder().Bytes(latin1)
 	if err != nil {
 		return "", err
 	}
-	return string(latin1), nil
+	return string(gbk), nil
 }
 
 func (this_ *Service) GetTargetDialect(param *Param) (dia dialect.Dialect) {
