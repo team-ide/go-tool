@@ -9,6 +9,8 @@ import (
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/encoding/simplifiedchinese"
 	"os"
 	"strings"
 	"time"
@@ -751,6 +753,13 @@ func (this_ *Service) TableData(param *Param, ownerName string, tableName string
 				}
 			case int, int8, int16, int32:
 				item[name] = tV
+			case string:
+				if param.Charset != "" && !strings.Contains(param.Charset, "utf") {
+					if sV, e := Convert(tV); e == nil {
+						tV = sV
+					}
+				}
+				item[name] = tV
 			default:
 				item[name] = fmt.Sprint(tV)
 			}
@@ -761,6 +770,18 @@ func (this_ *Service) TableData(param *Param, ownerName string, tableName string
 	dataListResult.Total = page.TotalCount
 	dataListResult.DataList = listMap
 	return
+}
+
+func Convert(src string) (string, error) {
+	gbk, err := charmap.ISO8859_1.NewEncoder().Bytes([]byte(src))
+	if err != nil {
+		return "", err
+	}
+	latin1, err := simplifiedchinese.GBK.NewDecoder().Bytes(gbk)
+	if err != nil {
+		return "", err
+	}
+	return string(latin1), nil
 }
 
 func (this_ *Service) GetTargetDialect(param *Param) (dia dialect.Dialect) {
@@ -1047,6 +1068,7 @@ type Param struct {
 	ImportType           string  `json:"importType"`
 	TargetDatabaseConfig *Config `json:"targetDatabaseConfig"`
 	ModelType            string  `json:"modelType"`
+	Charset              string  `json:"charset"`
 
 	FormatIndexName bool `json:"formatIndexName"`
 }
