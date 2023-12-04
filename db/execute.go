@@ -25,10 +25,13 @@ type executeTask struct {
 	*ExecuteOptions
 }
 
+// type queryFunc func(ctx context.Context, query string, args ...any) (*sql.Rows, error)
+// type execFunc func(ctx context.Context, query string, args ...any) (sql.Result, error)
+type prepareFunc func(ctx context.Context, query string) (*sql.Stmt, error)
+
 func (this_ *executeTask) run(sqlContent string) (executeList []map[string]interface{}, errStr string, err error) {
 	var executeData map[string]interface{}
-	var query func(query string, args ...any) (*sql.Rows, error)
-	var exec func(query string, args ...any) (sql.Result, error)
+	var prepare prepareFunc
 
 	workDb, err := newWorkDb(this_.databaseType, this_.config, this_.ExecUsername, this_.ExecPassword, this_.ownerName)
 	if err != nil {
@@ -38,8 +41,8 @@ func (this_ *executeTask) run(sqlContent string) (executeList []map[string]inter
 	defer func() {
 		_ = workDb.Close()
 	}()
-	cxt := context.Background()
-	conn, err := workDb.Conn(cxt)
+	var ctx = context.Background()
+	conn, err := workDb.Conn(ctx)
 	if err != nil {
 		util.Logger.Error("ExecuteSQL Conn error", zap.Error(err))
 		return
@@ -50,7 +53,7 @@ func (this_ *executeTask) run(sqlContent string) (executeList []map[string]inter
 	var hasError bool
 	if this_.OpenTransaction {
 		var tx *sql.Tx
-		tx, err = conn.BeginTx(cxt, nil)
+		tx, err = conn.BeginTx(ctx, nil)
 		if err != nil {
 			util.Logger.Error("ExecuteSQL BeginTx error", zap.Error(err))
 			return
@@ -65,30 +68,30 @@ func (this_ *executeTask) run(sqlContent string) (executeList []map[string]inter
 				}
 			}
 		}()
-		query = tx.Query
-		exec = tx.Exec
+		prepare = tx.PrepareContext
 	} else {
-		query = func(query string, args ...any) (*sql.Rows, error) {
-			return conn.QueryContext(cxt, query, args...)
-		}
-		exec = func(query string, args ...any) (sql.Result, error) {
-			return conn.ExecContext(cxt, query, args...)
-		}
+		prepare = conn.PrepareContext
 	}
 	defer func() {
 		// 如果 是 mysql 关闭 profiling
 		if this_.dia.DialectType() == dialect.TypeMysql && this_.OpenProfiling {
-			_, _ = exec("SET profiling = 0")
+			if stmt, e := prepare(ctx, "SET profiling = 0"); e == nil {
+				_, _ = stmt.Exec()
+				_ = stmt.Close()
+			}
 		}
 	}()
 	// 如果 是 mysql 开启 profiling
 	if this_.dia.DialectType() == dialect.TypeMysql && this_.OpenProfiling {
-		_, _ = exec("SET profiling = 1")
+		if stmt, e := prepare(ctx, "SET profiling = 1"); e == nil {
+			_, _ = stmt.Exec()
+			_ = stmt.Close()
+		}
 	}
 	sqlList := this_.dia.SqlSplit(sqlContent)
 	var lastQueryID int
 	for _, executeSql := range sqlList {
-		lastQueryID, executeData, err = this_.execExecuteSQL(lastQueryID, executeSql, query, exec)
+		lastQueryID, executeData, err = this_.execExecuteSQL(lastQueryID, executeSql, ctx, prepare)
 		executeList = append(executeList, executeData)
 		if err != nil {
 			util.Logger.Error("ExecuteSQL execExecuteSQL error", zap.Any("executeSql", executeSql), zap.Error(err))
@@ -104,8 +107,8 @@ func (this_ *executeTask) run(sqlContent string) (executeList []map[string]inter
 }
 
 func (this_ *executeTask) execExecuteSQL(lastQueryID int, executeSql string,
-	query func(query string, args ...any) (*sql.Rows, error),
-	exec func(query string, args ...any) (sql.Result, error),
+	ctx context.Context,
+	prepare prepareFunc,
 ) (queryID int, executeData map[string]interface{}, err error) {
 
 	queryID = lastQueryID
@@ -114,6 +117,7 @@ func (this_ *executeTask) execExecuteSQL(lastQueryID int, executeSql string,
 	executeData["sql"] = executeSql
 	executeData["startTime"] = util.GetFormatByTime(startTime)
 
+	var stmt *sql.Stmt = nil
 	defer func() {
 
 		var endTime = time.Now()
@@ -126,9 +130,14 @@ func (this_ *executeTask) execExecuteSQL(lastQueryID int, executeSql string,
 
 		// 如果 是 mysql 关闭 profiling
 		if this_.dia.DialectType() == dialect.TypeMysql && this_.OpenProfiling {
-			queryID, executeData["profiling"], _ = queryProfiling(lastQueryID, query)
+			queryID, executeData["profiling"], _ = queryProfiling(lastQueryID, ctx, prepare)
 		}
 	}()
+	stmt, err = prepare(ctx, executeSql)
+	if err != nil {
+		return
+	}
+	defer func() { _ = stmt.Close() }()
 
 	str := strings.ToLower(executeSql)
 	if strings.HasPrefix(str, "select") ||
@@ -138,7 +147,7 @@ func (this_ *executeTask) execExecuteSQL(lastQueryID int, executeSql string,
 		executeData["isSelect"] = true
 		// 查询
 		var rows *sql.Rows
-		rows, err = query(executeSql)
+		rows, err = stmt.Query()
 		if err != nil {
 			return
 		}
@@ -160,7 +169,7 @@ func (this_ *executeTask) execExecuteSQL(lastQueryID int, executeSql string,
 	} else if strings.HasPrefix(str, "insert") {
 		executeData["isInsert"] = true
 		var result sql.Result
-		result, err = exec(executeSql)
+		result, err = stmt.Exec()
 		if err != nil {
 			return
 		}
@@ -168,7 +177,7 @@ func (this_ *executeTask) execExecuteSQL(lastQueryID int, executeSql string,
 	} else if strings.HasPrefix(str, "update") {
 		executeData["isUpdate"] = true
 		var result sql.Result
-		result, err = exec(executeSql)
+		result, err = stmt.Exec()
 		if err != nil {
 			return
 		}
@@ -176,7 +185,7 @@ func (this_ *executeTask) execExecuteSQL(lastQueryID int, executeSql string,
 	} else if strings.HasPrefix(str, "delete") {
 		executeData["isDelete"] = true
 		var result sql.Result
-		result, err = exec(executeSql)
+		result, err = stmt.Exec()
 		if err != nil {
 			return
 		}
@@ -184,7 +193,7 @@ func (this_ *executeTask) execExecuteSQL(lastQueryID int, executeSql string,
 	} else {
 		executeData["isExec"] = true
 		var result sql.Result
-		result, err = exec(executeSql)
+		result, err = stmt.Exec()
 		if err != nil {
 			return
 		}
@@ -194,17 +203,22 @@ func (this_ *executeTask) execExecuteSQL(lastQueryID int, executeSql string,
 	return
 }
 
-func queryProfiling(lastQueryID int, query func(query string, args ...any) (*sql.Rows, error)) (queryID int, profiling map[string]interface{}, err error) {
+func queryProfiling(lastQueryID int, ctx context.Context, prepare prepareFunc) (queryID int, profiling map[string]interface{}, err error) {
 	queryID = lastQueryID
 	var dataList []map[string]interface{}
-	// 查询
-	var rows *sql.Rows
-	rows, err = query("SHOW PROFILES")
+
+	stmt1, err := prepare(ctx, "SHOW PROFILES")
 	if err != nil {
 		return
 	}
-	_, _, dataList, err = RowsToListMap(rows, 0)
-	_ = rows.Close()
+	defer func() { _ = stmt1.Close() }()
+	// 查询
+	rows1, err := stmt1.Query()
+	if err != nil {
+		return
+	}
+	defer func() { _ = rows1.Close() }()
+	_, _, dataList, err = RowsToListMap(rows1, 0)
 	if err != nil {
 		return
 	}
@@ -231,12 +245,18 @@ func queryProfiling(lastQueryID int, query func(query string, args ...any) (*sql
 		return
 	}
 
-	rows, err = query("SHOW PROFILE ALL FOR QUERY " + util.GetStringValue(data["Query_ID"]))
+	stmt2, err := prepare(ctx, "SHOW PROFILE ALL FOR QUERY "+util.GetStringValue(data["Query_ID"]))
 	if err != nil {
 		return
 	}
-	_, columnList, dataList, err = RowsToListMap(rows, 0)
-	_ = rows.Close()
+	defer func() { _ = stmt2.Close() }()
+
+	rows2, err := stmt2.Query()
+	if err != nil {
+		return
+	}
+	defer func() { _ = rows1.Close() }()
+	_, columnList, dataList, err = RowsToListMap(rows2, 0)
 	if err != nil {
 		return
 	}
