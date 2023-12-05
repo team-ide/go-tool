@@ -4,7 +4,6 @@ go 1.18
 
 require (
 	gitee.com/opengauss/openGauss-connector-go-pq v1.0.4
-	github.com/Chain-Zhang/pinyin v0.1.3
 	github.com/Shopify/sarama v1.38.1
 	github.com/apache/thrift v0.17.0
 	github.com/gin-gonic/gin v1.9.1

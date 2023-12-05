@@ -375,14 +375,6 @@ GetStringValue(arg)`,
 			Func:    util.GetStringValue,
 		},
 		{
-			Name:    "toPinYin",
-			Comment: `将姓名转为拼音
-@param name string "姓名"
-@return string
-ToPinYin("张三")`,
-			Func:    util.ToPinYin,
-		},
-		{
 			Name:    "randomString",
 			Comment: `获取随机字符串
 @param minLen int "最小长度"

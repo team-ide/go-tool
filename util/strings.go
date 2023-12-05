@@ -3,7 +3,6 @@ package util
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Chain-Zhang/pinyin"
 	"github.com/shopspring/decimal"
 	"strings"
 	"time"
@@ -116,16 +115,16 @@ func GetStringValue(value interface{}) (valueString string) {
 // @param name string "姓名"
 // @return string
 // ToPinYin("张三")
-func ToPinYin(name string) (res string, err error) {
-	// InitialsInCapitals: 首字母大写, 不带音调
-	// WithoutTone: 全小写,不带音调
-	// Tone: 全小写带音调
-	res, err = pinyin.New(name).Split("").Mode(pinyin.WithoutTone).Convert()
-	if err != nil {
-		return
-	}
-	return
-}
+//func ToPinYin(name string) (res string, err error) {
+//	// InitialsInCapitals: 首字母大写, 不带音调
+//	// WithoutTone: 全小写,不带音调
+//	// Tone: 全小写带音调
+//	res, err = pinyin.New(name).Split("").Mode(pinyin.WithoutTone).Convert()
+//	if err != nil {
+//		return
+//	}
+//	return
+//}
 
 var (
 	RandChats = []string{
