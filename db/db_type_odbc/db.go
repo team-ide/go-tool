@@ -1,4 +1,4 @@
-//go:build darwin || arm64 || arm
+//go:build darwin
 
 package db_type_odbc
 
