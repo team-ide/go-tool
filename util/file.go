@@ -222,3 +222,23 @@ func ReadLine(filename string) (lines []string, err error) {
 	}
 	return
 }
+
+// IsSubPath child是否是parent子路径
+// IsSubPath("/a/b", "/a/b/c")
+func IsSubPath(parent, child string) (isSub bool, err error) {
+	parentPath, err := filepath.Abs(parent)
+	if err != nil {
+		return
+	}
+	parentPath = filepath.ToSlash(parentPath)
+	if !strings.HasSuffix(parentPath, "/") {
+		parentPath += "/"
+	}
+	childPath, err := filepath.Abs(child)
+	if err != nil {
+		return
+	}
+	childPath = filepath.ToSlash(childPath)
+	isSub = strings.HasPrefix(childPath, parentPath)
+	return
+}

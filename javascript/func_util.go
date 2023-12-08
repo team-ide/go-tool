@@ -201,6 +201,12 @@ ReadLine("/x/x/xxx\xx\xx")`,
 			Func:    util.ReadLine,
 		},
 		{
+			Name:    "isSubPath",
+			Comment: `child是否是parent子路径
+IsSubPath("/a/b", "/a/b/c")`,
+			Func:    util.IsSubPath,
+		},
+		{
 			Name:    "getFileType",
 			Comment: `用文件前面几个字节来判断
 fSrc: 文件字节流（就用前面几个字节）`,
