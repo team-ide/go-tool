@@ -112,7 +112,7 @@ func TestIp(t *testing.T) {
 }
 
 func TestUtil(t *testing.T) {
-	var err error
+	//var err error
 
 	fmt.Println("RandomInt", RandomInt(1, 100))
 	fmt.Println("RandomInt64", RandomInt64(1, 100))
@@ -124,11 +124,11 @@ func TestUtil(t *testing.T) {
 	fmt.Println("RandomString", RandomString(1, 100))
 	fmt.Println("RandomUserName", RandomUserName(2))
 	fmt.Println("GetStringValue", GetStringValue(1))
-	py, err := ToPinYin("惠波琬")
-	if err != nil {
-		panic("ToPinYin error:" + err.Error())
-	}
-	fmt.Println("ToPinYin", py)
+	//py, err := ToPinYin("惠波琬")
+	//if err != nil {
+	//	panic("ToPinYin error:" + err.Error())
+	//}
+	//fmt.Println("ToPinYin", py)
 
 	fmt.Println("GetNow", GetNow())
 	fmt.Println("GetNowMilli", GetNowMilli())

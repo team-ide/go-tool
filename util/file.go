@@ -242,3 +242,78 @@ func IsSubPath(parent, child string) (isSub bool, err error) {
 	isSub = strings.HasPrefix(childPath, parentPath)
 	return
 }
+
+type DirInfo struct {
+	Path          string         `json:"path"`
+	Name          string         `json:"name"`
+	FileSize      int64          `json:"fileSize,omitempty"`
+	AllFileSize   int64          `json:"allFileSize,omitempty"`
+	DirNumber     int            `json:"dirNumber,omitempty"`
+	FileNumber    int            `json:"fileNumber,omitempty"`
+	AllFileNumber int            `json:"allFileNumber,omitempty"`
+	AllDirNumber  int            `json:"allDirNumber,omitempty"`
+	FileInfos     []*DirFileInfo `json:"fileInfos,omitempty"`
+	DirInfos      []*DirInfo     `json:"dirInfos,omitempty"`
+}
+type DirFileInfo struct {
+	Path     string `json:"path"`
+	Name     string `json:"name"`
+	FileSize int64  `json:"fileSize"`
+}
+
+// LoadDirInfo 加载目录信息，目录下文件目录数量大小等，可以配置加载所有子目录
+// LoadDirInfo("/x/x/", true)
+func LoadDirInfo(dir string, loadSubDir bool) (dirInfo *DirInfo, err error) {
+
+	var path = FormatPath(dir)
+	if !strings.HasSuffix(path, "/") {
+		path += "/"
+	}
+	info, err := os.Stat(path)
+	if err != nil {
+		return
+	}
+	if !info.IsDir() {
+		return
+	}
+	dirInfo = &DirInfo{}
+	dirInfo.Name = info.Name()
+	dirInfo.Path = path
+
+	fs, err := os.ReadDir(path)
+	if err != nil {
+		return
+	}
+	for _, f := range fs {
+		fPath := path + f.Name()
+		if f.IsDir() {
+			dirInfo.DirNumber += 1
+			if !loadSubDir {
+				continue
+			}
+			subDir, _ := LoadDirInfo(fPath, loadSubDir)
+			if subDir != nil {
+				dirInfo.DirInfos = append(dirInfo.DirInfos, subDir)
+				dirInfo.AllFileNumber += subDir.AllFileNumber
+				dirInfo.AllDirNumber += subDir.AllDirNumber
+				dirInfo.AllFileSize += subDir.AllFileSize
+			}
+		} else {
+			fInfo, _ := f.Info()
+			if fInfo == nil {
+				continue
+			}
+			fileInfo := &DirFileInfo{}
+			dirInfo.FileInfos = append(dirInfo.FileInfos, fileInfo)
+			fileInfo.FileSize = fInfo.Size()
+			fileInfo.Path = fPath
+			fileInfo.Name = f.Name()
+			dirInfo.FileNumber += 1
+			dirInfo.FileSize += fileInfo.FileSize
+			dirInfo.AllFileNumber += 1
+			dirInfo.AllFileSize += fileInfo.FileSize
+		}
+	}
+
+	return
+}

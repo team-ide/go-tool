@@ -6,9 +6,9 @@ import (
 	"crypto/x509"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"github.com/Shopify/sarama"
 	"github.com/team-ide/go-tool/util"
+	"go.uber.org/zap"
 	"sort"
 	"strconv"
 	"strings"
@@ -217,29 +217,22 @@ func (this_ *Service) Pull(groupId string, topics []string, PullSize int, PullTi
 	if err != nil {
 		return
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(PullTimeout))
 	handler := &consumerGroupHandler{
-		size: PullSize,
+		size:   PullSize,
+		cancel: cancel,
 	}
-	go func() {
-		ctx := context.Background()
-		err = group.Consume(ctx, topics, handler)
+	util.Logger.Info("kafka pull start", zap.Any("topics", topics), zap.Any("groupId", groupId), zap.Any("timeout", PullTimeout))
+	err = group.Consume(ctx, topics, handler)
 
-		if err != nil {
-			fmt.Println("group.Consume error:", err)
-		}
-	}()
-	startTime := util.GetNowMilli()
-	for {
-		time.Sleep(100 * time.Millisecond)
-		nowTime := util.GetNowMilli()
-		if handler.appended || nowTime-startTime >= int64(PullTimeout) {
-			break
-		}
+	util.Logger.Info("kafka pull end", zap.Any("topics", topics), zap.Any("groupId", groupId), zap.Any("timeout", PullTimeout))
+	if err != nil {
+		util.Logger.Error("group consume error", zap.Error(err))
 	}
+
 	err = group.Close()
 	if err != nil {
-		fmt.Println("group.Close error:", err)
-		return
+		util.Logger.Error("group close error", zap.Error(err))
 	}
 	for _, one := range handler.messages {
 		var msg *Message
@@ -254,14 +247,15 @@ func (this_ *Service) Pull(groupId string, topics []string, PullSize int, PullTi
 
 type consumerGroupHandler struct {
 	messages []*sarama.ConsumerMessage
-	appended bool
+	cancel   context.CancelFunc
 	size     int
 }
 
 func (*consumerGroupHandler) Setup(_ sarama.ConsumerGroupSession) error   { return nil }
 func (*consumerGroupHandler) Cleanup(_ sarama.ConsumerGroupSession) error { return nil }
 func (handler *consumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
-	if sess == nil {
+
+	if sess == nil || claim == nil {
 		return nil
 	}
 	chanMessages := claim.Messages()
@@ -271,7 +265,11 @@ func (handler *consumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSessi
 			break
 		}
 	}
-	handler.appended = true
+	if len(handler.messages) >= handler.size {
+		if handler.cancel != nil {
+			handler.cancel()
+		}
+	}
 	return nil
 }
 

@@ -207,6 +207,12 @@ IsSubPath("/a/b", "/a/b/c")`,
 			Func:    util.IsSubPath,
 		},
 		{
+			Name:    "loadDirInfo",
+			Comment: `加载目录信息，目录下文件目录数量大小等，可以配置加载所有子目录
+LoadDirInfo("/x/x/", true)`,
+			Func:    util.LoadDirInfo,
+		},
+		{
 			Name:    "getFileType",
 			Comment: `用文件前面几个字节来判断
 fSrc: 文件字节流（就用前面几个字节）`,
