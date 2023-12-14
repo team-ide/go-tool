@@ -43,4 +43,5 @@ type IService interface {
 	Scroll(indexName string, scrollId string, pageSize int, whereList []*Where, orderList []*Order) (res *SearchResult, err error)
 	// IndexAlias 索引别名
 	IndexAlias(indexName string, aliasName string) (res *IndexAliasResponse, err error)
+	PerformRequest(options PerformRequestOptions) (res *PerformResponse, err error)
 }

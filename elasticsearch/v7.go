@@ -121,6 +121,31 @@ func (this_ *V7Service) Info() (res *elastic.NodesInfoResponse, err error) {
 	return
 }
 
+type PerformRequestOptions struct {
+	elastic.PerformRequestOptions
+}
+type PerformResponse struct {
+	Header http.Header
+	Body   []byte
+}
+
+func (this_ *V7Service) PerformRequest(options PerformRequestOptions) (res *PerformResponse, err error) {
+	client, err := this_.GetClient()
+	if err != nil {
+		return
+	}
+	//defer client.Stop()
+	ctx := context.Background()
+	r, err := client.PerformRequest(ctx, options.PerformRequestOptions)
+	if err != nil {
+		return
+	}
+	res = &PerformResponse{
+		Body:   r.Body,
+		Header: r.Header,
+	}
+	return
+}
 func (this_ *V7Service) DeleteIndex(indexName string) (err error) {
 	client, err := this_.GetClient()
 	if err != nil {
