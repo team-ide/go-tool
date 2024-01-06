@@ -8,16 +8,14 @@ import (
 	"github.com/team-ide/go-dialect/worker"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
-	"os"
 	"strings"
 )
 
 type DataSourceExcel struct {
 	FilePath string `json:"filePath"`
 
-	readFile   *xlsx.File
-	writeFile  *xlsx.File
-	writeFile_ *os.File
+	readFile  *xlsx.File
+	writeFile *xlsx.File
 
 	readSheet  *xlsx.Sheet
 	writeSheet *xlsx.Sheet
@@ -74,18 +72,22 @@ func (this_ *DataSourceExcel) WriteStart(progress *DateMoveProgress) (err error)
 	if err != nil {
 		return
 	}
-	//err = this_.writeFile.Write(this_.writeFile_)
-	//if err != nil {
-	//	err = errors.New("write file [" + this_.FilePath + "] add sheet error:" + err.Error())
-	//	return
-	//}
+	err = this_.writeFile.Save(this_.FilePath)
+	if err != nil {
+		err = errors.New("write file [" + this_.FilePath + "] add sheet error:" + err.Error())
+		return
+	}
 	return
 }
 
 func (this_ *DataSourceExcel) WriteEnd(progress *DateMoveProgress) (err error) {
 
-	if this_.writeFile != nil && this_.writeFile_ != nil {
-		err = this_.writeFile.Write(this_.writeFile_)
+	if this_.writeFile != nil {
+		err = this_.writeFile.Save(this_.FilePath)
+		if err != nil {
+			err = errors.New("write file [" + this_.FilePath + "] save error:" + err.Error())
+			return
+		}
 	}
 	this_.CloseWriteFile()
 	return
@@ -123,26 +125,20 @@ func (this_ *DataSourceExcel) GetWriteFile() (file *xlsx.File, err error) {
 	if file != nil {
 		return
 	}
-	file_, err := os.Create(this_.FilePath)
-	if err != nil {
-		err = errors.New("create file [" + this_.FilePath + "] error:" + err.Error())
-		return
-	}
-	this_.writeFile_ = file_
 	file = xlsx.NewFile()
 	this_.writeFile = file
 	return
 }
 
 func (this_ *DataSourceExcel) CloseWriteFile() {
-	file := this_.writeFile_
-	this_.writeFile_ = nil
+	file := this_.writeFile
+	this_.writeFile = nil
 	if file != nil {
-		err := file.Close()
-		if err != nil {
-			util.Logger.Error("close write file ["+this_.FilePath+"] error", zap.Error(err))
-			return
-		}
+		//err := file.Close()
+		//if err != nil {
+		//	util.Logger.Error("close write file ["+this_.FilePath+"] error", zap.Error(err))
+		//	return
+		//}
 	}
 	return
 }

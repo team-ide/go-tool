@@ -17,7 +17,7 @@ func DateMove(param *Param, from DataSource, to DataSource, onProgress func(prog
 	}
 	defer func() {
 		if x := recover(); x != nil {
-			err = errors.New(fmt.Sprintf("%x", x))
+			err = errors.New(fmt.Sprintf("%s", x))
 		}
 		onProgress(progress)
 	}()
@@ -48,7 +48,7 @@ func startRead(progress *DateMoveProgress, from DataSource) (err error) {
 	util.Logger.Info("read data source start")
 	defer func() {
 		if x := recover(); x != nil {
-			err = errors.New(fmt.Sprintf("%x", x))
+			err = errors.New(fmt.Sprintf("%s", x))
 		}
 		progress.isEnd = true
 		close(progress.dataChan)
@@ -74,7 +74,7 @@ func startWrite(progress *DateMoveProgress, to DataSource) (err error) {
 	util.Logger.Info("write data source start")
 	defer func() {
 		if x := recover(); x != nil {
-			err = errors.New(fmt.Sprintf("%x", x))
+			err = errors.New(fmt.Sprintf("%s", x))
 		}
 		progress.isEnd = true
 

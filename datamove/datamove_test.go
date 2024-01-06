@@ -15,10 +15,12 @@ func GetDataSourceData() *DataSourceData {
 		},
 	}
 	var data []map[string]interface{}
-	for i := 0; i < 222; i++ {
+	for i := 0; i < 222222; i++ {
 		data = append(data, map[string]interface{}{
-			"userId": i,
-			"name":   i,
+			"userId":   i,
+			"name":     fmt.Sprintf("名称%d", i),
+			"age":      util.RandomInt(1, 115),
+			"password": util.RandomString(6, 16),
 		})
 	}
 	d.DataList = data
@@ -27,6 +29,12 @@ func GetDataSourceData() *DataSourceData {
 	})
 	d.ColumnList = append(d.ColumnList, &dialect.ColumnModel{
 		ColumnName: "name",
+	})
+	d.ColumnList = append(d.ColumnList, &dialect.ColumnModel{
+		ColumnName: "age",
+	})
+	d.ColumnList = append(d.ColumnList, &dialect.ColumnModel{
+		ColumnName: "password",
 	})
 	return d
 }
@@ -63,7 +71,7 @@ func TestDataToData(t *testing.T) {
 	to := &DataSourceData{}
 
 	param := &Param{
-		BatchNumber: 10,
+		BatchNumber: 1000,
 	}
 	param.init()
 
@@ -94,7 +102,7 @@ func TestDataToTxt(t *testing.T) {
 	to := GetDataSourceTxt()
 
 	param := &Param{
-		BatchNumber: 10,
+		BatchNumber: 1000,
 	}
 	param.init()
 
@@ -114,7 +122,7 @@ func TestTxtToData(t *testing.T) {
 	to := &DataSourceData{}
 
 	param := &Param{
-		BatchNumber: 10,
+		BatchNumber: 1000,
 	}
 	param.init()
 
@@ -138,7 +146,7 @@ func TestTxtToTxt2(t *testing.T) {
 	}
 
 	param := &Param{
-		BatchNumber: 10,
+		BatchNumber: 1000,
 	}
 	param.init()
 
@@ -162,7 +170,7 @@ func TestTxt2ToData(t *testing.T) {
 	to := &DataSourceData{}
 
 	param := &Param{
-		BatchNumber: 10,
+		BatchNumber: 1000,
 	}
 	param.init()
 
@@ -186,7 +194,7 @@ func TestTxt2ToExcel(t *testing.T) {
 	to := GetDataSourceExcel()
 
 	param := &Param{
-		BatchNumber: 10,
+		BatchNumber: 1000,
 	}
 	param.init()
 
