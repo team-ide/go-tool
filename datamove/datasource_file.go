@@ -14,6 +14,31 @@ type DataSourceFile struct {
 	writeFile *os.File
 }
 
+func (this_ *DataSourceFile) Stop(progress *DateMoveProgress) {
+	this_.CloseReadFile()
+	this_.CloseWriteFile()
+}
+
+func (this_ *DataSourceFile) ReadStart(progress *DateMoveProgress) (err error) {
+	_, err = this_.GetReadFile()
+	return
+}
+
+func (this_ *DataSourceFile) ReadEnd(progress *DateMoveProgress) (err error) {
+	this_.CloseReadFile()
+	return
+}
+
+func (this_ *DataSourceFile) WriteStart(progress *DateMoveProgress) (err error) {
+	_, err = this_.GetWriteFile()
+	return
+}
+
+func (this_ *DataSourceFile) WriteEnd(progress *DateMoveProgress) (err error) {
+	this_.CloseWriteFile()
+	return
+}
+
 func (this_ *DataSourceFile) GetReadFile() (file *os.File, err error) {
 	file = this_.readFile
 	if file != nil {

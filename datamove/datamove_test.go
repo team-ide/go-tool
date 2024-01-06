@@ -51,6 +51,12 @@ func GetDataSourceTxt2() *DataSourceTxt {
 	return d
 }
 
+func GetDataSourceExcel() *DataSourceExcel {
+	d := &DataSourceExcel{
+		FilePath: testDir + "test2.xlsx",
+	}
+	return d
+}
 func TestDataToData(t *testing.T) {
 	var err error
 	from := GetDataSourceData()
@@ -150,10 +156,34 @@ func TestTxt2ToData(t *testing.T) {
 	from := GetDataSourceTxt2()
 	from.ColumnNameMapping = map[string]string{
 		"用户主键": "userId",
-		"名称22": "name",
+		"名称":   "name",
 	}
 
 	to := &DataSourceData{}
+
+	param := &Param{
+		BatchNumber: 10,
+	}
+	param.init()
+
+	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
+		//fmt.Println(util.GetStringValue(progress))
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(util.GetStringValue(to))
+}
+
+func TestTxt2ToExcel(t *testing.T) {
+	var err error
+	from := GetDataSourceTxt2()
+	from.ColumnNameMapping = map[string]string{
+		"用户主键": "userId",
+		"名称":   "name",
+	}
+
+	to := GetDataSourceExcel()
 
 	param := &Param{
 		BatchNumber: 10,

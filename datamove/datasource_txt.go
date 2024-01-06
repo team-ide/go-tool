@@ -27,16 +27,6 @@ type DataSourceTxt struct {
 	ColumnNameMapping map[string]string `json:"columnNameMapping"`
 }
 
-func (this_ *DataSourceTxt) Stop(progress *DateMoveProgress) {
-	this_.CloseReadFile()
-	this_.CloseWriteFile()
-}
-
-func (this_ *DataSourceTxt) ReadStart(progress *DateMoveProgress) (err error) {
-	_, err = this_.GetReadFile()
-	return
-}
-
 func (this_ *DataSourceTxt) ColsToData(progress *DateMoveProgress, cols []string, columnList []*dialect.ColumnModel) (data map[string]interface{}, err error) {
 	data = map[string]interface{}{}
 	for index, col := range cols {
@@ -50,9 +40,6 @@ func (this_ *DataSourceTxt) ColsToData(progress *DateMoveProgress, cols []string
 			v = strings.TrimSpace(v)
 		}
 		name := columnList[index].ColumnName
-		if this_.ColumnNameMapping != nil && this_.ColumnNameMapping[name] != "" {
-			name = this_.ColumnNameMapping[name]
-		}
 		data[name] = v
 	}
 	return
@@ -145,11 +132,18 @@ func (this_ *DataSourceTxt) Read(progress *DateMoveProgress, dataChan chan *Data
 		if line != "" {
 			cols := strings.Split(line, colSeparator)
 			if !this_.headerRead {
-				for _, col := range cols {
+				for _, name := range cols {
+					if this_.ShouldTrimSpace {
+						name = strings.TrimSpace(name)
+					}
+					if this_.ColumnNameMapping != nil && this_.ColumnNameMapping[name] != "" {
+						name = this_.ColumnNameMapping[name]
+					}
 					this_.readColumnList = append(this_.readColumnList, &dialect.ColumnModel{
-						ColumnName: col,
+						ColumnName: name,
 					})
 				}
+				util.Logger.Info("read head columns [" + strings.Join(worker.GetColumnNames(this_.readColumnList), ",") + "]")
 				this_.readColumnLength = len(this_.readColumnList)
 				this_.headerRead = true
 				continue
@@ -193,16 +187,6 @@ func (this_ *DataSourceTxt) Read(progress *DateMoveProgress, dataChan chan *Data
 		progress.callback(progress)
 		dataChan <- lastData
 	}
-	return
-}
-
-func (this_ *DataSourceTxt) ReadEnd(progress *DateMoveProgress) (err error) {
-	this_.CloseReadFile()
-	return
-}
-
-func (this_ *DataSourceTxt) WriteStart(progress *DateMoveProgress) (err error) {
-	_, err = this_.GetWriteFile()
 	return
 }
 
@@ -279,10 +263,5 @@ func (this_ *DataSourceTxt) Write(progress *DateMoveProgress, data *Data) (err e
 		return
 	}
 	progress.callback(progress)
-	return
-}
-
-func (this_ *DataSourceTxt) WriteEnd(progress *DateMoveProgress) (err error) {
-	this_.CloseWriteFile()
 	return
 }
