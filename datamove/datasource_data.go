@@ -3,12 +3,12 @@ package datamove
 import (
 	"errors"
 	"fmt"
-	"github.com/team-ide/go-tool/util"
-	"go.uber.org/zap"
 )
 
 type DataSourceData struct {
-	*Data
+	DataSourceBase
+	Total    int64                    `json:"total"`
+	DataList []map[string]interface{} `json:"dataList"`
 }
 
 func (this_ *DataSourceData) Stop(progress *DateMoveProgress) {
@@ -16,82 +16,77 @@ func (this_ *DataSourceData) Stop(progress *DateMoveProgress) {
 }
 
 func (this_ *DataSourceData) ReadStart(progress *DateMoveProgress) (err error) {
-	if this_.Data == nil {
-		this_.Data = &Data{}
-	}
-	if err = ValidateDataType(this_.DataType); err != nil {
-		return
+
+	this_.Total = int64(len(this_.DataList))
+	progress.Total = this_.Total
+	if this_.Total > 0 {
+		err = this_.initColumnListByData(progress, this_.DataList[0])
+		if err != nil {
+			return
+		}
 	}
 
-	switch this_.DataType {
-	case DataTypeData:
-		this_.Total = int64(len(this_.DataList))
-		break
-	case DataTypeSql:
-		this_.Total = int64(len(this_.SqlList))
-		break
-	case DataTypeSqlAndParams:
-		this_.Total = int64(len(this_.SqlAndParams))
-		break
-	default:
-		err = errors.New(fmt.Sprintf("当前数据类型[%d]，不支持读取", this_.DataType))
-		return
-	}
-	progress.Total = this_.Total
 	return
 }
 
+func (this_ *DataSourceData) initColumnListByData(progress *DateMoveProgress, data map[string]interface{}) (err error) {
+
+	var titles []string
+	if data != nil {
+		for k := range data {
+			titles = append(titles, k)
+		}
+	}
+	if len(this_.ColumnList) == 0 {
+		for _, title := range titles {
+			column := &Column{}
+			column.ColumnName = title
+			this_.ColumnList = append(this_.ColumnList, column)
+		}
+	}
+	if len(this_.ColumnList) != len(titles) {
+		err = errors.New(fmt.Sprintf("字段长度[%d]头部长度[%d]，长度不一致", len(this_.ColumnList), len(titles)))
+		return
+	}
+
+	return
+}
 func (this_ *DataSourceData) Read(progress *DateMoveProgress, dataChan chan *Data) (err error) {
 
 	pageSize := progress.BatchNumber
-	total := this_.Total
-	var nextStartIndex int64
 
-	for {
+	var lastData = &Data{
+		DataType: DataTypeCols,
+	}
+	for _, data := range this_.DataList {
 		if progress.ShouldStop() {
 			return
 		}
-
-		startIndex := nextStartIndex
-		endIndex := startIndex + pageSize - 1
-		if endIndex >= total {
-			endIndex = total - 1
+		values, e := this_.DataToValues(progress, data)
+		if e != nil {
+			progress.Read.Errors = append(progress.Read.Errors, e.Error())
+			progress.Read.AddError(1)
+			progress.callback(progress)
+			if !progress.ErrorContinue {
+				err = e
+				return
+			}
+		} else {
+			lastData.ColsList = append(lastData.ColsList, values)
+			lastData.Total++
+			progress.Read.AddSuccess(1)
+			if lastData.Total >= pageSize {
+				progress.callback(progress)
+				dataChan <- lastData
+				lastData = &Data{
+					DataType: DataTypeCols,
+				}
+			}
 		}
-		if endIndex < 0 {
-			return
-		}
-		nextStartIndex = endIndex + 1
-		data := &Data{}
-		data.DataType = this_.DataType
-		data.ColumnList = this_.ColumnList
-		// 获取包含结束索引的数据
-		endIndex++
-		var size int
-		switch this_.DataType {
-		case DataTypeData:
-			data.DataList = this_.DataList[startIndex:endIndex]
-			size = len(data.DataList)
-			break
-		case DataTypeSql:
-			data.SqlList = this_.SqlList[startIndex:endIndex]
-			size = len(data.SqlList)
-			break
-		case DataTypeSqlAndParams:
-			data.SqlAndParams = this_.SqlAndParams[startIndex:endIndex]
-			size = len(data.SqlAndParams)
-			break
-		default:
-			err = errors.New(fmt.Sprintf("当前数据类型[%d]，不支持读取", data.DataType))
-			return
-		}
-		data.Total = int64(size)
-		progress.Read.AddSuccess(data.Total)
-		util.Logger.Info("read data source", zap.Any("total", data.Total))
-		progress.dataChan <- data
+	}
+	if lastData.Total > 0 {
 		progress.callback(progress)
-		if endIndex >= progress.Total {
-			break
-		}
+		dataChan <- lastData
 	}
 
 	return
@@ -102,46 +97,34 @@ func (this_ *DataSourceData) ReadEnd(progress *DateMoveProgress) (err error) {
 }
 
 func (this_ *DataSourceData) WriteStart(progress *DateMoveProgress) (err error) {
-	if this_.Data == nil {
-		this_.Data = &Data{}
-	}
 	this_.Total = 0
-	this_.DataType = DataTypeEmpty
-	this_.SqlList = nil
-	this_.SqlAndParams = nil
 	this_.DataList = nil
-	this_.ColumnList = nil
 	return
 }
 
 func (this_ *DataSourceData) Write(progress *DateMoveProgress, data *Data) (err error) {
-	if this_.DataType == DataTypeEmpty {
-		this_.DataType = data.DataType
-	}
-	if err = ValidateDataType(data.DataType); err != nil {
-		return
-	}
-	if this_.DataType != data.DataType {
-		err = errors.New(fmt.Sprintf("当前数据类型[%d]，写入数据类型[%d]，数据类型不一致", this_.DataType, data.DataType))
-		return
-	}
 
-	switch this_.DataType {
-	case DataTypeData:
-		data.Total = int64(len(data.DataList))
+	switch data.DataType {
+	case DataTypeCols:
+		data.Total = int64(len(data.ColsList))
 		if data.Total > 0 {
-			this_.DataList = append(this_.DataList, data.DataList...)
-		}
-		break
-	case DataTypeSql:
-		data.Total = int64(len(data.SqlList))
-		if data.Total > 0 {
-			this_.SqlList = append(this_.SqlList, data.SqlList...)
-		}
-	case DataTypeSqlAndParams:
-		data.Total = int64(len(data.SqlAndParams))
-		if data.Total > 0 {
-			this_.SqlAndParams = append(this_.SqlAndParams, data.SqlAndParams...)
+			for _, cols := range data.ColsList {
+				d, e := this_.ValuesToData(progress, cols)
+				if e != nil {
+					progress.Write.Errors = append(progress.Write.Errors, e.Error())
+					progress.Write.AddError(1)
+					progress.callback(progress)
+					if !progress.ErrorContinue {
+						err = e
+						return
+					}
+				} else {
+					this_.DataList = append(this_.DataList, d)
+					progress.Write.AddSuccess(1)
+				}
+
+			}
+
 		}
 		break
 	default:

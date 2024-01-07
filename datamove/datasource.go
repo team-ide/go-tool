@@ -3,9 +3,6 @@ package datamove
 import (
 	"errors"
 	"fmt"
-	"github.com/team-ide/go-dialect/dialect"
-	"github.com/team-ide/go-tool/util"
-	"go.uber.org/zap"
 	"sync"
 	"time"
 )
@@ -27,12 +24,11 @@ type DateMoveProgress struct {
 	Read  *DateMoveProgressInfo `json:"read"`
 	Write *DateMoveProgressInfo `json:"write"`
 
-	dataChan       chan *Data
-	stopWait       sync.WaitGroup
-	nextStartIndex int64
-	isEnd          bool
-	isStopped      bool
-	callback       func(progress *DateMoveProgress)
+	dataChan  chan *Data
+	stopWait  sync.WaitGroup
+	isEnd     bool
+	isStopped bool
+	callback  func(progress *DateMoveProgress)
 }
 
 type DateMoveProgressInfo struct {
@@ -54,31 +50,16 @@ func (this_ *DateMoveProgressInfo) AddError(size int64) {
 	this_.Error += size
 }
 
-func (this_ *DateMoveProgress) NextIndies() (int64, int64) {
-	pageSize := this_.BatchNumber
-	total := this_.Total
-
-	startIndex := this_.nextStartIndex
-	endIndex := startIndex + pageSize - 1
-	if endIndex >= total {
-		endIndex = total - 1
-	}
-	this_.nextStartIndex = endIndex + 1
-	util.Logger.Info("NextIndies", zap.Any("startIndex", startIndex), zap.Any("endIndex", endIndex))
-	return startIndex, endIndex
-}
-
 func (this_ *DateMoveProgress) ShouldStop() bool {
 	return this_.isEnd || this_.isStopped
 }
 
 type Data struct {
-	Total        int64                    `json:"total"`
-	DataType     DataType                 `json:"dataType"`
-	SqlList      []string                 `json:"sqlList"`
-	SqlAndParams []*SqlAndParam           `json:"sqlAndParams"`
-	DataList     []map[string]interface{} `json:"dataList"`
-	ColumnList   []*dialect.ColumnModel   `json:"columnList"`
+	Total        int64           `json:"total"`
+	DataType     DataType        `json:"dataType"`
+	ColsList     [][]interface{} `json:"colsList"`
+	SqlList      []string        `json:"sqlList"`
+	SqlAndParams []*SqlAndParam  `json:"sqlAndParams"`
 }
 
 type SqlAndParam struct {
@@ -90,13 +71,13 @@ type DataType int8
 
 const (
 	DataTypeEmpty        = 0
-	DataTypeData         = 1
-	DataTypeSql          = 2
-	DataTypeSqlAndParams = 3
+	DataTypeCols         = 1 // 列数据
+	DataTypeSql          = 2 // SQL 语句
+	DataTypeSqlAndParams = 3 // 带占位符的SQL语句
 )
 
 func ValidateDataType(dataType DataType) (err error) {
-	if dataType == DataTypeData || dataType == DataTypeSql || dataType == DataTypeSqlAndParams {
+	if dataType == DataTypeCols || dataType == DataTypeSql || dataType == DataTypeSqlAndParams {
 		return
 	}
 	err = errors.New(fmt.Sprintf("不支持的数据类型[%d]", dataType))

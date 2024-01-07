@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"github.com/tealeg/xlsx"
 	"github.com/team-ide/go-dialect/dialect"
-	"github.com/team-ide/go-dialect/worker"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"strings"
 )
 
 type DataSourceExcel struct {
+	DataSourceBase
 	FilePath string `json:"filePath"`
 
 	readFile  *xlsx.File
@@ -51,6 +51,29 @@ func (this_ *DataSourceExcel) ReadStart(progress *DateMoveProgress) (err error) 
 		err = errors.New("read file [" + this_.FilePath + "] sheet is not found")
 		return
 	}
+	var titles []string
+	if len(this_.readSheet.Cols) > 0 {
+		for _, c := range this_.readSheet.Rows[0].Cells {
+			s := c.String()
+			if this_.ShouldTrimSpace {
+				s = strings.TrimSpace(s)
+			}
+			titles = append(titles, s)
+		}
+	}
+
+	if len(this_.ColumnList) == 0 {
+		for _, title := range titles {
+			column := &Column{}
+			column.ColumnName = title
+			this_.ColumnList = append(this_.ColumnList, column)
+		}
+	}
+	lineCount, err := this_.ReadLineCount()
+	if err != nil {
+		return
+	}
+	progress.Total = lineCount - 1 // 第一行为头信息
 	return
 }
 
@@ -143,33 +166,6 @@ func (this_ *DataSourceExcel) CloseWriteFile() {
 	return
 }
 
-func (this_ *DataSourceExcel) ColsToData(progress *DateMoveProgress, cols []string, columnList []*dialect.ColumnModel) (data map[string]interface{}, err error) {
-	data = map[string]interface{}{}
-	for index, col := range cols {
-		v := col
-		if this_.ShouldTrimSpace {
-			v = strings.TrimSpace(v)
-		}
-		name := columnList[index].ColumnName
-		//if this_.ColumnNameMapping != nil && this_.ColumnNameMapping[name] != "" {
-		//	name = this_.ColumnNameMapping[name]
-		//}
-		data[name] = v
-	}
-	return
-}
-
-func (this_ *DataSourceExcel) DataToCols(progress *DateMoveProgress, data map[string]interface{}, columnList []*dialect.ColumnModel) (cols []string, err error) {
-	for _, column := range columnList {
-		v := util.GetStringValue(data[column.ColumnName])
-		if this_.ShouldTrimSpace {
-			v = strings.TrimSpace(v)
-		}
-		cols = append(cols, v)
-	}
-	return
-}
-
 func (this_ *DataSourceExcel) ReadLineCount() (lineCount int64, err error) {
 	lineCount = int64(len(this_.readSheet.Rows))
 	util.Logger.Info("excel data source read line count", zap.Any("lineCount", lineCount))
@@ -179,45 +175,24 @@ func (this_ *DataSourceExcel) ReadLineCount() (lineCount int64, err error) {
 func (this_ *DataSourceExcel) Read(progress *DateMoveProgress, dataChan chan *Data) (err error) {
 
 	var lastData = &Data{
-		DataType: DataTypeData,
+		DataType: DataTypeCols,
 	}
-	lineCount, err := this_.ReadLineCount()
-	if err != nil {
-		return
-	}
-	progress.Total = lineCount - 1 // 第一行为头信息
 	pageSize := progress.BatchNumber
 	for _, row := range this_.readSheet.Rows {
 		if progress.ShouldStop() {
 			return
 		}
-		var cols []string
+		var cols []interface{}
 		for _, c := range row.Cells {
 			cols = append(cols, c.String())
 		}
 
 		if !this_.headerRead {
-			for _, name := range cols {
-				if this_.ShouldTrimSpace {
-					name = strings.TrimSpace(name)
-				}
-				if this_.ColumnNameMapping != nil && this_.ColumnNameMapping[name] != "" {
-					name = this_.ColumnNameMapping[name]
-				}
-				this_.readColumnList = append(this_.readColumnList, &dialect.ColumnModel{
-					ColumnName: name,
-				})
-			}
-			this_.readColumnLength = len(this_.readColumnList)
 			this_.headerRead = true
 			continue
 		}
-		if len(cols) != this_.readColumnLength {
-			err = errors.New("cols [" + strings.Join(cols, ",") + "] can not to column names [" + strings.Join(worker.GetColumnNames(this_.readColumnList), ",") + "]")
-			return
-		}
 
-		rowData, e := this_.ColsToData(progress, cols, this_.readColumnList)
+		values, e := this_.ValuesToValues(progress, cols)
 		if e != nil {
 			progress.Read.Errors = append(progress.Read.Errors, e.Error())
 			progress.Read.AddError(1)
@@ -227,15 +202,14 @@ func (this_ *DataSourceExcel) Read(progress *DateMoveProgress, dataChan chan *Da
 				return
 			}
 		} else {
-			lastData.ColumnList = this_.readColumnList
-			lastData.DataList = append(lastData.DataList, rowData)
+			lastData.ColsList = append(lastData.ColsList, values)
 			lastData.Total++
 			progress.Read.AddSuccess(1)
 			if lastData.Total >= pageSize {
 				progress.callback(progress)
 				dataChan <- lastData
 				lastData = &Data{
-					DataType: DataTypeData,
+					DataType: DataTypeCols,
 				}
 			}
 		}
@@ -254,18 +228,11 @@ func (this_ *DataSourceExcel) Write(progress *DateMoveProgress, data *Data) (err
 	}
 
 	if !this_.headerWrite {
-		if len(data.ColumnList) == 0 {
+		if len(this_.ColumnList) == 0 {
 			err = errors.New("字段信息不存在，无法写入头部信息")
 			return
 		}
-		var names []string
-		for _, c := range data.ColumnList {
-			name := c.ColumnName
-			if this_.ColumnNameMapping != nil && this_.ColumnNameMapping[name] != "" {
-				name = this_.ColumnNameMapping[name]
-			}
-			names = append(names, name)
-		}
+		var names = this_.GetColumnNames()
 
 		row := this_.writeSheet.AddRow()
 		for _, v := range names {
@@ -277,11 +244,11 @@ func (this_ *DataSourceExcel) Write(progress *DateMoveProgress, data *Data) (err
 	}
 
 	switch data.DataType {
-	case DataTypeData:
-		data.Total = int64(len(data.DataList))
+	case DataTypeCols:
+		data.Total = int64(len(data.ColsList))
 		if data.Total > 0 {
-			for _, one := range data.DataList {
-				cols, e := this_.DataToCols(progress, one, data.ColumnList)
+			for _, one := range data.ColsList {
+				values, e := this_.ValuesToValues(progress, one)
 				if e != nil {
 					progress.Write.Errors = append(progress.Write.Errors, e.Error())
 					progress.Write.AddError(1)
@@ -292,9 +259,22 @@ func (this_ *DataSourceExcel) Write(progress *DateMoveProgress, data *Data) (err
 					}
 				} else {
 					row := this_.writeSheet.AddRow()
-					for _, v := range cols {
+					for _, v := range values {
 						c := row.AddCell()
-						c.SetString(v)
+						switch t := v.(type) {
+						case int8:
+							c.SetInt(int(t))
+						case int16:
+							c.SetInt(int(t))
+						case int:
+							c.SetInt(t)
+						case string:
+							c.SetString(t)
+							break
+						default:
+							c.SetString(util.GetStringValue(v))
+							break
+						}
 					}
 					//_ = this_.writeFile.Write(this_.writeFile_)
 					progress.Write.AddSuccess(1)
