@@ -5,6 +5,7 @@ import (
 	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-tool/db"
 	_ "github.com/team-ide/go-tool/db/db_type_sqlite"
+	"github.com/team-ide/go-tool/elasticsearch"
 	"github.com/team-ide/go-tool/util"
 	"os"
 	"testing"
@@ -133,7 +134,7 @@ func GetDataSourceDb2() *DataSourceDb {
 	if err != nil {
 		panic(err)
 	}
-	_, _ = d.Service.Exec("DELETE FROM TM_LOG", nil)
+	_, _ = d.Service.Exec(`DELETE FROM TM_LOG`, nil)
 	d.ColumnList = []*Column{
 		{ColumnModel: dialect.ColumnModel{ColumnName: "logId"}},
 		{ColumnModel: dialect.ColumnModel{ColumnName: "loginId"}},
@@ -205,6 +206,75 @@ func GetDataSourceDbExcel() *DataSourceExcel {
 	}
 	return d
 }
+
+func GetDataSourceEs() *DataSourceEs {
+	d := &DataSourceEs{
+		IndexName: "index_xxx",
+		IdName:    "logId",
+	}
+	var err error
+	d.Service, err = elasticsearch.New(&elasticsearch.Config{
+		Url: "http://127.0.0.1:9200/",
+	})
+	if err != nil {
+		panic(err)
+	}
+	d.ColumnList = []*Column{
+		{ColumnModel: dialect.ColumnModel{ColumnName: "logId"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "loginId"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userId"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userName"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userAccount"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "ip"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "action"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "method"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "param"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "data"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "status"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "error"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "useTime"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "startTime"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "endTime"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userAgent"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "createTime"}},
+	}
+	return d
+}
+func GetDataSourceEs2() *DataSourceEs {
+	d := &DataSourceEs{
+		IndexName: "index_2",
+		IdName:    "logId",
+	}
+	var err error
+	d.Service, err = elasticsearch.New(&elasticsearch.Config{
+		Url: "http://127.0.0.1:9200/",
+	})
+	if err != nil {
+		panic(err)
+	}
+	_ = d.Service.DeleteIndex("index_2")
+	d.ColumnList = []*Column{
+		{ColumnModel: dialect.ColumnModel{ColumnName: "logId"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "loginId"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userId"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userName"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userAccount"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "ip"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "action"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "method"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "param"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "data"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "status"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "error"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "useTime"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "startTime"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "endTime"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userAgent"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "createTime"}},
+	}
+	return d
+}
+
 func TestDataToData(t *testing.T) {
 	var err error
 	from := GetDataSourceData()
@@ -518,6 +588,50 @@ func TestTxtToDb2(t *testing.T) {
 	from := GetDataSourceDbExcel()
 
 	to := GetDataSourceDb2()
+
+	param := &Param{
+		BatchNumber: 1000,
+	}
+	param.init()
+
+	var p *DateMoveProgress
+	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
+		p = progress
+		//fmt.Println(util.GetStringValue(progress))
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(util.GetStringValue(p))
+}
+
+func TestDbToEs(t *testing.T) {
+	var err error
+	from := GetDataSourceDb()
+
+	to := GetDataSourceEs()
+
+	param := &Param{
+		BatchNumber: 1000,
+	}
+	param.init()
+
+	var p *DateMoveProgress
+	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
+		p = progress
+		//fmt.Println(util.GetStringValue(progress))
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(util.GetStringValue(p))
+}
+
+func TestEsToEs2(t *testing.T) {
+	var err error
+	from := GetDataSourceEs()
+
+	to := GetDataSourceEs2()
 
 	param := &Param{
 		BatchNumber: 1000,

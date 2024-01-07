@@ -146,6 +146,40 @@ func (this_ *V7Service) PerformRequest(options PerformRequestOptions) (res *Perf
 	}
 	return
 }
+
+type QuerySqlResult struct {
+	Columns []*QuerySqlResultColumn `json:"columns"`
+	Rows    [][]interface{}         `json:"rows"`
+}
+type QuerySqlResultColumn struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
+func (this_ *V7Service) QuerySql(query string) (res *QuerySqlResult, err error) {
+	client, err := this_.GetClient()
+	if err != nil {
+		return
+	}
+	//defer client.Stop()
+	ctx := context.Background()
+	body := map[string]interface{}{}
+	body["query"] = query
+	r, err := client.PerformRequest(ctx, elastic.PerformRequestOptions{
+		Method: "post",
+		Path:   "/_sql",
+	})
+	if err != nil {
+		return
+	}
+
+	res = new(QuerySqlResult)
+	d := json.NewDecoder(r.BodyReader)
+	d.UseNumber()
+	err = d.Decode(res)
+	return
+}
+
 func (this_ *V7Service) DeleteIndex(indexName string) (err error) {
 	client, err := this_.GetClient()
 	if err != nil {
@@ -248,6 +282,7 @@ type SearchResult struct {
 	TotalHits *elastic.TotalHits `json:"total,omitempty"`     // total number of hits found
 	MaxScore  *float64           `json:"max_score,omitempty"` // maximum score of all hits
 	Hits      []*HitData         `json:"hits,omitempty"`      // the actual hits returned
+	ScrollId  string             `json:"_scroll_id,omitempty"`
 }
 
 type HitData struct {
@@ -590,6 +625,9 @@ func (this_ *V7Service) Scroll(indexName string, scrollId string, pageSize int, 
 	if err != nil {
 		return
 	}
+
+	res = new(SearchResult)
+	res.ScrollId = searchResult.ScrollId
 	if searchResult.Hits != nil {
 		res.TotalHits = searchResult.Hits.TotalHits
 		res.MaxScore = searchResult.Hits.MaxScore

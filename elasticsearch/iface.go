@@ -44,4 +44,5 @@ type IService interface {
 	// IndexAlias 索引别名
 	IndexAlias(indexName string, aliasName string) (res *IndexAliasResponse, err error)
 	PerformRequest(options PerformRequestOptions) (res *PerformResponse, err error)
+	QuerySql(query string) (res *QuerySqlResult, err error)
 }
