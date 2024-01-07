@@ -13,7 +13,7 @@ type DataSourceDb struct {
 	TableName string `json:"tableName"`
 	SelectSql string `json:"selectSql"`
 
-	Service db.Service
+	Service db.IService
 }
 
 func (this_ *DataSourceDb) GetParam() *db.Param {
@@ -159,7 +159,7 @@ func (this_ *DataSourceDb) Write(progress *DateMoveProgress, data *Data) (err er
 						return
 					}
 				} else {
-					ss, ps, _, _, e := this_.Service.DataListInsertSql(this_.GetParam().ParamModel, "", this_.TableName, this_.GetDialectColumnList(), []map[string]interface{}{d})
+					ss, ps, _, _, e := this_.Service.GetDialect().DataListInsertSql(this_.GetParam().ParamModel, "", this_.TableName, this_.GetDialectColumnList(), []map[string]interface{}{d})
 					if e != nil {
 						progress.Write.Errors = append(progress.Write.Errors, e.Error())
 						progress.Write.AddError(1)

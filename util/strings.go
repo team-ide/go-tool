@@ -88,7 +88,8 @@ func GetStringValue(value interface{}) (valueString string) {
 		if v.IsZero() {
 			valueString = ""
 		} else {
-			valueString = GetFormatByTime(v)
+			//valueString = GetFormatByTime(v)
+			valueString = v.Format("2006-01-02 15:04:05.0000000-07:00")
 		}
 		break
 	case []byte:

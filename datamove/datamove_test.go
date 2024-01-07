@@ -3,6 +3,8 @@ package datamove
 import (
 	"fmt"
 	"github.com/team-ide/go-dialect/dialect"
+	"github.com/team-ide/go-tool/db"
+	_ "github.com/team-ide/go-tool/db/db_type_sqlite"
 	"github.com/team-ide/go-tool/util"
 	"os"
 	"testing"
@@ -94,6 +96,112 @@ func GetDataSourceExcel3() *DataSourceExcel {
 		{ColumnModel: dialect.ColumnModel{ColumnName: "这是姓名"}},
 		{ColumnModel: dialect.ColumnModel{ColumnName: "这是年龄"}},
 		{ColumnModel: dialect.ColumnModel{ColumnName: "这是密码"}},
+	}
+	return d
+}
+
+func GetDataSourceDb() *DataSourceDb {
+	d := &DataSourceDb{
+		TableName: "TM_LOG",
+	}
+	var err error
+	d.Service, err = db.New(&db.Config{
+		Type:         "sqlite3",
+		DatabasePath: testDir + "db",
+	})
+	if err != nil {
+		panic(err)
+	}
+	//d.ColumnList = []*Column{
+	//	{ColumnModel: dialect.ColumnModel{ColumnName: "这是主键"}},
+	//	{ColumnModel: dialect.ColumnModel{ColumnName: "这是姓名"}},
+	//	{ColumnModel: dialect.ColumnModel{ColumnName: "这是年龄"}},
+	//	{ColumnModel: dialect.ColumnModel{ColumnName: "这是密码"}},
+	//}
+	return d
+}
+
+func GetDataSourceDb2() *DataSourceDb {
+	d := &DataSourceDb{
+		TableName: "TM_LOG",
+	}
+	var err error
+	d.Service, err = db.New(&db.Config{
+		Type:         "sqlite3",
+		DatabasePath: testDir + "db2",
+	})
+	if err != nil {
+		panic(err)
+	}
+	_, _ = d.Service.Exec("DELETE FROM TM_LOG", nil)
+	d.ColumnList = []*Column{
+		{ColumnModel: dialect.ColumnModel{ColumnName: "logId"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "loginId"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userId"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userName"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userAccount"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "ip"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "action"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "method"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "param"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "data"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "status"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "error"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "useTime"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "startTime"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "endTime"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userAgent"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "createTime"}},
+	}
+	return d
+}
+
+func GetDataSourceDbTxt() *DataSourceTxt {
+	d := &DataSourceTxt{}
+	d.FilePath = testDir + "db.txt"
+	d.ColumnList = []*Column{
+		{ColumnModel: dialect.ColumnModel{ColumnName: "logId"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "loginId"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userId"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userName"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userAccount"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "ip"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "action"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "method"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "param"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "data"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "status"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "error"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "useTime"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "startTime"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "endTime"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userAgent"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "createTime"}},
+	}
+	return d
+}
+
+func GetDataSourceDbExcel() *DataSourceExcel {
+	d := &DataSourceExcel{}
+	d.FilePath = testDir + "db.xlsx"
+	d.ColumnList = []*Column{
+		{ColumnModel: dialect.ColumnModel{ColumnName: "logId"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "loginId"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userId"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userName"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userAccount"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "ip"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "action"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "method"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "param"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "data"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "status"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "error"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "useTime"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "startTime"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "endTime"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "userAgent"}},
+		{ColumnModel: dialect.ColumnModel{ColumnName: "createTime"}},
 	}
 	return d
 }
@@ -300,6 +408,116 @@ func TestExcel2ToTxt3(t *testing.T) {
 	from := GetDataSourceExcel2()
 
 	to := GetDataSourceTxt3()
+
+	param := &Param{
+		BatchNumber: 1000,
+	}
+	param.init()
+
+	var p *DateMoveProgress
+	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
+		p = progress
+		//fmt.Println(util.GetStringValue(progress))
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(util.GetStringValue(p))
+}
+
+func TestDbToTxt(t *testing.T) {
+	var err error
+	from := GetDataSourceDb()
+
+	to := GetDataSourceDbTxt()
+
+	param := &Param{
+		BatchNumber: 1000,
+	}
+	param.init()
+
+	var p *DateMoveProgress
+	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
+		p = progress
+		//fmt.Println(util.GetStringValue(progress))
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(util.GetStringValue(p))
+}
+
+func TestDbToExcel(t *testing.T) {
+	var err error
+	from := GetDataSourceDb()
+
+	to := GetDataSourceDbExcel()
+
+	param := &Param{
+		BatchNumber: 1000,
+	}
+	param.init()
+
+	var p *DateMoveProgress
+	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
+		p = progress
+		//fmt.Println(util.GetStringValue(progress))
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(util.GetStringValue(p))
+}
+
+func TestDbToDb2(t *testing.T) {
+	var err error
+	from := GetDataSourceDb()
+
+	to := GetDataSourceDb2()
+
+	param := &Param{
+		BatchNumber: 1000,
+	}
+	param.init()
+
+	var p *DateMoveProgress
+	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
+		p = progress
+		//fmt.Println(util.GetStringValue(progress))
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(util.GetStringValue(p))
+}
+
+func TestExcelToDb2(t *testing.T) {
+	var err error
+	from := GetDataSourceDbExcel()
+
+	to := GetDataSourceDb2()
+
+	param := &Param{
+		BatchNumber: 1000,
+	}
+	param.init()
+
+	var p *DateMoveProgress
+	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
+		p = progress
+		//fmt.Println(util.GetStringValue(progress))
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(util.GetStringValue(p))
+}
+
+func TestTxtToDb2(t *testing.T) {
+	var err error
+	from := GetDataSourceDbExcel()
+
+	to := GetDataSourceDb2()
 
 	param := &Param{
 		BatchNumber: 1000,
