@@ -33,7 +33,7 @@ func (this_ DataSourceBase) GetDialectColumnList() []*dialect.ColumnModel {
 	}
 	return columns
 }
-func (this_ DataSourceBase) StringsToValues(progress *DateMoveProgress, cols []string) (res []interface{}, err error) {
+func (this_ DataSourceBase) StringsToValues(progress *Progress, cols []string) (res []interface{}, err error) {
 	vSize := len(cols)
 	for index, _ := range this_.ColumnList {
 		var v string
@@ -53,7 +53,7 @@ func (this_ DataSourceBase) StringsToValues(progress *DateMoveProgress, cols []s
 	return
 }
 
-func (this_ DataSourceBase) ValuesToValues(progress *DateMoveProgress, cols []interface{}) (res []interface{}, err error) {
+func (this_ DataSourceBase) ValuesToValues(progress *Progress, cols []interface{}) (res []interface{}, err error) {
 	vSize := len(cols)
 	for index, _ := range this_.ColumnList {
 		var v interface{}
@@ -77,7 +77,7 @@ func (this_ DataSourceBase) ValuesToValues(progress *DateMoveProgress, cols []in
 	return
 }
 
-func (this_ DataSourceBase) ValuesToStrings(progress *DateMoveProgress, cols []interface{}) (res []string, err error) {
+func (this_ DataSourceBase) ValuesToStrings(progress *Progress, cols []interface{}) (res []string, err error) {
 	values, err := this_.ValuesToValues(progress, cols)
 	if err != nil {
 		return
@@ -88,7 +88,7 @@ func (this_ DataSourceBase) ValuesToStrings(progress *DateMoveProgress, cols []i
 	return
 }
 
-func (this_ DataSourceBase) DataToValues(progress *DateMoveProgress, data map[string]interface{}) (res []interface{}, err error) {
+func (this_ DataSourceBase) DataToValues(progress *Progress, data map[string]interface{}) (res []interface{}, err error) {
 
 	for _, column := range this_.ColumnList {
 		v := data[column.ColumnName]
@@ -109,7 +109,7 @@ func (this_ DataSourceBase) DataToValues(progress *DateMoveProgress, data map[st
 	return
 }
 
-func (this_ DataSourceBase) ValuesToData(progress *DateMoveProgress, cols []interface{}) (data map[string]interface{}, err error) {
+func (this_ DataSourceBase) ValuesToData(progress *Progress, cols []interface{}) (data map[string]interface{}, err error) {
 
 	data = map[string]interface{}{}
 	vSize := len(cols)

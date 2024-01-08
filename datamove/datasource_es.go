@@ -20,11 +20,11 @@ type DataSourceEs struct {
 	Service elasticsearch.IService
 }
 
-func (this_ *DataSourceEs) Stop(progress *DateMoveProgress) {
+func (this_ *DataSourceEs) Stop(progress *Progress) {
 
 }
 
-func (this_ *DataSourceEs) ReadStart(progress *DateMoveProgress) (err error) {
+func (this_ *DataSourceEs) ReadStart(progress *Progress) (err error) {
 
 	if this_.SelectSql == "" {
 
@@ -42,7 +42,7 @@ func (this_ *DataSourceEs) ReadStart(progress *DateMoveProgress) (err error) {
 	if e == nil {
 		r, _ := this_.Service.QuerySql(countSql)
 		if r != nil && len(r.Rows) > 0 && len(r.Rows[0]) > 0 {
-			progress.Total = util.StringToInt64(util.GetStringValue(r.Rows[0][0]))
+			progress.DataTotal += util.StringToInt64(util.GetStringValue(r.Rows[0][0]))
 		}
 	}
 
@@ -63,7 +63,7 @@ func (this_ *DataSourceEs) ReadStart(progress *DateMoveProgress) (err error) {
 	return
 }
 
-func (this_ *DataSourceEs) Read(progress *DateMoveProgress, dataChan chan *Data) (err error) {
+func (this_ *DataSourceEs) Read(progress *Progress, dataChan chan *Data) (err error) {
 
 	pageSize := progress.BatchNumber
 	var doQuery func() (err error)
@@ -91,9 +91,7 @@ func (this_ *DataSourceEs) Read(progress *DateMoveProgress, dataChan chan *Data)
 
 			e := util.JSONDecodeUseNumber([]byte(h.Source), &data)
 			if e != nil {
-				progress.Write.Errors = append(progress.Write.Errors, e.Error())
-				progress.Write.AddError(1)
-				progress.callback(progress)
+				progress.WriteCount.AddError(1, e)
 				if !progress.ErrorContinue {
 					err = e
 					return
@@ -101,9 +99,7 @@ func (this_ *DataSourceEs) Read(progress *DateMoveProgress, dataChan chan *Data)
 			} else {
 				values, e := this_.DataToValues(progress, data)
 				if e != nil {
-					progress.Read.Errors = append(progress.Read.Errors, e.Error())
-					progress.Read.AddError(1)
-					progress.callback(progress)
+					progress.ReadCount.AddError(1, e)
 					if !progress.ErrorContinue {
 						err = e
 						return
@@ -111,13 +107,12 @@ func (this_ *DataSourceEs) Read(progress *DateMoveProgress, dataChan chan *Data)
 				} else {
 					lastData.ColsList = append(lastData.ColsList, values)
 					lastData.Total++
-					progress.Read.AddSuccess(1)
+					progress.ReadCount.AddSuccess(1)
 				}
 			}
 
 		}
 
-		progress.callback(progress)
 		dataChan <- lastData
 		if lastData.Total >= pageSize {
 			err = doQuery()
@@ -137,16 +132,16 @@ func (this_ *DataSourceEs) Read(progress *DateMoveProgress, dataChan chan *Data)
 	return
 }
 
-func (this_ *DataSourceEs) ReadEnd(progress *DateMoveProgress) (err error) {
+func (this_ *DataSourceEs) ReadEnd(progress *Progress) (err error) {
 	return
 }
 
-func (this_ *DataSourceEs) WriteStart(progress *DateMoveProgress) (err error) {
+func (this_ *DataSourceEs) WriteStart(progress *Progress) (err error) {
 
 	return
 }
 
-func (this_ *DataSourceEs) Write(progress *DateMoveProgress, data *Data) (err error) {
+func (this_ *DataSourceEs) Write(progress *Progress, data *Data) (err error) {
 
 	switch data.DataType {
 	case DataTypeCols:
@@ -155,9 +150,7 @@ func (this_ *DataSourceEs) Write(progress *DateMoveProgress, data *Data) (err er
 			for _, cols := range data.ColsList {
 				d, e := this_.ValuesToData(progress, cols)
 				if e != nil {
-					progress.Write.Errors = append(progress.Write.Errors, e.Error())
-					progress.Write.AddError(1)
-					progress.callback(progress)
+					progress.WriteCount.AddError(1, e)
 					if !progress.ErrorContinue {
 						err = e
 						return
@@ -166,15 +159,13 @@ func (this_ *DataSourceEs) Write(progress *DateMoveProgress, data *Data) (err er
 					var id = util.GetStringValue(d[this_.IdName])
 					_, e = this_.Service.InsertNotWait(this_.IndexName, id, d)
 					if e != nil {
-						progress.Write.Errors = append(progress.Write.Errors, e.Error())
-						progress.Write.AddError(1)
-						progress.callback(progress)
+						progress.WriteCount.AddError(1, e)
 						if !progress.ErrorContinue {
 							err = e
 							return
 						}
 					} else {
-						progress.Write.AddSuccess(1)
+						progress.WriteCount.AddSuccess(1)
 					}
 				}
 
@@ -186,10 +177,9 @@ func (this_ *DataSourceEs) Write(progress *DateMoveProgress, data *Data) (err er
 		err = errors.New(fmt.Sprintf("当前数据类型[%d]，不支持写入", data.DataType))
 		return
 	}
-	progress.callback(progress)
 	return
 }
 
-func (this_ *DataSourceEs) WriteEnd(progress *DateMoveProgress) (err error) {
+func (this_ *DataSourceEs) WriteEnd(progress *Progress) (err error) {
 	return
 }

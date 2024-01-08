@@ -29,12 +29,12 @@ type DataSourceExcel struct {
 	SheetName         string            `json:"sheetName"`
 }
 
-func (this_ *DataSourceExcel) Stop(progress *DateMoveProgress) {
+func (this_ *DataSourceExcel) Stop(progress *Progress) {
 	this_.CloseReadFile()
 	this_.CloseWriteFile()
 }
 
-func (this_ *DataSourceExcel) ReadStart(progress *DateMoveProgress) (err error) {
+func (this_ *DataSourceExcel) ReadStart(progress *Progress) (err error) {
 	file, err := this_.GetReadFile()
 	if err != nil {
 		return
@@ -73,16 +73,16 @@ func (this_ *DataSourceExcel) ReadStart(progress *DateMoveProgress) (err error) 
 	if err != nil {
 		return
 	}
-	progress.Total = lineCount - 1 // 第一行为头信息
+	progress.DataTotal += lineCount - 1 // 第一行为头信息
 	return
 }
 
-func (this_ *DataSourceExcel) ReadEnd(progress *DateMoveProgress) (err error) {
+func (this_ *DataSourceExcel) ReadEnd(progress *Progress) (err error) {
 	this_.CloseReadFile()
 	return
 }
 
-func (this_ *DataSourceExcel) WriteStart(progress *DateMoveProgress) (err error) {
+func (this_ *DataSourceExcel) WriteStart(progress *Progress) (err error) {
 	file, err := this_.GetWriteFile()
 	if err != nil {
 		return
@@ -103,7 +103,7 @@ func (this_ *DataSourceExcel) WriteStart(progress *DateMoveProgress) (err error)
 	return
 }
 
-func (this_ *DataSourceExcel) WriteEnd(progress *DateMoveProgress) (err error) {
+func (this_ *DataSourceExcel) WriteEnd(progress *Progress) (err error) {
 
 	if this_.writeFile != nil {
 		err = this_.writeFile.Save(this_.FilePath)
@@ -172,7 +172,7 @@ func (this_ *DataSourceExcel) ReadLineCount() (lineCount int64, err error) {
 	return
 }
 
-func (this_ *DataSourceExcel) Read(progress *DateMoveProgress, dataChan chan *Data) (err error) {
+func (this_ *DataSourceExcel) Read(progress *Progress, dataChan chan *Data) (err error) {
 
 	var lastData = &Data{
 		DataType: DataTypeCols,
@@ -194,9 +194,7 @@ func (this_ *DataSourceExcel) Read(progress *DateMoveProgress, dataChan chan *Da
 
 		values, e := this_.ValuesToValues(progress, cols)
 		if e != nil {
-			progress.Read.Errors = append(progress.Read.Errors, e.Error())
-			progress.Read.AddError(1)
-			progress.callback(progress)
+			progress.ReadCount.AddError(1, e)
 			if !progress.ErrorContinue {
 				err = e
 				return
@@ -204,9 +202,8 @@ func (this_ *DataSourceExcel) Read(progress *DateMoveProgress, dataChan chan *Da
 		} else {
 			lastData.ColsList = append(lastData.ColsList, values)
 			lastData.Total++
-			progress.Read.AddSuccess(1)
+			progress.ReadCount.AddSuccess(1)
 			if lastData.Total >= pageSize {
-				progress.callback(progress)
 				dataChan <- lastData
 				lastData = &Data{
 					DataType: DataTypeCols,
@@ -215,13 +212,12 @@ func (this_ *DataSourceExcel) Read(progress *DateMoveProgress, dataChan chan *Da
 		}
 	}
 	if lastData.Total > 0 {
-		progress.callback(progress)
 		dataChan <- lastData
 	}
 	return
 }
 
-func (this_ *DataSourceExcel) Write(progress *DateMoveProgress, data *Data) (err error) {
+func (this_ *DataSourceExcel) Write(progress *Progress, data *Data) (err error) {
 
 	if err = ValidateDataType(data.DataType); err != nil {
 		return
@@ -250,9 +246,7 @@ func (this_ *DataSourceExcel) Write(progress *DateMoveProgress, data *Data) (err
 			for _, one := range data.ColsList {
 				values, e := this_.ValuesToValues(progress, one)
 				if e != nil {
-					progress.Write.Errors = append(progress.Write.Errors, e.Error())
-					progress.Write.AddError(1)
-					progress.callback(progress)
+					progress.WriteCount.AddError(1, e)
 					if !progress.ErrorContinue {
 						err = e
 						return
@@ -277,7 +271,7 @@ func (this_ *DataSourceExcel) Write(progress *DateMoveProgress, data *Data) (err
 						}
 					}
 					//_ = this_.writeFile.Write(this_.writeFile_)
-					progress.Write.AddSuccess(1)
+					progress.WriteCount.AddSuccess(1)
 				}
 			}
 		}
@@ -286,6 +280,5 @@ func (this_ *DataSourceExcel) Write(progress *DateMoveProgress, data *Data) (err
 		err = errors.New(fmt.Sprintf("当前数据类型[%d]，不支持写入", data.DataType))
 		return
 	}
-	progress.callback(progress)
 	return
 }

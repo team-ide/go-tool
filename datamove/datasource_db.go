@@ -5,35 +5,37 @@ import (
 	"fmt"
 	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-tool/db"
+	"github.com/team-ide/go-tool/util"
+	"go.uber.org/zap"
 )
 
 type DataSourceDb struct {
-	*db.Param
+	*dialect.ParamModel
 	DataSourceBase
+
+	OwnerName string `json:"ownerName"`
 	TableName string `json:"tableName"`
 	SelectSql string `json:"selectSql"`
 
 	Service db.IService
 }
 
-func (this_ *DataSourceDb) GetParam() *db.Param {
-	if this_.Param == nil {
-		this_.Param = &db.Param{}
+func (this_ *DataSourceDb) GetParam() *dialect.ParamModel {
+
+	if this_.ParamModel == nil {
+		this_.ParamModel = &dialect.ParamModel{}
 	}
-	if this_.Param.ParamModel == nil {
-		this_.Param.ParamModel = &dialect.ParamModel{}
-	}
-	return this_.Param
+	return this_.ParamModel
 }
 
-func (this_ *DataSourceDb) Stop(progress *DateMoveProgress) {
+func (this_ *DataSourceDb) Stop(progress *Progress) {
 
 }
 
-func (this_ *DataSourceDb) ReadStart(progress *DateMoveProgress) (err error) {
+func (this_ *DataSourceDb) ReadStart(progress *Progress) (err error) {
 
 	if this_.SelectSql == "" {
-		this_.SelectSql, _, err = this_.Service.GetDialect().DataListSelectSql(this_.GetParam().ParamModel, "", this_.TableName, this_.GetDialectColumnList(), nil, nil)
+		this_.SelectSql, _, err = this_.Service.GetDialect().DataListSelectSql(this_.GetParam(), "", this_.TableName, this_.GetDialectColumnList(), nil, nil)
 		if err != nil {
 			return
 		}
@@ -41,7 +43,8 @@ func (this_ *DataSourceDb) ReadStart(progress *DateMoveProgress) (err error) {
 
 	countSql, e := dialect.FormatCountSql(this_.SelectSql)
 	if e == nil {
-		progress.Total, _ = this_.Service.Count(countSql, nil)
+		t, _ := this_.Service.Count(countSql, nil)
+		progress.DataTotal += t
 	}
 
 	if len(this_.ColumnList) == 0 {
@@ -76,7 +79,7 @@ func (this_ *DataSourceDb) ReadStart(progress *DateMoveProgress) (err error) {
 	return
 }
 
-func (this_ *DataSourceDb) Read(progress *DateMoveProgress, dataChan chan *Data) (err error) {
+func (this_ *DataSourceDb) Read(progress *Progress, dataChan chan *Data) (err error) {
 
 	pageSize := progress.BatchNumber
 
@@ -89,8 +92,14 @@ func (this_ *DataSourceDb) Read(progress *DateMoveProgress, dataChan chan *Data)
 			return
 		}
 		pageSql := this_.Service.GetDialect().PackPageSql(this_.SelectSql, int(pageSize), pageNo)
+		util.Logger.Info("datasource db read",
+			zap.Any("pageSql", pageSql),
+		)
 		list, err = this_.Service.QueryMap(pageSql, nil)
 		if err != nil {
+			util.Logger.Error("datasource db read error",
+				zap.Error(err),
+			)
 			return
 		}
 
@@ -100,9 +109,7 @@ func (this_ *DataSourceDb) Read(progress *DateMoveProgress, dataChan chan *Data)
 		for _, data := range list {
 			values, e := this_.DataToValues(progress, data)
 			if e != nil {
-				progress.Read.Errors = append(progress.Read.Errors, e.Error())
-				progress.Read.AddError(1)
-				progress.callback(progress)
+				progress.ReadCount.AddError(1, e)
 				if !progress.ErrorContinue {
 					err = e
 					return
@@ -110,11 +117,10 @@ func (this_ *DataSourceDb) Read(progress *DateMoveProgress, dataChan chan *Data)
 			} else {
 				lastData.ColsList = append(lastData.ColsList, values)
 				lastData.Total++
-				progress.Read.AddSuccess(1)
+				progress.ReadCount.AddSuccess(1)
 			}
 		}
 
-		progress.callback(progress)
 		dataChan <- lastData
 		if lastData.Total >= pageSize {
 			pageNo++
@@ -131,16 +137,16 @@ func (this_ *DataSourceDb) Read(progress *DateMoveProgress, dataChan chan *Data)
 	return
 }
 
-func (this_ *DataSourceDb) ReadEnd(progress *DateMoveProgress) (err error) {
+func (this_ *DataSourceDb) ReadEnd(progress *Progress) (err error) {
 	return
 }
 
-func (this_ *DataSourceDb) WriteStart(progress *DateMoveProgress) (err error) {
+func (this_ *DataSourceDb) WriteStart(progress *Progress) (err error) {
 
 	return
 }
 
-func (this_ *DataSourceDb) Write(progress *DateMoveProgress, data *Data) (err error) {
+func (this_ *DataSourceDb) Write(progress *Progress, data *Data) (err error) {
 
 	var sqlList []string
 	var paramList [][]interface{}
@@ -151,19 +157,15 @@ func (this_ *DataSourceDb) Write(progress *DateMoveProgress, data *Data) (err er
 			for _, cols := range data.ColsList {
 				d, e := this_.ValuesToData(progress, cols)
 				if e != nil {
-					progress.Write.Errors = append(progress.Write.Errors, e.Error())
-					progress.Write.AddError(1)
-					progress.callback(progress)
+					progress.WriteCount.AddError(1, e)
 					if !progress.ErrorContinue {
 						err = e
 						return
 					}
 				} else {
-					ss, ps, _, _, e := this_.Service.GetDialect().DataListInsertSql(this_.GetParam().ParamModel, "", this_.TableName, this_.GetDialectColumnList(), []map[string]interface{}{d})
+					ss, ps, _, _, e := this_.Service.GetDialect().DataListInsertSql(this_.GetParam(), "", this_.TableName, this_.GetDialectColumnList(), []map[string]interface{}{d})
 					if e != nil {
-						progress.Write.Errors = append(progress.Write.Errors, e.Error())
-						progress.Write.AddError(1)
-						progress.callback(progress)
+						progress.WriteCount.AddError(1, e)
 						if !progress.ErrorContinue {
 							err = e
 							return
@@ -204,21 +206,18 @@ func (this_ *DataSourceDb) Write(progress *DateMoveProgress, data *Data) (err er
 		size := int64(len(sqlList))
 		_, e := this_.Service.Execs(sqlList, paramList)
 		if e != nil {
-			progress.Write.Errors = append(progress.Write.Errors, e.Error())
-			progress.Write.AddError(size)
-			progress.callback(progress)
+			progress.WriteCount.AddError(size, e)
 			if !progress.ErrorContinue {
 				err = e
 				return
 			}
 		} else {
-			progress.Write.AddSuccess(size)
-			progress.callback(progress)
+			progress.WriteCount.AddSuccess(size)
 		}
 	}
 	return
 }
 
-func (this_ *DataSourceDb) WriteEnd(progress *DateMoveProgress) (err error) {
+func (this_ *DataSourceDb) WriteEnd(progress *Progress) (err error) {
 	return
 }

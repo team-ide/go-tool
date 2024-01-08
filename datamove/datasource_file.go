@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"os"
@@ -20,27 +21,27 @@ type DataSourceFile struct {
 	writeFile *os.File
 }
 
-func (this_ DataSourceFile) Stop(progress *DateMoveProgress) {
+func (this_ DataSourceFile) Stop(progress *Progress) {
 	this_.CloseReadFile()
 	this_.CloseWriteFile()
 }
 
-func (this_ DataSourceFile) ReadStart(progress *DateMoveProgress) (err error) {
+func (this_ DataSourceFile) ReadStart(progress *Progress) (err error) {
 	_, err = this_.GetReadFile()
 	return
 }
 
-func (this_ DataSourceFile) ReadEnd(progress *DateMoveProgress) (err error) {
+func (this_ DataSourceFile) ReadEnd(progress *Progress) (err error) {
 	this_.CloseReadFile()
 	return
 }
 
-func (this_ DataSourceFile) WriteStart(progress *DateMoveProgress) (err error) {
+func (this_ DataSourceFile) WriteStart(progress *Progress) (err error) {
 	_, err = this_.GetWriteFile()
 	return
 }
 
-func (this_ DataSourceFile) WriteEnd(progress *DateMoveProgress) (err error) {
+func (this_ DataSourceFile) WriteEnd(progress *Progress) (err error) {
 	this_.CloseWriteFile()
 	return
 }
@@ -77,7 +78,21 @@ func (this_ DataSourceFile) GetWriteFile() (file *os.File, err error) {
 	if file != nil {
 		return
 	}
-	file, err = os.Create(this_.FilePath)
+
+	ex, err := util.PathExists(this_.FilePath)
+	if err != nil {
+		return
+	}
+	if !ex {
+		fmt.Println("os create file:" + this_.FilePath)
+		file, err = os.Create(this_.FilePath)
+		if err != nil {
+			err = errors.New("create file [" + this_.FilePath + "] error:" + err.Error())
+			return
+		}
+		_ = file.Close()
+	}
+	file, err = os.OpenFile(this_.FilePath, os.O_WRONLY|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		err = errors.New("create file [" + this_.FilePath + "] error:" + err.Error())
 		return

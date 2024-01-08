@@ -275,6 +275,12 @@ func GetDataSourceEs2() *DataSourceEs {
 	return d
 }
 
+func NewProgress() *Progress {
+	p := &Progress{}
+	p.BatchNumber = 1000
+	return p
+}
+
 func TestDataToData(t *testing.T) {
 	var err error
 	from := GetDataSourceData()
@@ -289,16 +295,8 @@ func TestDataToData(t *testing.T) {
 	}
 	to := GetDataSourceData()
 
-	param := &Param{
-		BatchNumber: 1000,
-	}
-	param.init()
-
-	var p *DateMoveProgress
-	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p := NewProgress()
+	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
 	}
@@ -306,10 +304,8 @@ func TestDataToData(t *testing.T) {
 	fmt.Println(util.GetStringValue(to.Total))
 	fmt.Println(util.GetStringValue(to.DataList))
 
-	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p = NewProgress()
+	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
 	}
@@ -335,25 +331,15 @@ func TestDataToTxt(t *testing.T) {
 
 	err = os.MkdirAll(testDir, os.ModePerm)
 
-	param := &Param{
-		BatchNumber: 1000,
-	}
-	param.init()
-
-	var p *DateMoveProgress
-	err = DateMove(param, from, GetDataSourceTxt(), func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p := NewProgress()
+	err = DateMove(p, from, GetDataSourceTxt())
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(util.GetStringValue(p))
 
-	err = DateMove(param, from, GetDataSourceExcel(), func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p = NewProgress()
+	err = DateMove(p, from, GetDataSourceTxt())
 	if err != nil {
 		panic(err)
 	}
@@ -366,16 +352,8 @@ func TestTxtToData(t *testing.T) {
 
 	to := GetDataSourceData()
 
-	param := &Param{
-		BatchNumber: 1000,
-	}
-	param.init()
-
-	var p *DateMoveProgress
-	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p := NewProgress()
+	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
 	}
@@ -390,16 +368,8 @@ func TestExcelToData(t *testing.T) {
 
 	to := GetDataSourceData()
 
-	param := &Param{
-		BatchNumber: 1000,
-	}
-	param.init()
-
-	var p *DateMoveProgress
-	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p := NewProgress()
+	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
 	}
@@ -414,16 +384,8 @@ func TestTxtToTxt2(t *testing.T) {
 
 	to := GetDataSourceTxt2()
 
-	param := &Param{
-		BatchNumber: 1000,
-	}
-	param.init()
-
-	var p *DateMoveProgress
-	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p := NewProgress()
+	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
 	}
@@ -436,16 +398,8 @@ func TestExcelToExcel2(t *testing.T) {
 
 	to := GetDataSourceExcel2()
 
-	param := &Param{
-		BatchNumber: 1000,
-	}
-	param.init()
-
-	var p *DateMoveProgress
-	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p := NewProgress()
+	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
 	}
@@ -458,16 +412,8 @@ func TestTxt2ToExcel3(t *testing.T) {
 
 	to := GetDataSourceExcel3()
 
-	param := &Param{
-		BatchNumber: 1000,
-	}
-	param.init()
-
-	var p *DateMoveProgress
-	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p := NewProgress()
+	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
 	}
@@ -479,16 +425,8 @@ func TestExcel2ToTxt3(t *testing.T) {
 
 	to := GetDataSourceTxt3()
 
-	param := &Param{
-		BatchNumber: 1000,
-	}
-	param.init()
-
-	var p *DateMoveProgress
-	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p := NewProgress()
+	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
 	}
@@ -501,16 +439,8 @@ func TestDbToTxt(t *testing.T) {
 
 	to := GetDataSourceDbTxt()
 
-	param := &Param{
-		BatchNumber: 1000,
-	}
-	param.init()
-
-	var p *DateMoveProgress
-	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p := NewProgress()
+	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
 	}
@@ -523,16 +453,8 @@ func TestDbToExcel(t *testing.T) {
 
 	to := GetDataSourceDbExcel()
 
-	param := &Param{
-		BatchNumber: 1000,
-	}
-	param.init()
-
-	var p *DateMoveProgress
-	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p := NewProgress()
+	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
 	}
@@ -545,16 +467,8 @@ func TestDbToDb2(t *testing.T) {
 
 	to := GetDataSourceDb2()
 
-	param := &Param{
-		BatchNumber: 1000,
-	}
-	param.init()
-
-	var p *DateMoveProgress
-	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p := NewProgress()
+	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
 	}
@@ -567,16 +481,8 @@ func TestExcelToDb2(t *testing.T) {
 
 	to := GetDataSourceDb2()
 
-	param := &Param{
-		BatchNumber: 1000,
-	}
-	param.init()
-
-	var p *DateMoveProgress
-	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p := NewProgress()
+	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
 	}
@@ -589,16 +495,8 @@ func TestTxtToDb2(t *testing.T) {
 
 	to := GetDataSourceDb2()
 
-	param := &Param{
-		BatchNumber: 1000,
-	}
-	param.init()
-
-	var p *DateMoveProgress
-	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p := NewProgress()
+	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
 	}
@@ -611,16 +509,8 @@ func TestDbToEs(t *testing.T) {
 
 	to := GetDataSourceEs()
 
-	param := &Param{
-		BatchNumber: 1000,
-	}
-	param.init()
-
-	var p *DateMoveProgress
-	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p := NewProgress()
+	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
 	}
@@ -633,16 +523,8 @@ func TestEsToEs2(t *testing.T) {
 
 	to := GetDataSourceEs2()
 
-	param := &Param{
-		BatchNumber: 1000,
-	}
-	param.init()
-
-	var p *DateMoveProgress
-	err = DateMove(param, from, to, func(progress *DateMoveProgress) {
-		p = progress
-		//fmt.Println(util.GetStringValue(progress))
-	})
+	p := NewProgress()
+	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
 	}

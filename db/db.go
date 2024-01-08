@@ -22,6 +22,10 @@ func (this_ *DatabaseType) init() (err error) {
 	return
 }
 
+func (this_ *DatabaseType) GetDialect() dialect.Dialect {
+	return this_.dia
+}
+
 var (
 	DatabaseTypes []*DatabaseType
 )

@@ -8,13 +8,13 @@ import (
 	"strings"
 )
 
-type DataSourceTxt struct {
+type DataSourceSql struct {
 	DataSourceFile
 	headerRead  bool
 	headerWrite bool
 }
 
-func (this_ *DataSourceTxt) ReadStart(progress *Progress) (err error) {
+func (this_ *DataSourceSql) ReadStart(progress *Progress) (err error) {
 	err = this_.DataSourceFile.ReadStart(progress)
 	if err != nil {
 		return
@@ -40,7 +40,7 @@ func (this_ *DataSourceTxt) ReadStart(progress *Progress) (err error) {
 	return
 }
 
-func (this_ *DataSourceTxt) Read(progress *Progress, dataChan chan *Data) (err error) {
+func (this_ *DataSourceSql) Read(progress *Progress, dataChan chan *Data) (err error) {
 
 	file, err := this_.GetReadFile()
 	if err != nil {
@@ -100,7 +100,7 @@ func (this_ *DataSourceTxt) Read(progress *Progress, dataChan chan *Data) (err e
 	return
 }
 
-func (this_ *DataSourceTxt) Write(progress *Progress, data *Data) (err error) {
+func (this_ *DataSourceSql) Write(progress *Progress, data *Data) (err error) {
 
 	if err = ValidateDataType(data.DataType); err != nil {
 		return

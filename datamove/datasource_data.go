@@ -11,14 +11,14 @@ type DataSourceData struct {
 	DataList []map[string]interface{} `json:"dataList"`
 }
 
-func (this_ *DataSourceData) Stop(progress *DateMoveProgress) {
+func (this_ *DataSourceData) Stop(progress *Progress) {
 
 }
 
-func (this_ *DataSourceData) ReadStart(progress *DateMoveProgress) (err error) {
+func (this_ *DataSourceData) ReadStart(progress *Progress) (err error) {
 
 	this_.Total = int64(len(this_.DataList))
-	progress.Total = this_.Total
+	progress.DataTotal += this_.Total
 	if this_.Total > 0 {
 		err = this_.initColumnListByData(progress, this_.DataList[0])
 		if err != nil {
@@ -29,7 +29,7 @@ func (this_ *DataSourceData) ReadStart(progress *DateMoveProgress) (err error) {
 	return
 }
 
-func (this_ *DataSourceData) initColumnListByData(progress *DateMoveProgress, data map[string]interface{}) (err error) {
+func (this_ *DataSourceData) initColumnListByData(progress *Progress, data map[string]interface{}) (err error) {
 
 	var titles []string
 	if data != nil {
@@ -51,7 +51,7 @@ func (this_ *DataSourceData) initColumnListByData(progress *DateMoveProgress, da
 
 	return
 }
-func (this_ *DataSourceData) Read(progress *DateMoveProgress, dataChan chan *Data) (err error) {
+func (this_ *DataSourceData) Read(progress *Progress, dataChan chan *Data) (err error) {
 
 	pageSize := progress.BatchNumber
 
@@ -64,9 +64,7 @@ func (this_ *DataSourceData) Read(progress *DateMoveProgress, dataChan chan *Dat
 		}
 		values, e := this_.DataToValues(progress, data)
 		if e != nil {
-			progress.Read.Errors = append(progress.Read.Errors, e.Error())
-			progress.Read.AddError(1)
-			progress.callback(progress)
+			progress.ReadCount.AddError(1, e)
 			if !progress.ErrorContinue {
 				err = e
 				return
@@ -74,9 +72,8 @@ func (this_ *DataSourceData) Read(progress *DateMoveProgress, dataChan chan *Dat
 		} else {
 			lastData.ColsList = append(lastData.ColsList, values)
 			lastData.Total++
-			progress.Read.AddSuccess(1)
+			progress.ReadCount.AddSuccess(1)
 			if lastData.Total >= pageSize {
-				progress.callback(progress)
 				dataChan <- lastData
 				lastData = &Data{
 					DataType: DataTypeCols,
@@ -85,24 +82,23 @@ func (this_ *DataSourceData) Read(progress *DateMoveProgress, dataChan chan *Dat
 		}
 	}
 	if lastData.Total > 0 {
-		progress.callback(progress)
 		dataChan <- lastData
 	}
 
 	return
 }
 
-func (this_ *DataSourceData) ReadEnd(progress *DateMoveProgress) (err error) {
+func (this_ *DataSourceData) ReadEnd(progress *Progress) (err error) {
 	return
 }
 
-func (this_ *DataSourceData) WriteStart(progress *DateMoveProgress) (err error) {
+func (this_ *DataSourceData) WriteStart(progress *Progress) (err error) {
 	this_.Total = 0
 	this_.DataList = nil
 	return
 }
 
-func (this_ *DataSourceData) Write(progress *DateMoveProgress, data *Data) (err error) {
+func (this_ *DataSourceData) Write(progress *Progress, data *Data) (err error) {
 
 	switch data.DataType {
 	case DataTypeCols:
@@ -111,16 +107,14 @@ func (this_ *DataSourceData) Write(progress *DateMoveProgress, data *Data) (err 
 			for _, cols := range data.ColsList {
 				d, e := this_.ValuesToData(progress, cols)
 				if e != nil {
-					progress.Write.Errors = append(progress.Write.Errors, e.Error())
-					progress.Write.AddError(1)
-					progress.callback(progress)
+					progress.WriteCount.AddError(1, e)
 					if !progress.ErrorContinue {
 						err = e
 						return
 					}
 				} else {
 					this_.DataList = append(this_.DataList, d)
-					progress.Write.AddSuccess(1)
+					progress.WriteCount.AddSuccess(1)
 				}
 
 			}
@@ -131,11 +125,11 @@ func (this_ *DataSourceData) Write(progress *DateMoveProgress, data *Data) (err 
 		err = errors.New(fmt.Sprintf("当前数据类型[%d]，不支持写入", data.DataType))
 		return
 	}
-	progress.Write.AddSuccess(data.Total)
+	progress.WriteCount.AddSuccess(data.Total)
 	this_.Total += data.Total
 	return
 }
 
-func (this_ *DataSourceData) WriteEnd(progress *DateMoveProgress) (err error) {
+func (this_ *DataSourceData) WriteEnd(progress *Progress) (err error) {
 	return
 }
