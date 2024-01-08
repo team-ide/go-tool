@@ -7,10 +7,10 @@ import (
 )
 
 type Options struct {
-	Key    string           `json:"key"`    // 任务的 key
-	Dir    string           `json:"dir"`    // 任务过程中 生成文件的目录
-	Source DataSourceConfig `json:"source"` // 源 数据配置
-	Target DataSourceConfig `json:"target"` // 目标 数据配置
+	Key    string            `json:"key"`    // 任务的 key
+	Dir    string            `json:"dir"`    // 任务过程中 生成文件的目录
+	Source *DataSourceConfig `json:"source"` // 源 数据配置
+	Target *DataSourceConfig `json:"target"` // 目标 数据配置
 
 	AllOwner       bool       `json:"allOwner"`
 	Owners         []*DbOwner `json:"owners"`
@@ -31,16 +31,16 @@ type Options struct {
 	ErrorContinue bool  `json:"errorContinue"`
 	BatchNumber   int64 `json:"batchNumber"`
 
-	dialect.ParamModel
+	*dialect.ParamModel
 }
 
 type DataSourceConfig struct {
 	Type string `json:"type"`
 
 	// 数据库 配置
-	DbConfig db.Config `json:"-"`
+	DbConfig *db.Config `json:"-"`
 
-	EsConfig elasticsearch.Config `json:"-"`
+	EsConfig *elasticsearch.Config `json:"-"`
 }
 
 type DbOwner struct {
@@ -64,7 +64,7 @@ type DbTable struct {
 }
 
 type DbColumn struct {
-	Column
+	*Column
 	SourceName string `json:"sourceName"`
 	TargetName string `json:"targetName"`
 	Value      string `json:"value"`
@@ -91,5 +91,8 @@ func (this_ DataSourceConfig) IsSql() bool {
 }
 
 func (this_ Options) GetDialectParam() *dialect.ParamModel {
-	return &this_.ParamModel
+	if this_.ParamModel == nil {
+		this_.ParamModel = &dialect.ParamModel{}
+	}
+	return this_.ParamModel
 }

@@ -10,10 +10,13 @@ import (
 )
 
 func TestDataMoveDbToTxt(t *testing.T) {
-	options := &Options{}
+	options := &Options{
+		Source: &DataSourceConfig{},
+		Target: &DataSourceConfig{},
+	}
 	options.Key = util.GetUUID()
 	options.Source.Type = "database"
-	options.Source.DbConfig = db.Config{
+	options.Source.DbConfig = &db.Config{
 		Type:         "sqlite",
 		DatabasePath: "out/db",
 	}
@@ -33,11 +36,15 @@ func TestDataMoveDbToTxt(t *testing.T) {
 	task.Run()
 	fmt.Println(util.GetStringValue(task))
 }
+
 func TestDataMoveDbToSql(t *testing.T) {
-	options := &Options{}
+	options := &Options{
+		Source: &DataSourceConfig{},
+		Target: &DataSourceConfig{},
+	}
 	options.Key = util.GetUUID()
 	options.Source.Type = "database"
-	options.Source.DbConfig = db.Config{
+	options.Source.DbConfig = &db.Config{
 		Type:         "sqlite",
 		DatabasePath: "out/db",
 	}

@@ -14,10 +14,10 @@ import (
 func GetDataSourceData() *DataSourceData {
 	d := &DataSourceData{}
 	d.ColumnList = []*Column{
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "name"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "age"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "password"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "name"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "age"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "password"}},
 	}
 	return d
 }
@@ -27,10 +27,10 @@ func GetDataSourceTxt() *DataSourceTxt {
 	d.FilePath = testDir + "txt.txt"
 	d.ColSeparator = ","
 	d.ColumnList = []*Column{
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "name"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "age"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "password"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "name"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "age"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "password"}},
 	}
 
 	return d
@@ -41,10 +41,10 @@ func GetDataSourceTxt2() *DataSourceTxt {
 	d.FilePath = testDir + "txt2.txt"
 	d.ColSeparator = ","
 	d.ColumnList = []*Column{
-		{ColumnModel: dialect.ColumnModel{ColumnName: "这是主键"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "这是姓名"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "这是年龄"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "这是密码"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是主键"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是姓名"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是年龄"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是密码"}},
 	}
 	return d
 }
@@ -54,10 +54,10 @@ func GetDataSourceTxt3() *DataSourceTxt {
 	d.FilePath = testDir + "txt3.txt"
 	d.ColSeparator = ","
 	d.ColumnList = []*Column{
-		{ColumnModel: dialect.ColumnModel{ColumnName: "这是主键"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "这是姓名"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "这是年龄"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "这是密码"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是主键"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是姓名"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是年龄"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是密码"}},
 	}
 	return d
 }
@@ -67,10 +67,10 @@ func GetDataSourceExcel() *DataSourceExcel {
 		FilePath: testDir + "excel.xlsx",
 	}
 	d.ColumnList = []*Column{
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "name"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "age"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "password"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "name"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "age"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "password"}},
 	}
 	return d
 }
@@ -80,10 +80,10 @@ func GetDataSourceExcel2() *DataSourceExcel {
 		FilePath: testDir + "excel2.xlsx",
 	}
 	d.ColumnList = []*Column{
-		{ColumnModel: dialect.ColumnModel{ColumnName: "这是主键"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "这是姓名"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "这是年龄"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "这是密码"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是主键"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是姓名"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是年龄"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是密码"}},
 	}
 	return d
 }
@@ -93,10 +93,10 @@ func GetDataSourceExcel3() *DataSourceExcel {
 		FilePath: testDir + "excel3.xlsx",
 	}
 	d.ColumnList = []*Column{
-		{ColumnModel: dialect.ColumnModel{ColumnName: "这是主键"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "这是姓名"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "这是年龄"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "这是密码"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是主键"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是姓名"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是年龄"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是密码"}},
 	}
 	return d
 }
@@ -114,10 +114,10 @@ func GetDataSourceDb() *DataSourceDb {
 		panic(err)
 	}
 	//d.ColumnList = []*Column{
-	//	{ColumnModel: dialect.ColumnModel{ColumnName: "这是主键"}},
-	//	{ColumnModel: dialect.ColumnModel{ColumnName: "这是姓名"}},
-	//	{ColumnModel: dialect.ColumnModel{ColumnName: "这是年龄"}},
-	//	{ColumnModel: dialect.ColumnModel{ColumnName: "这是密码"}},
+	//	{ColumnModel: &dialect.ColumnModel{ColumnName: "这是主键"}},
+	//	{ColumnModel: &dialect.ColumnModel{ColumnName: "这是姓名"}},
+	//	{ColumnModel: &dialect.ColumnModel{ColumnName: "这是年龄"}},
+	//	{ColumnModel: &dialect.ColumnModel{ColumnName: "这是密码"}},
 	//}
 	return d
 }
@@ -136,23 +136,23 @@ func GetDataSourceDb2() *DataSourceDb {
 	}
 	_, _ = d.Service.Exec(`DELETE FROM TM_LOG`, nil)
 	d.ColumnList = []*Column{
-		{ColumnModel: dialect.ColumnModel{ColumnName: "logId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "loginId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userName"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userAccount"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "ip"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "action"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "method"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "param"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "data"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "status"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "error"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "useTime"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "startTime"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "endTime"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userAgent"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "createTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "logId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "loginId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userName"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userAccount"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "ip"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "action"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "method"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "param"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "data"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "status"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "error"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "useTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "startTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "endTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userAgent"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "createTime"}},
 	}
 	return d
 }
@@ -161,23 +161,23 @@ func GetDataSourceDbTxt() *DataSourceTxt {
 	d := &DataSourceTxt{}
 	d.FilePath = testDir + "db.txt"
 	d.ColumnList = []*Column{
-		{ColumnModel: dialect.ColumnModel{ColumnName: "logId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "loginId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userName"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userAccount"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "ip"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "action"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "method"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "param"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "data"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "status"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "error"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "useTime"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "startTime"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "endTime"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userAgent"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "createTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "logId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "loginId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userName"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userAccount"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "ip"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "action"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "method"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "param"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "data"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "status"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "error"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "useTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "startTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "endTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userAgent"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "createTime"}},
 	}
 	return d
 }
@@ -186,23 +186,23 @@ func GetDataSourceDbExcel() *DataSourceExcel {
 	d := &DataSourceExcel{}
 	d.FilePath = testDir + "db.xlsx"
 	d.ColumnList = []*Column{
-		{ColumnModel: dialect.ColumnModel{ColumnName: "logId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "loginId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userName"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userAccount"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "ip"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "action"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "method"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "param"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "data"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "status"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "error"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "useTime"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "startTime"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "endTime"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userAgent"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "createTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "logId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "loginId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userName"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userAccount"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "ip"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "action"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "method"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "param"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "data"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "status"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "error"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "useTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "startTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "endTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userAgent"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "createTime"}},
 	}
 	return d
 }
@@ -220,23 +220,23 @@ func GetDataSourceEs() *DataSourceEs {
 		panic(err)
 	}
 	d.ColumnList = []*Column{
-		{ColumnModel: dialect.ColumnModel{ColumnName: "logId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "loginId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userName"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userAccount"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "ip"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "action"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "method"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "param"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "data"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "status"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "error"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "useTime"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "startTime"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "endTime"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userAgent"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "createTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "logId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "loginId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userName"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userAccount"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "ip"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "action"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "method"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "param"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "data"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "status"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "error"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "useTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "startTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "endTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userAgent"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "createTime"}},
 	}
 	return d
 }
@@ -254,29 +254,31 @@ func GetDataSourceEs2() *DataSourceEs {
 	}
 	_ = d.Service.DeleteIndex("index_2")
 	d.ColumnList = []*Column{
-		{ColumnModel: dialect.ColumnModel{ColumnName: "logId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "loginId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userId"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userName"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userAccount"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "ip"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "action"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "method"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "param"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "data"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "status"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "error"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "useTime"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "startTime"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "endTime"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "userAgent"}},
-		{ColumnModel: dialect.ColumnModel{ColumnName: "createTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "logId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "loginId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userId"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userName"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userAccount"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "ip"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "action"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "method"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "param"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "data"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "status"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "error"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "useTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "startTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "endTime"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "userAgent"}},
+		{ColumnModel: &dialect.ColumnModel{ColumnName: "createTime"}},
 	}
 	return d
 }
 
-func NewProgress() *Progress {
-	p := &Progress{}
+func testNewProgress() *Progress {
+	p := &Progress{
+		Options: &Options{},
+	}
 	p.BatchNumber = 1000
 	return p
 }
@@ -295,7 +297,7 @@ func TestDataToData(t *testing.T) {
 	}
 	to := GetDataSourceData()
 
-	p := NewProgress()
+	p := testNewProgress()
 	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
@@ -304,7 +306,7 @@ func TestDataToData(t *testing.T) {
 	fmt.Println(util.GetStringValue(to.Total))
 	fmt.Println(util.GetStringValue(to.DataList))
 
-	p = NewProgress()
+	p = testNewProgress()
 	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
@@ -331,14 +333,14 @@ func TestDataToTxt(t *testing.T) {
 
 	err = os.MkdirAll(testDir, os.ModePerm)
 
-	p := NewProgress()
+	p := testNewProgress()
 	err = DateMove(p, from, GetDataSourceTxt())
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(util.GetStringValue(p))
 
-	p = NewProgress()
+	p = testNewProgress()
 	err = DateMove(p, from, GetDataSourceTxt())
 	if err != nil {
 		panic(err)
@@ -352,7 +354,7 @@ func TestTxtToData(t *testing.T) {
 
 	to := GetDataSourceData()
 
-	p := NewProgress()
+	p := testNewProgress()
 	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
@@ -368,7 +370,7 @@ func TestExcelToData(t *testing.T) {
 
 	to := GetDataSourceData()
 
-	p := NewProgress()
+	p := testNewProgress()
 	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
@@ -384,7 +386,7 @@ func TestTxtToTxt2(t *testing.T) {
 
 	to := GetDataSourceTxt2()
 
-	p := NewProgress()
+	p := testNewProgress()
 	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
@@ -398,7 +400,7 @@ func TestExcelToExcel2(t *testing.T) {
 
 	to := GetDataSourceExcel2()
 
-	p := NewProgress()
+	p := testNewProgress()
 	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
@@ -412,7 +414,7 @@ func TestTxt2ToExcel3(t *testing.T) {
 
 	to := GetDataSourceExcel3()
 
-	p := NewProgress()
+	p := testNewProgress()
 	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
@@ -425,7 +427,7 @@ func TestExcel2ToTxt3(t *testing.T) {
 
 	to := GetDataSourceTxt3()
 
-	p := NewProgress()
+	p := testNewProgress()
 	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
@@ -439,7 +441,7 @@ func TestDbToTxt(t *testing.T) {
 
 	to := GetDataSourceDbTxt()
 
-	p := NewProgress()
+	p := testNewProgress()
 	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
@@ -453,7 +455,7 @@ func TestDbToExcel(t *testing.T) {
 
 	to := GetDataSourceDbExcel()
 
-	p := NewProgress()
+	p := testNewProgress()
 	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
@@ -467,7 +469,7 @@ func TestDbToDb2(t *testing.T) {
 
 	to := GetDataSourceDb2()
 
-	p := NewProgress()
+	p := testNewProgress()
 	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
@@ -481,7 +483,7 @@ func TestExcelToDb2(t *testing.T) {
 
 	to := GetDataSourceDb2()
 
-	p := NewProgress()
+	p := testNewProgress()
 	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
@@ -495,7 +497,7 @@ func TestTxtToDb2(t *testing.T) {
 
 	to := GetDataSourceDb2()
 
-	p := NewProgress()
+	p := testNewProgress()
 	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
@@ -509,7 +511,7 @@ func TestDbToEs(t *testing.T) {
 
 	to := GetDataSourceEs()
 
-	p := NewProgress()
+	p := testNewProgress()
 	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)
@@ -523,7 +525,7 @@ func TestEsToEs2(t *testing.T) {
 
 	to := GetDataSourceEs2()
 
-	p := NewProgress()
+	p := testNewProgress()
 	err = DateMove(p, from, to)
 	if err != nil {
 		panic(err)

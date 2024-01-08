@@ -9,9 +9,15 @@ import (
 	"go.uber.org/zap"
 )
 
+func NewDataSourceDb() *DataSourceDb {
+	return &DataSourceDb{
+		DataSourceBase: &DataSourceBase{},
+	}
+}
+
 type DataSourceDb struct {
 	*dialect.ParamModel
-	DataSourceBase
+	*DataSourceBase
 
 	OwnerName string `json:"ownerName"`
 	TableName string `json:"tableName"`

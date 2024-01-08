@@ -8,8 +8,16 @@ import (
 	"strings"
 )
 
+func NewDataSourceTxt() *DataSourceTxt {
+	return &DataSourceTxt{
+		DataSourceFile: &DataSourceFile{
+			DataSourceBase: &DataSourceBase{},
+		},
+	}
+}
+
 type DataSourceTxt struct {
-	DataSourceFile
+	*DataSourceFile
 	headerRead  bool
 	headerWrite bool
 }

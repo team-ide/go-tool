@@ -30,11 +30,9 @@ func (this_ *Executor) dbToTxt() (err error) {
 
 	util.Logger.Info("db to txt start")
 	err = this_.forEachOwnersTables(true, func(owner *DbOwner, table *DbTable, from *DataSourceDb) (err error) {
-		to := &DataSourceTxt{}
+		to := NewDataSourceTxt()
 		to.ColumnList = from.ColumnList
 		to.FilePath = this_.Dir + owner.TargetName + "." + table.TargetName + ".txt"
-		fmt.Println("from:", util.GetStringValue(from))
-		fmt.Println("to:", util.GetStringValue(to))
 		err = DateMove(this_.Progress, from, to)
 		return
 	})
@@ -61,7 +59,7 @@ func (this_ *Executor) forEachOwnersTables(isSource bool, on func(owner *DbOwner
 	if this_.AllOwner && isSource {
 		var list []*dialect.OwnerModel
 		var service db.IService
-		service, err = this_.newDbService(this_.Source.DbConfig, "", "", "")
+		service, err = this_.newDbService(*this_.Source.DbConfig, "", "", "")
 		if err != nil {
 			return
 		}
@@ -154,9 +152,9 @@ func (this_ *Executor) forEachOwnerTables(isSource bool, owner *DbOwner, on func
 	util.Logger.Info("for each owner tables to do", zap.Any("isSource", isSource), zap.Any("owner", owner.SourceName))
 
 	if isSource {
-		owner.sourceService, err = this_.newDbService(this_.Source.DbConfig, owner.Username, owner.Username, owner.SourceName)
+		owner.sourceService, err = this_.newDbService(*this_.Source.DbConfig, owner.Username, owner.Username, owner.SourceName)
 	} else {
-		owner.targetService, err = this_.newDbService(this_.Target.DbConfig, owner.Username, owner.Username, owner.TargetName)
+		owner.targetService, err = this_.newDbService(*this_.Target.DbConfig, owner.Username, owner.Username, owner.TargetName)
 	}
 	if err != nil {
 		return
@@ -280,15 +278,17 @@ func (this_ *Executor) doOwnerTable(isSource bool, owner *DbOwner, table *DbTabl
 				if table.AllColumn && isSource {
 					columns = append(columns, &DbColumn{
 						SourceName: one.OwnerName,
-						Column: Column{
-							ColumnModel: *one,
+						Column: &Column{
+							ColumnModel: one,
 						},
 					})
 				}
 			} else {
 				find.SourceName = one.ColumnName
-				find.ColumnName = one.ColumnName
-				find.ColumnModel = *one
+				if find.Column == nil {
+					find.Column = &Column{}
+				}
+				find.Column.ColumnModel = one
 			}
 		}
 	}
@@ -311,14 +311,14 @@ func (this_ *Executor) doOwnerTable(isSource bool, owner *DbOwner, table *DbTabl
 	}
 
 	if isSource {
-		datasource := &DataSourceDb{}
+		datasource := NewDataSourceDb()
 		datasource.ParamModel = this_.GetDialectParam()
 		datasource.OwnerName = owner.SourceName
 		datasource.TableName = table.SourceName
 		datasource.Service = owner.sourceService
 
 		for _, c := range columns {
-			datasource.ColumnList = append(datasource.ColumnList, &c.Column)
+			datasource.ColumnList = append(datasource.ColumnList, c.Column)
 		}
 
 		err = on(owner, table, datasource)

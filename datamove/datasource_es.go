@@ -12,7 +12,7 @@ import (
 
 type DataSourceEs struct {
 	*db.Param
-	DataSourceBase
+	*DataSourceBase
 	IndexName string `json:"indexName"`
 	IdName    string `json:"idName"`
 	SelectSql string `json:"selectSql"`

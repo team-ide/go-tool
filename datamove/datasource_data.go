@@ -6,7 +6,7 @@ import (
 )
 
 type DataSourceData struct {
-	DataSourceBase
+	*DataSourceBase
 	Total    int64                    `json:"total"`
 	DataList []map[string]interface{} `json:"dataList"`
 }

@@ -9,7 +9,7 @@ import (
 )
 
 type DataSourceSql struct {
-	DataSourceFile
+	*DataSourceFile
 	headerRead  bool
 	headerWrite bool
 }

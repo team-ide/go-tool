@@ -10,9 +10,7 @@ import (
 )
 
 func New(options *Options) (t *task.Task, err error) {
-	progress := &Progress{
-		Options: *options,
-	}
+	progress := NewProgress(options)
 
 	if options.Dir == "" {
 		err = errors.New(fmt.Sprintf("存储目录为空"))
@@ -52,26 +50,38 @@ func New(options *Options) (t *task.Task, err error) {
 	return
 
 }
+func NewProgress(options *Options) *Progress {
+	res := &Progress{
+		Options: options,
+	}
+	res.OwnerCount = &ProgressCount{}
+	res.TableCount = &ProgressCount{}
+	res.ReadCount = &ProgressCount{}
+	res.WriteCount = &ProgressCount{}
+	res.IndexCount = &ProgressCount{}
+	res.TopicCount = &ProgressCount{}
+	return res
+}
 
 type Progress struct {
-	Options
+	*Options
 
 	DataTotal int64 `json:"dataTotal"`
 
-	OwnerTotal int64         `json:"ownerTotal"`
-	OwnerCount ProgressCount `json:"ownerCount"`
+	OwnerTotal int64          `json:"ownerTotal"`
+	OwnerCount *ProgressCount `json:"ownerCount"`
 
-	TableTotal int64         `json:"tableTotal"`
-	TableCount ProgressCount `json:"tableCount"`
+	TableTotal int64          `json:"tableTotal"`
+	TableCount *ProgressCount `json:"tableCount"`
 
-	ReadCount  ProgressCount `json:"readCount"`
-	WriteCount ProgressCount `json:"writeCount"`
+	ReadCount  *ProgressCount `json:"readCount"`
+	WriteCount *ProgressCount `json:"writeCount"`
 
-	IndexTotal int64         `json:"indexTotal"`
-	IndexCount ProgressCount `json:"indexCount"`
+	IndexTotal int64          `json:"indexTotal"`
+	IndexCount *ProgressCount `json:"indexCount"`
 
-	TopicTotal int64         `json:"topicTotal"`
-	TopicCount ProgressCount `json:"topicCount"`
+	TopicTotal int64          `json:"topicTotal"`
+	TopicCount *ProgressCount `json:"topicCount"`
 
 	isEnd     bool
 	isStopped bool
@@ -88,12 +98,12 @@ type ProgressCount struct {
 	Errors  []string `json:"errors"`
 }
 
-func (this_ ProgressCount) AddSuccess(size int64) {
+func (this_ *ProgressCount) AddSuccess(size int64) {
 	this_.Total += size
 	this_.Success += size
 }
 
-func (this_ ProgressCount) AddError(size int64, err error) {
+func (this_ *ProgressCount) AddError(size int64, err error) {
 	this_.Total += size
 	this_.Error += size
 	if err != nil {

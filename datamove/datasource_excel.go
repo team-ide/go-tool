@@ -4,14 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/tealeg/xlsx"
-	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"strings"
 )
 
 type DataSourceExcel struct {
-	DataSourceBase
+	*DataSourceBase
 	FilePath string `json:"filePath"`
 
 	readFile  *xlsx.File
@@ -22,8 +21,6 @@ type DataSourceExcel struct {
 
 	headerRead        bool
 	headerWrite       bool
-	readColumnList    []*dialect.ColumnModel
-	readColumnLength  int
 	ColumnNameMapping map[string]string `json:"columnNameMapping"`
 	ShouldTrimSpace   bool              `json:"shouldTrimSpace"` // 是否需要去除空白字符
 	SheetName         string            `json:"sheetName"`
