@@ -19,6 +19,7 @@ type DataSourceEs struct {
 	*DataSourceBase
 	IndexName string `json:"indexName"`
 	IdName    string `json:"idName"`
+	IdScript  string `json:"idScript"`
 	SelectSql string `json:"selectSql"`
 
 	Service elasticsearch.IService

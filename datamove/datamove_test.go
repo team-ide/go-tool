@@ -25,7 +25,6 @@ func GetDataSourceData() *DataSourceData {
 func GetDataSourceTxt() *DataSourceTxt {
 	d := NewDataSourceTxt()
 	d.FilePath = testDir + "txt.txt"
-	d.ColSeparator = ","
 	d.ColumnList = []*Column{
 		{ColumnModel: &dialect.ColumnModel{ColumnName: "userId"}},
 		{ColumnModel: &dialect.ColumnModel{ColumnName: "name"}},
@@ -39,7 +38,6 @@ func GetDataSourceTxt() *DataSourceTxt {
 func GetDataSourceTxt2() *DataSourceTxt {
 	d := NewDataSourceTxt()
 	d.FilePath = testDir + "txt2.txt"
-	d.ColSeparator = ","
 	d.ColumnList = []*Column{
 		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是主键"}},
 		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是姓名"}},
@@ -52,7 +50,6 @@ func GetDataSourceTxt2() *DataSourceTxt {
 func GetDataSourceTxt3() *DataSourceTxt {
 	d := NewDataSourceTxt()
 	d.FilePath = testDir + "txt3.txt"
-	d.ColSeparator = ","
 	d.ColumnList = []*Column{
 		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是主键"}},
 		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是姓名"}},

@@ -4,13 +4,17 @@ import (
 	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-tool/db"
 	"github.com/team-ide/go-tool/elasticsearch"
+	"github.com/team-ide/go-tool/kafka"
+	"github.com/team-ide/go-tool/redis"
+	"github.com/team-ide/go-tool/util"
+	"os"
 )
 
 type Options struct {
-	Key    string            `json:"key"`    // 任务的 key
-	Dir    string            `json:"dir"`    // 任务过程中 生成文件的目录
-	Source *DataSourceConfig `json:"source"` // 源 数据配置
-	Target *DataSourceConfig `json:"target"` // 目标 数据配置
+	Key  string            `json:"key"`  // 任务的 key
+	Dir  string            `json:"dir"`  // 任务过程中 生成文件的目录
+	From *DataSourceConfig `json:"from"` // 源 数据配置
+	To   *DataSourceConfig `json:"to"`   // 目标 数据配置
 
 	AllOwner       bool       `json:"allOwner"`
 	Owners         []*DbOwner `json:"owners"`
@@ -23,6 +27,8 @@ type Options struct {
 	ColumnList []*Column `json:"columnList"`
 
 	IndexName string `json:"indexName"`
+	IdName    string `json:"IdName"`
+	IdScript  string `json:"idScript"`
 
 	DataList []map[string]interface{} `json:"dataList"`
 
@@ -53,6 +59,20 @@ func (this_ *Options) GetColSeparator() string {
 	return this_.ColSeparator
 }
 
+func (this_ *Options) getFilePath(dirName string, fileName string, suffix string) (path string) {
+	dir := this_.Dir
+	if dirName != "" {
+		dir = this_.Dir + dirName + "/"
+		exists, _ := util.PathExists(dir)
+		if !exists {
+			_ = os.MkdirAll(dir, os.ModePerm)
+		}
+	}
+	path = dir + fileName + "." + suffix
+
+	return
+}
+
 func (this_ *Options) GetDialectParam() *dialect.ParamModel {
 	if this_.ParamModel == nil {
 		this_.ParamModel = &dialect.ParamModel{}
@@ -81,87 +101,91 @@ type DataSourceConfig struct {
 	DbConfig    *db.Config `json:"-"`
 	DialectType string     `json:"databaseType"`
 
+	Username string `json:"username"`
+	Password string `json:"password"`
+
 	EsConfig *elasticsearch.Config `json:"-"`
+
+	RedisConfig *redis.Config `json:"-"`
+
+	KafkaConfig *kafka.Config `json:"-"`
 }
 
 type DbOwner struct {
-	SourceName     string     `json:"sourceName"`
-	TargetName     string     `json:"targetName"`
-	SkipTableNames []string   `json:"skipTableNames"`
-	AllTable       bool       `json:"allTable"`
-	Tables         []*DbTable `json:"tables"`
-	Username       string     `json:"username"`
-	Password       string     `json:"password"`
-	sourceService  db.IService
-	targetService  db.IService
+	From           *dialect.OwnerModel `json:"from"`
+	To             *dialect.OwnerModel `json:"to"`
+	SkipTableNames []string            `json:"skipTableNames"`
+	AllTable       bool                `json:"allTable"`
+	Tables         []*DbTable          `json:"tables"`
+	fromService    db.IService
+	toService      db.IService
 	appended       bool
 }
 
 type DbTable struct {
-	SourceName      string      `json:"sourceName"`
-	TargetName      string      `json:"targetName"`
-	Columns         []*DbColumn `json:"columns"`
-	SkipColumnNames []string    `json:"skipColumnNames"`
-	AllColumn       bool        `json:"allColumn"`
-	table           *dialect.TableModel
+	From            *dialect.TableModel `json:"from"`
+	To              *dialect.TableModel `json:"to"`
+	Columns         []*DbColumn         `json:"columns"`
+	SkipColumnNames []string            `json:"skipColumnNames"`
+	AllColumn       bool                `json:"allColumn"`
 	appended        bool
+
+	IndexName string `json:"indexName"`
+	IdName    string `json:"idName"`
 }
 
-func (this_ *DbTable) GetTargetDialectTable() *dialect.TableModel {
+func (this_ *DbTable) GetToDialectTable() *dialect.TableModel {
 	table := &dialect.TableModel{}
-	table.TableName = this_.TargetName
+	table.TableName = this_.To.TableName
 
 	for _, c := range this_.Columns {
 		column := &dialect.ColumnModel{}
-		column.ColumnName = c.TargetName
-		if c.Column != nil && c.Column.ColumnModel != nil {
-			column.ColumnDataType = c.Column.ColumnModel.ColumnDataType
-			column.ColumnComment = c.Column.ColumnModel.ColumnComment
-			column.ColumnDefault = c.Column.ColumnModel.ColumnDefault
-			column.ColumnExtra = c.Column.ColumnModel.ColumnExtra
-			column.ColumnEnums = c.Column.ColumnModel.ColumnEnums
-			column.ColumnLength = c.Column.ColumnModel.ColumnLength
-			column.ColumnNotNull = c.Column.ColumnModel.ColumnNotNull
-			column.ColumnCharacterSetName = c.Column.ColumnModel.ColumnCharacterSetName
-			column.ColumnPrecision = c.Column.ColumnModel.ColumnPrecision
-			column.ColumnScale = c.Column.ColumnModel.ColumnScale
-		}
+		column.ColumnName = c.To.ColumnName
+
+		column.ColumnDataType = c.From.ColumnDataType
+		column.ColumnComment = c.From.ColumnComment
+		column.ColumnDefault = c.From.ColumnDefault
+		column.ColumnExtra = c.From.ColumnExtra
+		column.ColumnEnums = c.From.ColumnEnums
+		column.ColumnLength = c.From.ColumnLength
+		column.ColumnNotNull = c.From.ColumnNotNull
+		column.ColumnCharacterSetName = c.From.ColumnCharacterSetName
+		column.ColumnPrecision = c.From.ColumnPrecision
+		column.ColumnScale = c.From.ColumnScale
 		table.ColumnList = append(table.ColumnList, column)
 	}
-	if this_.table != nil {
-		table.PrimaryKeys = this_.table.PrimaryKeys
-		table.IndexList = this_.table.IndexList
-	}
+	table.PrimaryKeys = this_.From.PrimaryKeys
+	table.IndexList = this_.From.IndexList
 	return table
 }
 
 type DbColumn struct {
-	*Column
-	SourceName string `json:"sourceName"`
-	TargetName string `json:"targetName"`
-	Value      string `json:"value"`
+	From  *dialect.ColumnModel `json:"from"`
+	To    *dialect.ColumnModel `json:"to"`
+	Value string               `json:"value"`
 }
 
 func (this_ DataSourceConfig) IsData() bool {
 	return this_.Type == "data"
 }
-
 func (this_ DataSourceConfig) IsDb() bool {
 	return this_.Type == "database"
 }
-
 func (this_ DataSourceConfig) IsEs() bool {
 	return this_.Type == "elasticsearch"
 }
-
 func (this_ DataSourceConfig) IsTxt() bool {
 	return this_.Type == "txt"
 }
-
 func (this_ DataSourceConfig) IsExcel() bool {
 	return this_.Type == "excel"
 }
-
 func (this_ DataSourceConfig) IsSql() bool {
 	return this_.Type == "sql"
+}
+func (this_ DataSourceConfig) IsKafka() bool {
+	return this_.Type == "kafka"
+}
+func (this_ DataSourceConfig) IsRedis() bool {
+	return this_.Type == "redis"
 }

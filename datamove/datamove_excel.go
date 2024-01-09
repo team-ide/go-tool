@@ -9,6 +9,13 @@ func (this_ *Executor) excelToDb() (err error) {
 	return
 }
 
+func (this_ *Executor) excelToEs() (err error) {
+	util.Logger.Info("excel to es start")
+	err = this_.onExcelSourceData(this_.datasourceToEs)
+	util.Logger.Info("excel to es end")
+	return
+}
+
 func (this_ *Executor) excelToSql() (err error) {
 	util.Logger.Info("excel to sql start")
 	err = this_.onExcelSourceData(this_.datasourceToSql)

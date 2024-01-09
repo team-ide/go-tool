@@ -3,6 +3,7 @@ package datamove
 import (
 	"errors"
 	"fmt"
+	"github.com/team-ide/go-tool/elasticsearch"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"sync"
@@ -118,7 +119,7 @@ func (this_ *Executor) datasourceToSql(from DataSource) (err error) {
 	to := NewDataSourceSql()
 	to.ParamModel = this_.GetDialectParam()
 	to.ColumnList = this_.ColumnList
-	to.DialectType = this_.Target.DialectType
+	to.DialectType = this_.To.DialectType
 	to.FilePath = this_.getFilePath("", this_.GetFileName(), "sql")
 	err = DateMove(this_.Progress, from, to)
 	if err != nil {
@@ -164,7 +165,7 @@ func (this_ *Executor) datasourceToDb(from DataSource) (err error) {
 	to.OwnerName = this_.OwnerName
 	to.TableName = this_.TableName
 	to.ParamModel = this_.GetDialectParam()
-	to.Service, err = this_.newDbService(*this_.Target.DbConfig, "", "", this_.OwnerName)
+	to.Service, err = this_.newDbService(*this_.To.DbConfig, this_.To.Username, this_.To.Password, this_.OwnerName)
 	if err != nil {
 		return
 	}
@@ -174,5 +175,26 @@ func (this_ *Executor) datasourceToDb(from DataSource) (err error) {
 		return
 	}
 	util.Logger.Info("datasource to excel end")
+	return
+}
+
+func (this_ *Executor) datasourceToEs(from DataSource) (err error) {
+	util.Logger.Info("datasource to es start")
+	to := NewDataSourceEs()
+	to.ColumnList = this_.ColumnList
+	to.IndexName = this_.IndexName
+	to.IdName = this_.IdName
+	to.IdScript = this_.IdScript
+	to.Service, err = elasticsearch.New(this_.To.EsConfig)
+	if err != nil {
+		util.Logger.Error("elasticsearch client new error", zap.Error(err))
+		return
+	}
+	err = DateMove(this_.Progress, from, to)
+	if err != nil {
+		util.Logger.Error("datasource to es error", zap.Error(err))
+		return
+	}
+	util.Logger.Info("datasource to es end")
 	return
 }

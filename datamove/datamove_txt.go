@@ -9,6 +9,13 @@ func (this_ *Executor) txtToDb() (err error) {
 	return
 }
 
+func (this_ *Executor) txtToEs() (err error) {
+	util.Logger.Info("txt to es start")
+	err = this_.onTxtSourceData(this_.datasourceToEs)
+	util.Logger.Info("txt to es end")
+	return
+}
+
 func (this_ *Executor) txtToSql() (err error) {
 	util.Logger.Info("txt to sql start")
 	err = this_.onTxtSourceData(this_.datasourceToSql)

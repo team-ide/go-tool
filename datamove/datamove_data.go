@@ -11,6 +11,13 @@ func (this_ *Executor) dataToDb() (err error) {
 	return
 }
 
+func (this_ *Executor) dataToEs() (err error) {
+	util.Logger.Info("data to es start")
+	err = this_.onDataSourceData(this_.datasourceToDb)
+	util.Logger.Info("data to es end")
+	return
+}
+
 func (this_ *Executor) dataToSql() (err error) {
 	util.Logger.Info("data to sql start")
 	err = this_.onDataSourceData(this_.datasourceToSql)
