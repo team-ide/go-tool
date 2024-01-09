@@ -83,11 +83,17 @@ type Progress struct {
 	TopicTotal int64          `json:"topicTotal"`
 	TopicCount *ProgressCount `json:"topicCount"`
 
-	isEnd     bool
-	isStopped bool
+	isEnd        bool
+	isStopped    bool
+	dataMoveStop *bool
 }
 
 func (this_ *Progress) ShouldStop() bool {
+	if this_.dataMoveStop != nil {
+		if *this_.dataMoveStop {
+			return true
+		}
+	}
 	return this_.isEnd || this_.isStopped
 }
 

@@ -12,7 +12,7 @@ import (
 )
 
 func GetDataSourceData() *DataSourceData {
-	d := &DataSourceData{}
+	d := NewDataSourceData()
 	d.ColumnList = []*Column{
 		{ColumnModel: &dialect.ColumnModel{ColumnName: "userId"}},
 		{ColumnModel: &dialect.ColumnModel{ColumnName: "name"}},
@@ -23,7 +23,7 @@ func GetDataSourceData() *DataSourceData {
 }
 
 func GetDataSourceTxt() *DataSourceTxt {
-	d := &DataSourceTxt{}
+	d := NewDataSourceTxt()
 	d.FilePath = testDir + "txt.txt"
 	d.ColSeparator = ","
 	d.ColumnList = []*Column{
@@ -37,7 +37,7 @@ func GetDataSourceTxt() *DataSourceTxt {
 }
 
 func GetDataSourceTxt2() *DataSourceTxt {
-	d := &DataSourceTxt{}
+	d := NewDataSourceTxt()
 	d.FilePath = testDir + "txt2.txt"
 	d.ColSeparator = ","
 	d.ColumnList = []*Column{
@@ -50,7 +50,7 @@ func GetDataSourceTxt2() *DataSourceTxt {
 }
 
 func GetDataSourceTxt3() *DataSourceTxt {
-	d := &DataSourceTxt{}
+	d := NewDataSourceTxt()
 	d.FilePath = testDir + "txt3.txt"
 	d.ColSeparator = ","
 	d.ColumnList = []*Column{
@@ -63,9 +63,8 @@ func GetDataSourceTxt3() *DataSourceTxt {
 }
 
 func GetDataSourceExcel() *DataSourceExcel {
-	d := &DataSourceExcel{
-		FilePath: testDir + "excel.xlsx",
-	}
+	d := NewDataSourceExcel()
+	d.FilePath = testDir + "excel.xlsx"
 	d.ColumnList = []*Column{
 		{ColumnModel: &dialect.ColumnModel{ColumnName: "userId"}},
 		{ColumnModel: &dialect.ColumnModel{ColumnName: "name"}},
@@ -76,9 +75,8 @@ func GetDataSourceExcel() *DataSourceExcel {
 }
 
 func GetDataSourceExcel2() *DataSourceExcel {
-	d := &DataSourceExcel{
-		FilePath: testDir + "excel2.xlsx",
-	}
+	d := NewDataSourceExcel()
+	d.FilePath = testDir + "excel2.xlsx"
 	d.ColumnList = []*Column{
 		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是主键"}},
 		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是姓名"}},
@@ -89,9 +87,8 @@ func GetDataSourceExcel2() *DataSourceExcel {
 }
 
 func GetDataSourceExcel3() *DataSourceExcel {
-	d := &DataSourceExcel{
-		FilePath: testDir + "excel3.xlsx",
-	}
+	d := NewDataSourceExcel()
+	d.FilePath = testDir + "excel3.xlsx"
 	d.ColumnList = []*Column{
 		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是主键"}},
 		{ColumnModel: &dialect.ColumnModel{ColumnName: "这是姓名"}},
@@ -102,9 +99,8 @@ func GetDataSourceExcel3() *DataSourceExcel {
 }
 
 func GetDataSourceDb() *DataSourceDb {
-	d := &DataSourceDb{
-		TableName: "TM_LOG",
-	}
+	d := NewDataSourceDb()
+	d.TableName = "TM_LOG"
 	var err error
 	d.Service, err = db.New(&db.Config{
 		Type:         "sqlite3",
@@ -123,9 +119,8 @@ func GetDataSourceDb() *DataSourceDb {
 }
 
 func GetDataSourceDb2() *DataSourceDb {
-	d := &DataSourceDb{
-		TableName: "TM_LOG",
-	}
+	d := NewDataSourceDb()
+	d.TableName = "TM_LOG"
 	var err error
 	d.Service, err = db.New(&db.Config{
 		Type:         "sqlite3",
@@ -158,7 +153,7 @@ func GetDataSourceDb2() *DataSourceDb {
 }
 
 func GetDataSourceDbTxt() *DataSourceTxt {
-	d := &DataSourceTxt{}
+	d := NewDataSourceTxt()
 	d.FilePath = testDir + "db.txt"
 	d.ColumnList = []*Column{
 		{ColumnModel: &dialect.ColumnModel{ColumnName: "logId"}},
@@ -183,7 +178,7 @@ func GetDataSourceDbTxt() *DataSourceTxt {
 }
 
 func GetDataSourceDbExcel() *DataSourceExcel {
-	d := &DataSourceExcel{}
+	d := NewDataSourceExcel()
 	d.FilePath = testDir + "db.xlsx"
 	d.ColumnList = []*Column{
 		{ColumnModel: &dialect.ColumnModel{ColumnName: "logId"}},
@@ -208,10 +203,10 @@ func GetDataSourceDbExcel() *DataSourceExcel {
 }
 
 func GetDataSourceEs() *DataSourceEs {
-	d := &DataSourceEs{
-		IndexName: "index_xxx",
-		IdName:    "logId",
-	}
+	d := NewDataSourceEs()
+	d.IndexName = "index_xxx"
+	d.IdName = "logId"
+
 	var err error
 	d.Service, err = elasticsearch.New(&elasticsearch.Config{
 		Url: "http://127.0.0.1:9200/",
@@ -241,10 +236,9 @@ func GetDataSourceEs() *DataSourceEs {
 	return d
 }
 func GetDataSourceEs2() *DataSourceEs {
-	d := &DataSourceEs{
-		IndexName: "index_2",
-		IdName:    "logId",
-	}
+	d := NewDataSourceEs()
+	d.IndexName = "index_2"
+	d.IdName = "logId"
 	var err error
 	d.Service, err = elasticsearch.New(&elasticsearch.Config{
 		Url: "http://127.0.0.1:9200/",

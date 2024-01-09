@@ -4,14 +4,18 @@ import (
 	"errors"
 	"fmt"
 	"github.com/team-ide/go-dialect/dialect"
-	"github.com/team-ide/go-tool/db"
 	"github.com/team-ide/go-tool/elasticsearch"
 	"github.com/team-ide/go-tool/util"
 	"strings"
 )
 
+func NewDataSourceEs() *DataSourceEs {
+	return &DataSourceEs{
+		DataSourceBase: &DataSourceBase{},
+	}
+}
+
 type DataSourceEs struct {
-	*db.Param
 	*DataSourceBase
 	IndexName string `json:"indexName"`
 	IdName    string `json:"idName"`

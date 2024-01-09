@@ -28,7 +28,7 @@ func (this_ *DataSourceTxt) ReadStart(progress *Progress) (err error) {
 		return
 	}
 
-	titles, err := this_.ReadTitles()
+	titles, err := this_.ReadTitles(progress)
 	if err != nil {
 		return
 	}
@@ -56,8 +56,7 @@ func (this_ *DataSourceTxt) Read(progress *Progress, dataChan chan *Data) (err e
 	}
 	buf := bufio.NewReader(file)
 	var line string
-	rowSeparator := this_.GetRowSeparator()
-	colSeparator := this_.GetColSeparator()
+	colSeparator := progress.GetColSeparator()
 
 	var lastData = &Data{
 		DataType: DataTypeCols,
@@ -67,8 +66,8 @@ func (this_ *DataSourceTxt) Read(progress *Progress, dataChan chan *Data) (err e
 		if progress.ShouldStop() {
 			return
 		}
-		line, err = buf.ReadString(rowSeparator)
-		line = strings.TrimSuffix(line, string(rowSeparator))
+		line, err = buf.ReadString('\n')
+		line = strings.TrimSuffix(line, "\n")
 		if line != "" {
 			cols := strings.Split(line, colSeparator)
 			if !this_.headerRead {
@@ -113,10 +112,9 @@ func (this_ *DataSourceTxt) Write(progress *Progress, data *Data) (err error) {
 	if err = ValidateDataType(data.DataType); err != nil {
 		return
 	}
-	rowSeparator := this_.GetRowSeparator()
-	colSeparator := this_.GetColSeparator()
+	colSeparator := progress.GetColSeparator()
 
-	file, err := this_.GetWriteFile()
+	buf, err := this_.GetWriteBuf()
 	if err != nil {
 		return
 	}
@@ -126,7 +124,8 @@ func (this_ *DataSourceTxt) Write(progress *Progress, data *Data) (err error) {
 			return
 		}
 		line := strings.Join(this_.GetColumnNames(), colSeparator)
-		_, _ = file.WriteString(line)
+		_, _ = buf.WriteString(line)
+		_ = buf.Flush()
 		this_.headerWrite = true
 	}
 
@@ -144,7 +143,7 @@ func (this_ *DataSourceTxt) Write(progress *Progress, data *Data) (err error) {
 					}
 				} else {
 					line := strings.Join(stringValues, colSeparator)
-					_, _ = file.WriteString(string(rowSeparator) + line)
+					_, _ = buf.WriteString("\n" + line)
 					progress.WriteCount.AddSuccess(1)
 				}
 			}
@@ -154,5 +153,6 @@ func (this_ *DataSourceTxt) Write(progress *Progress, data *Data) (err error) {
 		err = errors.New(fmt.Sprintf("当前数据类型[%d]，不支持写入", data.DataType))
 		return
 	}
+	_ = buf.Flush()
 	return
 }

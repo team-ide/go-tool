@@ -9,6 +9,12 @@ import (
 	"strings"
 )
 
+func NewDataSourceExcel() *DataSourceExcel {
+	return &DataSourceExcel{
+		DataSourceBase: &DataSourceBase{},
+	}
+}
+
 type DataSourceExcel struct {
 	*DataSourceBase
 	FilePath string `json:"filePath"`

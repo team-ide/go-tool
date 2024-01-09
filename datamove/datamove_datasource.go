@@ -9,11 +9,12 @@ import (
 )
 
 func DateMove(progress *Progress, from DataSource, to DataSource) (err error) {
-
+	progress.dataMoveStop = nil
 	defer func() {
 		if x := recover(); x != nil {
 			err = errors.New(fmt.Sprintf("%s", x))
 		}
+		progress.dataMoveStop = nil
 	}()
 	var dataChan = make(chan *Data, 1)
 
@@ -45,7 +46,6 @@ func startRead(progress *Progress, from DataSource, dataChan chan *Data) (err er
 		if x := recover(); x != nil {
 			err = errors.New(fmt.Sprintf("%s", x))
 		}
-		//progress.isEnd = true
 		close(dataChan)
 
 		if e := from.ReadEnd(progress); e != nil {
@@ -69,7 +69,6 @@ func startWrite(progress *Progress, to DataSource, dataChan chan *Data) (err err
 		if x := recover(); x != nil {
 			err = errors.New(fmt.Sprintf("%s", x))
 		}
-		//progress.isEnd = true
 
 		if e := to.WriteEnd(progress); e != nil {
 			if err == nil {
@@ -98,15 +97,82 @@ func startWrite(progress *Progress, to DataSource, dataChan chan *Data) (err err
 			continue
 		}
 
-		util.Logger.Info("write data source", zap.Any("total", data.Total))
+		util.Logger.Info("write data source start", zap.Any("total", data.Total))
 		err = to.Write(progress, data)
+		util.Logger.Info("write data source end", zap.Any("total", data.Total))
 		if err != nil {
 			if !progress.ErrorContinue || errors.Is(err, ErrorStopped) {
-				//progress.isEnd = true
+				dataMoveStop := new(bool)
+				*dataMoveStop = true
+				progress.dataMoveStop = dataMoveStop
 				continue
 			}
 			err = nil
 		}
 	}
+	return
+}
+
+func (this_ *Executor) datasourceToSql(from DataSource) (err error) {
+	util.Logger.Info("datasource to sql start")
+	to := NewDataSourceSql()
+	to.ParamModel = this_.GetDialectParam()
+	to.ColumnList = this_.ColumnList
+	to.DialectType = this_.Target.DialectType
+	to.FilePath = this_.getFilePath("", this_.GetFileName(), "sql")
+	err = DateMove(this_.Progress, from, to)
+	if err != nil {
+		util.Logger.Error("datasource to sql error", zap.Error(err))
+		return
+	}
+	util.Logger.Info("datasource to sql end")
+	return
+}
+
+func (this_ *Executor) datasourceToTxt(from DataSource) (err error) {
+	util.Logger.Info("datasource to text start")
+	to := NewDataSourceTxt()
+	to.ColumnList = this_.ColumnList
+	to.FilePath = this_.getFilePath("", this_.GetFileName(), this_.GetFileSuffix())
+	err = DateMove(this_.Progress, from, to)
+	if err != nil {
+		util.Logger.Error("datasource to text error", zap.Error(err))
+		return
+	}
+	util.Logger.Info("datasource to text end")
+	return
+}
+
+func (this_ *Executor) datasourceToExcel(from DataSource) (err error) {
+	util.Logger.Info("datasource to excel start")
+	to := NewDataSourceExcel()
+	to.ColumnList = this_.ColumnList
+	to.FilePath = this_.getFilePath("", this_.GetFileName(), "xlsx")
+	err = DateMove(this_.Progress, from, to)
+	if err != nil {
+		util.Logger.Error("datasource to excel error", zap.Error(err))
+		return
+	}
+	util.Logger.Info("datasource to excel end")
+	return
+}
+
+func (this_ *Executor) datasourceToDb(from DataSource) (err error) {
+	util.Logger.Info("datasource to excel start")
+	to := NewDataSourceDb()
+	to.ColumnList = this_.ColumnList
+	to.OwnerName = this_.OwnerName
+	to.TableName = this_.TableName
+	to.ParamModel = this_.GetDialectParam()
+	to.Service, err = this_.newDbService(*this_.Target.DbConfig, "", "", this_.OwnerName)
+	if err != nil {
+		return
+	}
+	err = DateMove(this_.Progress, from, to)
+	if err != nil {
+		util.Logger.Error("datasource to excel error", zap.Error(err))
+		return
+	}
+	util.Logger.Info("datasource to excel end")
 	return
 }

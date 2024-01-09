@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"os"
@@ -13,16 +12,15 @@ import (
 
 type DataSourceFile struct {
 	*DataSourceBase
-	FilePath     string `json:"filePath"`
-	RowSeparator byte   `json:"rowSeparator"` // 行 分隔符 默认 `\n`
-	ColSeparator string `json:"colSeparator"` // 列 分隔符 默认 `,`
+	FilePath string `json:"filePath"`
 
 	readFile  *os.File
 	writeFile *os.File
+	bufWriter *bufio.Writer
 }
 
 func (this_ *DataSourceFile) Stop(progress *Progress) {
-	fmt.Println("stop data source file:" + this_.FilePath)
+	//fmt.Println("stop data source file:" + this_.FilePath)
 	this_.CloseReadFile()
 	this_.CloseWriteFile()
 }
@@ -52,7 +50,7 @@ func (this_ *DataSourceFile) GetReadFile() (file *os.File, err error) {
 	if file != nil {
 		return
 	}
-	fmt.Println("open read file:" + this_.FilePath)
+	//fmt.Println("open read file:" + this_.FilePath)
 	file, err = os.Open(this_.FilePath)
 	if err != nil {
 		err = errors.New("open file [" + this_.FilePath + "] error:" + err.Error())
@@ -63,7 +61,7 @@ func (this_ *DataSourceFile) GetReadFile() (file *os.File, err error) {
 }
 
 func (this_ *DataSourceFile) CloseReadFile() {
-	fmt.Println("close read file:" + this_.FilePath)
+	//fmt.Println("close read file:" + this_.FilePath)
 	file := this_.readFile
 	this_.readFile = nil
 	if file != nil {
@@ -77,7 +75,7 @@ func (this_ *DataSourceFile) CloseReadFile() {
 }
 
 func (this_ *DataSourceFile) GetWriteFile() (file *os.File, err error) {
-	fmt.Println("get write file:"+this_.FilePath, this_.writeFile != nil)
+	//fmt.Println("get write file:"+this_.FilePath, this_.writeFile != nil)
 	file = this_.writeFile
 	if file != nil {
 		return
@@ -95,8 +93,9 @@ func (this_ *DataSourceFile) GetWriteFile() (file *os.File, err error) {
 		}
 		_ = file.Close()
 	}
-	fmt.Println("open write file:" + this_.FilePath)
-	file, err = os.OpenFile(this_.FilePath, os.O_WRONLY|os.O_CREATE, os.ModePerm)
+	//fmt.Println("open write file:" + this_.FilePath)
+	// 打开 只写 创建 追加
+	file, err = os.OpenFile(this_.FilePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		err = errors.New("create file [" + this_.FilePath + "] error:" + err.Error())
 		return
@@ -105,11 +104,31 @@ func (this_ *DataSourceFile) GetWriteFile() (file *os.File, err error) {
 	return
 }
 
+func (this_ *DataSourceFile) GetWriteBuf() (bufWriter *bufio.Writer, err error) {
+	bufWriter = this_.bufWriter
+	if bufWriter != nil {
+		return
+	}
+	file, err := this_.GetWriteFile()
+	if err != nil {
+		return
+	}
+
+	bufWriter = bufio.NewWriter(file)
+	this_.bufWriter = bufWriter
+	return
+}
+
 func (this_ *DataSourceFile) CloseWriteFile() {
-	fmt.Println("close write file:" + this_.FilePath)
+	bufWriter := this_.bufWriter
+	if bufWriter != nil {
+		this_.bufWriter = nil
+		_ = bufWriter.Flush()
+	}
+	//fmt.Println("close write file:" + this_.FilePath)
 	file := this_.writeFile
-	this_.writeFile = nil
 	if file != nil {
+		this_.writeFile = nil
 		err := file.Close()
 		if err != nil {
 			util.Logger.Error("close write file ["+this_.FilePath+"] error", zap.Error(err))
@@ -126,26 +145,11 @@ func dropCR(data []byte) []byte {
 	return data
 }
 
-func (this_ *DataSourceFile) GetRowSeparator() byte {
-	if this_.RowSeparator == 0 {
-		return '\n'
-	}
-	return this_.RowSeparator
-}
-
-func (this_ *DataSourceFile) GetColSeparator() string {
-	if this_.ColSeparator == "" {
-		return ","
-	}
-	return this_.ColSeparator
-}
-
 func (this_ *DataSourceFile) ScanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	if atEOF && len(data) == 0 {
 		return 0, nil, nil
 	}
-	rowSeparator := this_.GetRowSeparator()
-	if i := bytes.IndexByte(data, rowSeparator); i >= 0 {
+	if i := bytes.IndexByte(data, '\n'); i >= 0 {
 		// We have a full newline-terminated line.
 		return i + 1, dropCR(data[0:i]), nil
 	}
@@ -176,7 +180,7 @@ func (this_ *DataSourceFile) ReadLineCount() (lineCount int64, err error) {
 	return
 }
 
-func (this_ *DataSourceFile) ReadTitles() (titles []string, err error) {
+func (this_ *DataSourceFile) ReadTitles(progress *Progress) (titles []string, err error) {
 	file, err := os.Open(this_.FilePath)
 	if err != nil {
 		err = errors.New("open file [" + this_.FilePath + "] error:" + err.Error())
@@ -190,9 +194,9 @@ func (this_ *DataSourceFile) ReadTitles() (titles []string, err error) {
 		if line == "" {
 			continue
 		}
-		cols := strings.Split(line, this_.GetColSeparator())
+		cols := strings.Split(line, progress.GetColSeparator())
 		for _, c := range cols {
-			if this_.ShouldTrimSpace {
+			if progress.ShouldTrimSpace {
 				c = strings.TrimSpace(c)
 			}
 			titles = append(titles, c)

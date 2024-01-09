@@ -5,6 +5,12 @@ import (
 	"fmt"
 )
 
+func NewDataSourceData() *DataSourceData {
+	return &DataSourceData{
+		DataSourceBase: &DataSourceBase{},
+	}
+}
+
 type DataSourceData struct {
 	*DataSourceBase
 	Total    int64                    `json:"total"`

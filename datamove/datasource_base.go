@@ -7,10 +7,8 @@ import (
 )
 
 type DataSourceBase struct {
-	SkipNames         []string          `json:"skipNames"`
-	ColumnList        []*Column         `json:"columnList"`
-	ReplaceSeparators map[string]string `json:"replaceSeparators"` // 替换字符，如将：`\n` 替换为 `|:-n-:|`，`,` 替换为 `|:-，-:|`，写入时候 将 key 替换为 value，读取时候将 value 替换为 key
-	ShouldTrimSpace   bool              `json:"shouldTrimSpace"`   // 是否需要去除空白字符
+	SkipNames  []string  `json:"skipNames"`
+	ColumnList []*Column `json:"columnList"`
 }
 
 type Column struct {
@@ -40,12 +38,12 @@ func (this_ *DataSourceBase) StringsToValues(progress *Progress, cols []string) 
 		if vSize > index {
 			v = cols[index]
 		}
-		if this_.ReplaceSeparators != nil {
-			for rK, rV := range this_.ReplaceSeparators {
+		if progress.ReplaceSeparators != nil {
+			for rK, rV := range progress.ReplaceSeparators {
 				v = strings.ReplaceAll(v, rV, rK)
 			}
 		}
-		if this_.ShouldTrimSpace {
+		if progress.ShouldTrimSpace {
 			v = strings.TrimSpace(v)
 		}
 		res = append(res, v)
@@ -60,14 +58,14 @@ func (this_ *DataSourceBase) ValuesToValues(progress *Progress, cols []interface
 		if vSize > index {
 			v = cols[index]
 		}
-		if this_.ReplaceSeparators != nil {
-			for rK, rV := range this_.ReplaceSeparators {
+		if progress.ReplaceSeparators != nil {
+			for rK, rV := range progress.ReplaceSeparators {
 				if sV, sOk := v.(string); sOk {
 					v = strings.ReplaceAll(sV, rV, rK)
 				}
 			}
 		}
-		if this_.ShouldTrimSpace {
+		if progress.ShouldTrimSpace {
 			if sV, sOk := v.(string); sOk {
 				v = strings.TrimSpace(sV)
 			}
@@ -92,14 +90,14 @@ func (this_ *DataSourceBase) DataToValues(progress *Progress, data map[string]in
 
 	for _, column := range this_.ColumnList {
 		v := data[column.ColumnName]
-		if this_.ReplaceSeparators != nil {
-			for rK, rV := range this_.ReplaceSeparators {
+		if progress.ReplaceSeparators != nil {
+			for rK, rV := range progress.ReplaceSeparators {
 				if sV, sOk := v.(string); sOk {
 					v = strings.ReplaceAll(sV, rV, rK)
 				}
 			}
 		}
-		if this_.ShouldTrimSpace {
+		if progress.ShouldTrimSpace {
 			if sV, sOk := v.(string); sOk {
 				v = strings.TrimSpace(sV)
 			}
@@ -118,14 +116,14 @@ func (this_ *DataSourceBase) ValuesToData(progress *Progress, cols []interface{}
 		if vSize > index {
 			v = cols[index]
 		}
-		if this_.ReplaceSeparators != nil {
-			for rK, rV := range this_.ReplaceSeparators {
+		if progress.ReplaceSeparators != nil {
+			for rK, rV := range progress.ReplaceSeparators {
 				if sV, sOk := v.(string); sOk {
 					v = strings.ReplaceAll(sV, rV, rK)
 				}
 			}
 		}
-		if this_.ShouldTrimSpace {
+		if progress.ShouldTrimSpace {
 			if sV, sOk := v.(string); sOk {
 				v = strings.TrimSpace(sV)
 			}
