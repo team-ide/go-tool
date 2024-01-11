@@ -12,11 +12,20 @@ import (
 
 type DataSourceFile struct {
 	*DataSourceBase
-	FilePath string `json:"filePath"`
+	FilePath        string `json:"filePath"`
+	ColSeparator    string `json:"colSeparator"`    // 列 分隔符 默认 `,`
+	ShouldTrimSpace bool   `json:"shouldTrimSpace"` // 是否需要去除空白字符
 
 	readFile  *os.File
 	writeFile *os.File
 	bufWriter *bufio.Writer
+}
+
+func (this_ *DataSourceFile) GetColSeparator() string {
+	if this_.ColSeparator == "" {
+		return ","
+	}
+	return this_.ColSeparator
 }
 
 func (this_ *DataSourceFile) Stop(progress *Progress) {
@@ -194,9 +203,9 @@ func (this_ *DataSourceFile) ReadTitles(progress *Progress) (titles []string, er
 		if line == "" {
 			continue
 		}
-		cols := strings.Split(line, progress.GetColSeparator())
+		cols := strings.Split(line, this_.GetColSeparator())
 		for _, c := range cols {
-			if progress.ShouldTrimSpace {
+			if this_.ShouldTrimSpace {
 				c = strings.TrimSpace(c)
 			}
 			titles = append(titles, c)

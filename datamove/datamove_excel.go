@@ -39,7 +39,7 @@ func (this_ *Executor) excelToExcel() (err error) {
 
 func (this_ *Executor) onExcelSourceData(on func(datasource DataSource) (err error)) (err error) {
 	datasource := NewDataSourceExcel()
-	datasource.FilePath = this_.FileName
+	datasource.FilePath = this_.FilePath
 	datasource.ColumnList = this_.ColumnList
 	err = on(datasource)
 	return

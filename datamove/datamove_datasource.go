@@ -133,8 +133,12 @@ func (this_ *Executor) datasourceToSql(from DataSource) (err error) {
 func (this_ *Executor) datasourceToTxt(from DataSource) (err error) {
 	util.Logger.Info("datasource to text start")
 	to := NewDataSourceTxt()
+	to.ColSeparator = this_.To.ColSeparator
+	to.ReplaceCol = this_.To.ReplaceCol
+	to.ReplaceLine = this_.To.ReplaceLine
+	to.ShouldTrimSpace = this_.To.ShouldTrimSpace
 	to.ColumnList = this_.ColumnList
-	to.FilePath = this_.getFilePath("", this_.GetFileName(), this_.GetFileSuffix())
+	to.FilePath = this_.getFilePath("", this_.GetFileName(), this_.To.GetTxtFileType())
 	err = DateMove(this_.Progress, from, to)
 	if err != nil {
 		util.Logger.Error("datasource to text error", zap.Error(err))
@@ -148,6 +152,7 @@ func (this_ *Executor) datasourceToExcel(from DataSource) (err error) {
 	util.Logger.Info("datasource to excel start")
 	to := NewDataSourceExcel()
 	to.ColumnList = this_.ColumnList
+	to.ShouldTrimSpace = this_.To.ShouldTrimSpace
 	to.FilePath = this_.getFilePath("", this_.GetFileName(), "xlsx")
 	err = DateMove(this_.Progress, from, to)
 	if err != nil {

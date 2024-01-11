@@ -17,10 +17,10 @@ func (this_ *Executor) dbToEs() (err error) {
 	util.Logger.Info("db to es start")
 	err = this_.forEachOwnersTables(func(owner *DbOwner, table *DbTable, from *DataSourceDb) (err error) {
 		to := NewDataSourceEs()
-		to.ColumnList = this_.ColumnList
-		to.IndexName = this_.IndexName
-		to.IdName = this_.IdName
-		to.IdScript = this_.IdScript
+		to.ColumnList = from.ColumnList
+		to.IndexName = table.IndexName
+		to.IdName = table.IdName
+		to.IdScript = table.IdScript
 		to.Service, err = elasticsearch.New(this_.To.EsConfig)
 		if err != nil {
 			util.Logger.Error("elasticsearch client new error", zap.Error(err))
@@ -66,12 +66,12 @@ func (this_ *Executor) dbToSql() (err error) {
 		to.ParamModel = this_.GetDialectParam()
 		to.ColumnList = from.ColumnList
 		to.DialectType = this_.To.DialectType
-		switch this_.SqlFileMergeType {
+		switch this_.To.SqlFileMergeType {
 		case "", "owner":
 			to.FilePath = this_.getFilePath("", owner.To.OwnerName, "sql")
 			break
 		case "one":
-			to.FilePath = this_.getFilePath("", "all", "sql")
+			to.FilePath = this_.getFilePath("", this_.GetFileName(), "sql")
 			break
 		case "table":
 			owner.appended = false
@@ -126,13 +126,17 @@ func (this_ *Executor) dbToTxt() (err error) {
 	err = this_.forEachOwnersTables(func(owner *DbOwner, table *DbTable, from *DataSourceDb) (err error) {
 		to := NewDataSourceTxt()
 		to.ColumnList = from.ColumnList
+		to.ColSeparator = this_.To.ColSeparator
+		to.ReplaceCol = this_.To.ReplaceCol
+		to.ReplaceLine = this_.To.ReplaceLine
+		to.ShouldTrimSpace = this_.To.ShouldTrimSpace
 
 		switch this_.FileNameSplice {
 		case "", "/":
-			to.FilePath = this_.getFilePath(owner.To.OwnerName, table.To.TableName, this_.GetFileSuffix())
+			to.FilePath = this_.getFilePath(owner.To.OwnerName, table.To.TableName, this_.To.GetTxtFileType())
 			break
 		default:
-			to.FilePath = this_.getFilePath("", owner.To.OwnerName+this_.FileNameSplice+table.To.TableName, this_.GetFileSuffix())
+			to.FilePath = this_.getFilePath("", owner.To.OwnerName+this_.FileNameSplice+table.To.TableName, this_.To.GetTxtFileType())
 			break
 		}
 		err = DateMove(this_.Progress, from, to)
@@ -149,6 +153,7 @@ func (this_ *Executor) dbToExcel() (err error) {
 	err = this_.forEachOwnersTables(func(owner *DbOwner, table *DbTable, from *DataSourceDb) (err error) {
 		to := NewDataSourceExcel()
 		to.ColumnList = from.ColumnList
+		to.ShouldTrimSpace = this_.To.ShouldTrimSpace
 
 		switch this_.FileNameSplice {
 		case "", "/":

@@ -39,7 +39,7 @@ func (this_ *Executor) txtToExcel() (err error) {
 
 func (this_ *Executor) onTxtSourceData(on func(datasource DataSource) (err error)) (err error) {
 	datasource := NewDataSourceTxt()
-	datasource.FilePath = this_.FileName
+	datasource.FilePath = this_.FilePath
 	datasource.ColumnList = this_.ColumnList
 	err = on(datasource)
 	return

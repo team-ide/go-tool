@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/team-ide/go-tool/util"
 	"io"
 	"strings"
 )
@@ -20,6 +21,52 @@ type DataSourceTxt struct {
 	*DataSourceFile
 	headerRead  bool
 	headerWrite bool
+	ReplaceCol  string `json:"replaceCol"`  //
+	ReplaceLine string `json:"replaceLine"` //
+}
+
+func (this_ *DataSourceTxt) StringsToValues(progress *Progress, cols []string) (res []interface{}, err error) {
+	vSize := len(cols)
+	for index, _ := range this_.ColumnList {
+		var v string
+		if vSize > index {
+			v = cols[index]
+		}
+		if this_.ReplaceCol != "" {
+			v = strings.ReplaceAll(v, this_.ReplaceCol, this_.GetColSeparator())
+		}
+		if this_.ReplaceLine != "" {
+			v = strings.ReplaceAll(v, this_.ReplaceLine, "\n")
+		}
+		if this_.ShouldTrimSpace {
+			v = strings.TrimSpace(v)
+		}
+		res = append(res, v)
+	}
+	return
+}
+
+func (this_ *DataSourceTxt) ValuesToStrings(progress *Progress, cols []interface{}) (res []string, err error) {
+
+	vSize := len(cols)
+	for index, _ := range this_.ColumnList {
+		var v string
+		if vSize > index {
+			v = util.GetStringValue(cols[index])
+		}
+		if this_.ReplaceCol != "" {
+			v = strings.ReplaceAll(v, this_.GetColSeparator(), this_.ReplaceCol)
+		}
+		if this_.ReplaceLine != "" {
+			v = strings.ReplaceAll(v, "\n", this_.ReplaceLine)
+		}
+		if this_.ShouldTrimSpace {
+			v = strings.TrimSpace(v)
+		}
+		res = append(res, v)
+	}
+
+	return
 }
 
 func (this_ *DataSourceTxt) ReadStart(progress *Progress) (err error) {
@@ -56,7 +103,7 @@ func (this_ *DataSourceTxt) Read(progress *Progress, dataChan chan *Data) (err e
 	}
 	buf := bufio.NewReader(file)
 	var line string
-	colSeparator := progress.GetColSeparator()
+	colSeparator := this_.GetColSeparator()
 
 	var lastData = &Data{
 		DataType: DataTypeCols,
@@ -112,7 +159,7 @@ func (this_ *DataSourceTxt) Write(progress *Progress, data *Data) (err error) {
 	if err = ValidateDataType(data.DataType); err != nil {
 		return
 	}
-	colSeparator := progress.GetColSeparator()
+	colSeparator := this_.GetColSeparator()
 
 	buf, err := this_.GetWriteBuf()
 	if err != nil {

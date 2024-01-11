@@ -32,31 +32,18 @@ type Options struct {
 
 	DataList []map[string]interface{} `json:"dataList"`
 
-	FilePath         string `json:"filePath"`
-	FileSuffix       string `json:"fileSuffix"`
-	SqlFileMergeType string `json:"sqlFileMergeType"` // SQL 的文件合并类型 如：one：一个文件， owner：每个库一个文件，table：每个表一个文件
-	ShouldOwner      bool   `json:"shouldOwner"`      // 需要 建库
-	ShouldTable      bool   `json:"shouldTable"`      // 需要 建表
+	FilePath    string `json:"filePath"`
+	ShouldOwner bool   `json:"shouldOwner"` // 需要 建库
+	ShouldTable bool   `json:"shouldTable"` // 需要 建表
 
 	FileNameSplice string `json:"fileNameSplice"` // 文件名拼接字符 如：/ :库作为目录 表作为名称 默认
 	FileName       string `json:"fileName"`
 
 	ErrorContinue bool  `json:"errorContinue"`
 	BatchNumber   int64 `json:"batchNumber"`
-
-	ColSeparator string `json:"colSeparator"` // 列 分隔符 默认 `,`
-
-	ReplaceSeparators map[string]string `json:"replaceSeparators"` // 替换字符，如将：`\n` 替换为 `|:-n-:|`，`,` 替换为 `|:-，-:|`，写入时候 将 key 替换为 value，读取时候将 value 替换为 key
-	ShouldTrimSpace   bool              `json:"shouldTrimSpace"`   // 是否需要去除空白字符
+	RowNumber     int64 `json:"rowNumber"`
 
 	*dialect.ParamModel
-}
-
-func (this_ *Options) GetColSeparator() string {
-	if this_.ColSeparator == "" {
-		return ","
-	}
-	return this_.ColSeparator
 }
 
 func (this_ *Options) getFilePath(dirName string, fileName string, suffix string) (path string) {
@@ -80,13 +67,6 @@ func (this_ *Options) GetDialectParam() *dialect.ParamModel {
 	return this_.ParamModel
 }
 
-func (this_ *Options) GetFileSuffix() string {
-	if this_.FileSuffix == "" {
-		return "txt"
-	}
-	return this_.FileSuffix
-}
-
 func (this_ *Options) GetFileName() string {
 	if this_.FileName == "" {
 		return "导出"
@@ -95,7 +75,13 @@ func (this_ *Options) GetFileName() string {
 }
 
 type DataSourceConfig struct {
-	Type string `json:"type"`
+	Type             string `json:"type"`
+	SqlFileMergeType string `json:"sqlFileMergeType"` // SQL 的文件合并类型 如：one：一个文件， owner：每个库一个文件，table：每个表一个文件
+	ShouldTrimSpace  bool   `json:"shouldTrimSpace"`  // 是否需要去除空白字符
+	ColSeparator     string `json:"colSeparator"`     // 列 分隔符 默认 `,`
+	ReplaceCol       string `json:"replaceCol"`       //
+	ReplaceLine      string `json:"replaceLine"`      //
+	TxtFileType      string `json:"txtFileType"`      //
 
 	// 数据库 配置
 	DbConfig    *db.Config `json:"-"`
@@ -109,6 +95,13 @@ type DataSourceConfig struct {
 	RedisConfig *redis.Config `json:"-"`
 
 	KafkaConfig *kafka.Config `json:"-"`
+}
+
+func (this_ *DataSourceConfig) GetTxtFileType() string {
+	if this_.TxtFileType == "" {
+		return "txt"
+	}
+	return this_.TxtFileType
 }
 
 type DbOwner struct {
@@ -132,6 +125,7 @@ type DbTable struct {
 
 	IndexName string `json:"indexName"`
 	IdName    string `json:"idName"`
+	IdScript  string `json:"idScript"`
 }
 
 func (this_ *DbTable) GetToDialectTable() *dialect.TableModel {
