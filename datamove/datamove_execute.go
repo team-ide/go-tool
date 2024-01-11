@@ -14,6 +14,19 @@ func (this_ *Executor) execute() (err error) {
 			err = errors.New(fmt.Sprint(e))
 			util.Logger.Error("execute panic error", zap.Error(err))
 		}
+		if this_.From != nil && this_.From.DbConfig != nil && this_.From.DbConfig.SSHClient != nil {
+			_ = this_.From.DbConfig.SSHClient.Close()
+		}
+		if this_.To != nil && this_.To.DbConfig != nil && this_.To.DbConfig.SSHClient != nil {
+			_ = this_.To.DbConfig.SSHClient.Close()
+		}
+
+		if this_.From != nil && this_.From.RedisConfig != nil && this_.From.RedisConfig.SSHClient != nil {
+			_ = this_.From.RedisConfig.SSHClient.Close()
+		}
+		if this_.To != nil && this_.To.RedisConfig != nil && this_.To.RedisConfig.SSHClient != nil {
+			_ = this_.To.RedisConfig.SSHClient.Close()
+		}
 	}()
 
 	if this_.From.IsDb() {
@@ -91,6 +104,22 @@ func (this_ *Executor) execute() (err error) {
 			err = this_.esToDb()
 		} else if this_.To.IsEs() {
 			err = this_.esToEs()
+		} else {
+			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
+			util.Logger.Error("execute error", zap.Error(err))
+			return
+		}
+	} else if this_.From.IsScript() {
+		if this_.To.IsSql() {
+			err = this_.scriptToSql()
+		} else if this_.To.IsExcel() {
+			err = this_.scriptToExcel()
+		} else if this_.To.IsTxt() {
+			err = this_.scriptToTxt()
+		} else if this_.To.IsDb() {
+			err = this_.scriptToDb()
+		} else if this_.To.IsEs() {
+			err = this_.scriptToEs()
 		} else {
 			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
 			util.Logger.Error("execute error", zap.Error(err))

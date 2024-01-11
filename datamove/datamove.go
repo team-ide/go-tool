@@ -47,6 +47,8 @@ func New(options *Options) (t *task.Task, err error) {
 	if err != nil {
 		return
 	}
+	t.Extend = progress
+	progress.t = t
 	return
 
 }
@@ -86,9 +88,13 @@ type Progress struct {
 	isEnd        bool
 	isStopped    bool
 	dataMoveStop *bool
+	t            *task.Task
 }
 
 func (this_ *Progress) ShouldStop() bool {
+	if this_.t != nil && this_.t.IsStopped() {
+		return true
+	}
 	if this_.dataMoveStop != nil {
 		if *this_.dataMoveStop {
 			return true

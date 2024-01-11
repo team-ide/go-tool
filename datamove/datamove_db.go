@@ -178,19 +178,62 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 			util.Logger.Error("for each owners to do panic error", zap.Error(err))
 		}
 	}()
+
+	if this_.BySql {
+		var service db.IService
+		service, err = this_.newDbService(*this_.From.DbConfig, this_.From.Username, this_.From.Password, "")
+		if err != nil {
+			return
+		}
+		defer func() {
+			if service != nil {
+				_ = service.GetDb().Close()
+			}
+		}()
+
+		owner := &DbOwner{
+			From: &dialect.OwnerModel{
+				OwnerName: this_.OwnerName,
+			},
+			To: &dialect.OwnerModel{
+				OwnerName: this_.OwnerName,
+			},
+		}
+		table := &DbTable{
+			From: &dialect.TableModel{
+				TableName: this_.TableName,
+			},
+			To: &dialect.TableModel{
+				TableName: this_.TableName,
+			},
+			IndexName: this_.IndexName,
+			IdName:    this_.IdName,
+			IdScript:  this_.IdScript,
+		}
+		from := NewDataSourceDb()
+		from.ParamModel = this_.GetDialectParam()
+		from.OwnerName = owner.From.OwnerName
+		from.TableName = table.From.TableName
+		from.ColumnList = this_.ColumnList
+		from.Service = service
+		err = on(owner, table, from)
+
+		return
+	}
+
 	util.Logger.Info("for each owners to do", zap.Any("allOwner", this_.AllOwner))
 	owners := this_.Owners
 
 	if this_.AllOwner {
 		var list []*dialect.OwnerModel
 		var service db.IService
-		service, err = this_.newDbService(*this_.From.DbConfig, "", "", "")
+		service, err = this_.newDbService(*this_.From.DbConfig, this_.From.Username, this_.From.Password, "")
 		if err != nil {
 			return
 		}
 		defer func() {
 			if service != nil {
-				service.Close()
+				_ = service.GetDb().Close()
 			}
 		}()
 		list, err = worker.OwnersSelect(service.GetDb(), service.GetDialect(), this_.GetDialectParam())
@@ -198,7 +241,7 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 			return
 		}
 
-		service.Close()
+		_ = service.GetDb().Close()
 		service = nil
 
 		for _, one := range list {
@@ -287,12 +330,12 @@ func (this_ *Executor) forEachOwnerTables(owner *DbOwner, on func(owner *DbOwner
 	defer func() {
 
 		if owner.fromService != nil {
-			owner.fromService.Close()
+			_ = owner.fromService.GetDb().Close()
 			owner.fromService = nil
 		}
 
 		if owner.toService != nil {
-			owner.toService.Close()
+			_ = owner.toService.GetDb().Close()
 			owner.toService = nil
 		}
 

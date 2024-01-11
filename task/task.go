@@ -73,6 +73,8 @@ type Task struct {
 	ExecutorSuccessCount int `json:"executorSuccessCount"`
 	ExecutorErrorCount   int `json:"executorErrorCount"`
 
+	Extend interface{} `json:"extend"`
+
 	waitGroup *sync.WaitGroup
 
 	workerList []*Worker

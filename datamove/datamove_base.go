@@ -32,6 +32,8 @@ type Options struct {
 
 	DataList []map[string]interface{} `json:"dataList"`
 
+	Total int64 `json:"total"`
+
 	FilePath    string `json:"filePath"`
 	ShouldOwner bool   `json:"shouldOwner"` // 需要 建库
 	ShouldTable bool   `json:"shouldTable"` // 需要 建表
@@ -103,6 +105,33 @@ func (this_ *DataSourceConfig) GetTxtFileType() string {
 	}
 	return this_.TxtFileType
 }
+func (this_ *DataSourceConfig) IsData() bool {
+	return this_.Type == "data"
+}
+func (this_ *DataSourceConfig) IsDb() bool {
+	return this_.Type == "database"
+}
+func (this_ *DataSourceConfig) IsEs() bool {
+	return this_.Type == "elasticsearch"
+}
+func (this_ *DataSourceConfig) IsTxt() bool {
+	return this_.Type == "txt"
+}
+func (this_ *DataSourceConfig) IsExcel() bool {
+	return this_.Type == "excel"
+}
+func (this_ *DataSourceConfig) IsSql() bool {
+	return this_.Type == "sql"
+}
+func (this_ *DataSourceConfig) IsKafka() bool {
+	return this_.Type == "kafka"
+}
+func (this_ *DataSourceConfig) IsRedis() bool {
+	return this_.Type == "redis"
+}
+func (this_ *DataSourceConfig) IsScript() bool {
+	return this_.Type == "script"
+}
 
 type DbOwner struct {
 	From           *dialect.OwnerModel `json:"from"`
@@ -157,29 +186,4 @@ type DbColumn struct {
 	From  *dialect.ColumnModel `json:"from"`
 	To    *dialect.ColumnModel `json:"to"`
 	Value string               `json:"value"`
-}
-
-func (this_ DataSourceConfig) IsData() bool {
-	return this_.Type == "data"
-}
-func (this_ DataSourceConfig) IsDb() bool {
-	return this_.Type == "database"
-}
-func (this_ DataSourceConfig) IsEs() bool {
-	return this_.Type == "elasticsearch"
-}
-func (this_ DataSourceConfig) IsTxt() bool {
-	return this_.Type == "txt"
-}
-func (this_ DataSourceConfig) IsExcel() bool {
-	return this_.Type == "excel"
-}
-func (this_ DataSourceConfig) IsSql() bool {
-	return this_.Type == "sql"
-}
-func (this_ DataSourceConfig) IsKafka() bool {
-	return this_.Type == "kafka"
-}
-func (this_ DataSourceConfig) IsRedis() bool {
-	return this_.Type == "redis"
 }

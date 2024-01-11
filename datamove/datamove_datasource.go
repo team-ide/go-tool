@@ -174,6 +174,7 @@ func (this_ *Executor) datasourceToDb(from DataSource) (err error) {
 	if err != nil {
 		return
 	}
+	defer func() { _ = to.Service.GetDb().Close() }()
 	err = DateMove(this_.Progress, from, to)
 	if err != nil {
 		util.Logger.Error("datasource to excel error", zap.Error(err))
