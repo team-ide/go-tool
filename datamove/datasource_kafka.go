@@ -12,8 +12,11 @@ func NewDataSourceKafka() *DataSourceKafka {
 
 type DataSourceKafka struct {
 	*DataSourceBase
-	Topic   string `json:"topic"`
-	GroupId string `json:"groupId"`
+	TopicName      string `json:"topicName"`
+	TopicGroupName string `json:"topicGroupName"`
+	TopicKey       string `json:"topicKey"`
+	TopicValue     string `json:"topicValue"`
+	PullWait       int64  `json:"pullWait"`
 
 	Service kafka.IService
 }

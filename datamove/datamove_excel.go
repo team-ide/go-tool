@@ -16,6 +16,20 @@ func (this_ *Executor) excelToEs() (err error) {
 	return
 }
 
+func (this_ *Executor) excelToKafka() (err error) {
+	util.Logger.Info("excel to kafka start")
+	err = this_.onExcelSourceData(this_.datasourceToKafka)
+	util.Logger.Info("excel to kafka end")
+	return
+}
+
+func (this_ *Executor) excelToRedis() (err error) {
+	util.Logger.Info("excel to redis start")
+	err = this_.onExcelSourceData(this_.datasourceToRedis)
+	util.Logger.Info("excel to redis end")
+	return
+}
+
 func (this_ *Executor) excelToSql() (err error) {
 	util.Logger.Info("excel to sql start")
 	err = this_.onExcelSourceData(this_.datasourceToSql)
@@ -39,8 +53,8 @@ func (this_ *Executor) excelToExcel() (err error) {
 
 func (this_ *Executor) onExcelSourceData(on func(datasource DataSource) (err error)) (err error) {
 	datasource := NewDataSourceExcel()
-	datasource.FilePath = this_.FilePath
-	datasource.ColumnList = this_.ColumnList
+	datasource.FilePath = this_.From.FilePath
+	datasource.ColumnList = this_.From.ColumnList
 	err = on(datasource)
 	return
 }

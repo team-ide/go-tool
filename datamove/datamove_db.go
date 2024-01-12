@@ -7,10 +7,54 @@ import (
 	"github.com/team-ide/go-dialect/worker"
 	"github.com/team-ide/go-tool/db"
 	"github.com/team-ide/go-tool/elasticsearch"
+	"github.com/team-ide/go-tool/kafka"
+	"github.com/team-ide/go-tool/redis"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"strings"
 )
+
+func (this_ *Executor) dbToRedis() (err error) {
+
+	util.Logger.Info("db to redis start")
+	err = this_.forEachOwnersTables(func(owner *DbOwner, table *DbTable, from *DataSourceDb) (err error) {
+		to := NewDataSourceRedis()
+		to.ColumnList = from.ColumnList
+		to.Service, err = redis.New(this_.To.RedisConfig)
+		if err != nil {
+			util.Logger.Error("redis client new error", zap.Error(err))
+			return
+		}
+		err = DateMove(this_.Progress, from, to)
+		return
+	})
+	util.Logger.Info("db to redis end")
+
+	return
+}
+
+func (this_ *Executor) dbToKafka() (err error) {
+
+	util.Logger.Info("db to kafka start")
+	err = this_.forEachOwnersTables(func(owner *DbOwner, table *DbTable, from *DataSourceDb) (err error) {
+		to := NewDataSourceKafka()
+		to.ColumnList = from.ColumnList
+		to.TopicName = table.To.TableName
+		to.TopicGroupName = table.TopicGroupName
+		to.TopicKey = table.TopicKey
+		to.TopicValue = table.TopicValue
+		to.Service, err = kafka.New(this_.To.KafkaConfig)
+		if err != nil {
+			util.Logger.Error("kafka client new error", zap.Error(err))
+			return
+		}
+		err = DateMove(this_.Progress, from, to)
+		return
+	})
+	util.Logger.Info("db to kafka end")
+
+	return
+}
 
 func (this_ *Executor) dbToEs() (err error) {
 
@@ -18,9 +62,9 @@ func (this_ *Executor) dbToEs() (err error) {
 	err = this_.forEachOwnersTables(func(owner *DbOwner, table *DbTable, from *DataSourceDb) (err error) {
 		to := NewDataSourceEs()
 		to.ColumnList = from.ColumnList
-		to.IndexName = table.IndexName
-		to.IdName = table.IdName
-		to.IdScript = table.IdScript
+		to.IndexName = table.To.TableName
+		to.IndexIdName = table.IndexIdName
+		to.IndexIdScript = table.IndexIdScript
 		to.Service, err = elasticsearch.New(this_.To.EsConfig)
 		if err != nil {
 			util.Logger.Error("elasticsearch client new error", zap.Error(err))
@@ -38,17 +82,17 @@ func (this_ *Executor) dbToDb() (err error) {
 	util.Logger.Info("db to db start")
 	err = this_.forEachOwnersTables(func(owner *DbOwner, table *DbTable, from *DataSourceDb) (err error) {
 		to := NewDataSourceDb()
-		to.ParamModel = this_.GetDialectParam()
+		to.ParamModel = this_.To.GetDialectParam()
 		to.OwnerName = owner.To.OwnerName
 		to.TableName = table.To.TableName
 		to.Service = owner.toService
 		// 需要建库
-		if this_.ShouldOwner && !owner.appended {
+		if this_.From.ShouldOwner && !owner.appended {
 			owner.appended = true
 			// 同步结构
 		}
 		// 需要建表
-		if this_.ShouldTable && !table.appended {
+		if this_.From.ShouldTable && !table.appended {
 			table.appended = true
 			// 同步结构
 		}
@@ -59,11 +103,12 @@ func (this_ *Executor) dbToDb() (err error) {
 
 	return
 }
+
 func (this_ *Executor) dbToSql() (err error) {
 	util.Logger.Info("db to sql start")
 	err = this_.forEachOwnersTables(func(owner *DbOwner, table *DbTable, from *DataSourceDb) (err error) {
 		to := NewDataSourceSql()
-		to.ParamModel = this_.GetDialectParam()
+		to.ParamModel = this_.To.GetDialectParam()
 		to.ColumnList = from.ColumnList
 		to.DialectType = this_.To.DialectType
 		switch this_.To.SqlFileMergeType {
@@ -71,7 +116,7 @@ func (this_ *Executor) dbToSql() (err error) {
 			to.FilePath = this_.getFilePath("", owner.To.OwnerName, "sql")
 			break
 		case "one":
-			to.FilePath = this_.getFilePath("", this_.GetFileName(), "sql")
+			to.FilePath = this_.getFilePath("", this_.To.GetFileName(), "sql")
 			break
 		case "table":
 			owner.appended = false
@@ -84,7 +129,7 @@ func (this_ *Executor) dbToSql() (err error) {
 
 		var sqlList []string
 		// 需要建库
-		if this_.ShouldOwner && !owner.appended {
+		if this_.From.ShouldOwner && !owner.appended {
 			owner.appended = true
 			ss, e := to.GetDialect().OwnerCreateSql(to.ParamModel, &dialect.OwnerModel{
 				OwnerName: owner.To.OwnerName,
@@ -95,7 +140,7 @@ func (this_ *Executor) dbToSql() (err error) {
 			sqlList = append(sqlList, ss...)
 		}
 		// 需要建表
-		if this_.ShouldTable && !table.appended {
+		if this_.From.ShouldTable && !table.appended {
 			table.appended = true
 			ss, e := to.GetDialect().TableCreateSql(to.ParamModel, owner.To.OwnerName, table.GetToDialectTable())
 			if e != nil {
@@ -131,12 +176,12 @@ func (this_ *Executor) dbToTxt() (err error) {
 		to.ReplaceLine = this_.To.ReplaceLine
 		to.ShouldTrimSpace = this_.To.ShouldTrimSpace
 
-		switch this_.FileNameSplice {
+		switch this_.To.FileNameSplice {
 		case "", "/":
 			to.FilePath = this_.getFilePath(owner.To.OwnerName, table.To.TableName, this_.To.GetTxtFileType())
 			break
 		default:
-			to.FilePath = this_.getFilePath("", owner.To.OwnerName+this_.FileNameSplice+table.To.TableName, this_.To.GetTxtFileType())
+			to.FilePath = this_.getFilePath("", owner.To.OwnerName+this_.To.FileNameSplice+table.To.TableName, this_.To.GetTxtFileType())
 			break
 		}
 		err = DateMove(this_.Progress, from, to)
@@ -155,12 +200,12 @@ func (this_ *Executor) dbToExcel() (err error) {
 		to.ColumnList = from.ColumnList
 		to.ShouldTrimSpace = this_.To.ShouldTrimSpace
 
-		switch this_.FileNameSplice {
+		switch this_.To.FileNameSplice {
 		case "", "/":
 			to.FilePath = this_.getFilePath(owner.To.OwnerName, table.To.TableName, "xlsx")
 			break
 		default:
-			to.FilePath = this_.getFilePath("", owner.To.OwnerName+this_.FileNameSplice+table.To.TableName, "xlsx")
+			to.FilePath = this_.getFilePath("", owner.To.OwnerName+this_.To.FileNameSplice+table.To.TableName, "xlsx")
 			break
 		}
 		err = DateMove(this_.Progress, from, to)
@@ -179,7 +224,7 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 		}
 	}()
 
-	if this_.BySql {
+	if this_.From.BySql {
 		var service db.IService
 		service, err = this_.newDbService(*this_.From.DbConfig, this_.From.Username, this_.From.Password, "")
 		if err != nil {
@@ -193,38 +238,37 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 
 		owner := &DbOwner{
 			From: &dialect.OwnerModel{
-				OwnerName: this_.OwnerName,
+				OwnerName: this_.From.OwnerName,
 			},
 			To: &dialect.OwnerModel{
-				OwnerName: this_.OwnerName,
+				OwnerName: this_.To.OwnerName,
 			},
 		}
 		table := &DbTable{
 			From: &dialect.TableModel{
-				TableName: this_.TableName,
+				TableName: this_.From.TableName,
 			},
 			To: &dialect.TableModel{
-				TableName: this_.TableName,
+				TableName: this_.To.TableName,
 			},
-			IndexName: this_.IndexName,
-			IdName:    this_.IdName,
-			IdScript:  this_.IdScript,
+			IndexIdName:   this_.To.IndexIdName,
+			IndexIdScript: this_.To.IndexIdScript,
 		}
 		from := NewDataSourceDb()
-		from.ParamModel = this_.GetDialectParam()
+		from.ParamModel = this_.From.GetDialectParam()
 		from.OwnerName = owner.From.OwnerName
 		from.TableName = table.From.TableName
-		from.ColumnList = this_.ColumnList
+		from.ColumnList = this_.From.ColumnList
 		from.Service = service
 		err = on(owner, table, from)
 
 		return
 	}
 
-	util.Logger.Info("for each owners to do", zap.Any("allOwner", this_.AllOwner))
-	owners := this_.Owners
+	util.Logger.Info("for each owners to do", zap.Any("allOwner", this_.From.AllOwner))
+	owners := this_.From.Owners
 
-	if this_.AllOwner {
+	if this_.From.AllOwner {
 		var list []*dialect.OwnerModel
 		var service db.IService
 		service, err = this_.newDbService(*this_.From.DbConfig, this_.From.Username, this_.From.Password, "")
@@ -236,7 +280,7 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 				_ = service.GetDb().Close()
 			}
 		}()
-		list, err = worker.OwnersSelect(service.GetDb(), service.GetDialect(), this_.GetDialectParam())
+		list, err = worker.OwnersSelect(service.GetDb(), service.GetDialect(), this_.From.GetDialectParam())
 		if err != nil {
 			return
 		}
@@ -273,7 +317,7 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 		if o.From == nil || o.From.OwnerName == "" {
 			continue
 		}
-		if util.StringIndexOf(this_.SkipOwnerNames, o.From.OwnerName) >= 0 {
+		if util.StringIndexOf(this_.From.SkipOwnerNames, o.From.OwnerName) >= 0 {
 			continue
 		}
 		if o.To == nil {
@@ -345,7 +389,7 @@ func (this_ *Executor) forEachOwnerTables(owner *DbOwner, on func(owner *DbOwner
 
 	if owner.AllTable {
 		var list []*dialect.TableModel
-		list, err = worker.TablesSelect(owner.fromService.GetDb(), owner.fromService.GetDialect(), this_.GetDialectParam(), owner.From.OwnerName)
+		list, err = worker.TablesSelect(owner.fromService.GetDb(), owner.fromService.GetDialect(), this_.From.GetDialectParam(), owner.From.OwnerName)
 		if err != nil {
 			return
 		}
@@ -427,7 +471,7 @@ func (this_ *Executor) doOwnerTable(owner *DbOwner, table *DbTable, on func(owne
 	util.Logger.Info("owner table to do", zap.Any("ownerName", owner.From.OwnerName), zap.Any("tableName", table.From.TableName))
 
 	var detail *dialect.TableModel
-	detail, _ = worker.TableDetail(owner.fromService.GetDb(), owner.fromService.GetDialect(), this_.GetDialectParam(), owner.From.OwnerName, table.From.TableName, true)
+	detail, _ = worker.TableDetail(owner.fromService.GetDb(), owner.fromService.GetDialect(), this_.From.GetDialectParam(), owner.From.OwnerName, table.From.TableName, true)
 
 	if detail != nil {
 		table.From = detail
@@ -478,7 +522,7 @@ func (this_ *Executor) doOwnerTable(owner *DbOwner, table *DbTable, on func(owne
 	}
 
 	datasource := NewDataSourceDb()
-	datasource.ParamModel = this_.GetDialectParam()
+	datasource.ParamModel = this_.From.GetDialectParam()
 	datasource.OwnerName = owner.From.OwnerName
 	datasource.TableName = table.From.TableName
 	datasource.Service = owner.fromService

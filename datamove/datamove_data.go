@@ -13,8 +13,22 @@ func (this_ *Executor) dataToDb() (err error) {
 
 func (this_ *Executor) dataToEs() (err error) {
 	util.Logger.Info("data to es start")
-	err = this_.onDataSourceData(this_.datasourceToDb)
+	err = this_.onDataSourceData(this_.datasourceToEs)
 	util.Logger.Info("data to es end")
+	return
+}
+
+func (this_ *Executor) dataToKafka() (err error) {
+	util.Logger.Info("data to kafka start")
+	err = this_.onDataSourceData(this_.datasourceToKafka)
+	util.Logger.Info("data to kafka end")
+	return
+}
+
+func (this_ *Executor) dataToRedis() (err error) {
+	util.Logger.Info("data to redis start")
+	err = this_.onDataSourceData(this_.datasourceToRedis)
+	util.Logger.Info("data to redis end")
 	return
 }
 
@@ -34,15 +48,15 @@ func (this_ *Executor) dataToTxt() (err error) {
 
 func (this_ *Executor) dataToExcel() (err error) {
 	util.Logger.Info("data to excel start")
-	err = this_.onDataSourceData(this_.datasourceToTxt)
+	err = this_.onDataSourceData(this_.datasourceToExcel)
 	util.Logger.Info("data to excel end")
 	return
 }
 
 func (this_ *Executor) onDataSourceData(on func(datasource DataSource) (err error)) (err error) {
 	datasource := NewDataSourceData()
-	datasource.DataList = this_.DataList
-	datasource.ColumnList = this_.ColumnList
+	datasource.DataList = this_.From.DataList
+	datasource.ColumnList = this_.From.ColumnList
 	err = on(datasource)
 	return
 }

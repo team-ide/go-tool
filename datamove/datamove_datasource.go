@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/team-ide/go-tool/elasticsearch"
+	"github.com/team-ide/go-tool/kafka"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"sync"
@@ -117,10 +118,10 @@ func startWrite(progress *Progress, to DataSource, dataChan chan *Data) (err err
 func (this_ *Executor) datasourceToSql(from DataSource) (err error) {
 	util.Logger.Info("datasource to sql start")
 	to := NewDataSourceSql()
-	to.ParamModel = this_.GetDialectParam()
-	to.ColumnList = this_.ColumnList
+	to.ParamModel = this_.To.GetDialectParam()
+	to.ColumnList = this_.To.ColumnList
 	to.DialectType = this_.To.DialectType
-	to.FilePath = this_.getFilePath("", this_.GetFileName(), "sql")
+	to.FilePath = this_.getFilePath("", this_.To.GetFileName(), "sql")
 	err = DateMove(this_.Progress, from, to)
 	if err != nil {
 		util.Logger.Error("datasource to sql error", zap.Error(err))
@@ -137,8 +138,8 @@ func (this_ *Executor) datasourceToTxt(from DataSource) (err error) {
 	to.ReplaceCol = this_.To.ReplaceCol
 	to.ReplaceLine = this_.To.ReplaceLine
 	to.ShouldTrimSpace = this_.To.ShouldTrimSpace
-	to.ColumnList = this_.ColumnList
-	to.FilePath = this_.getFilePath("", this_.GetFileName(), this_.To.GetTxtFileType())
+	to.ColumnList = this_.To.ColumnList
+	to.FilePath = this_.getFilePath("", this_.To.GetFileName(), this_.To.GetTxtFileType())
 	err = DateMove(this_.Progress, from, to)
 	if err != nil {
 		util.Logger.Error("datasource to text error", zap.Error(err))
@@ -151,9 +152,9 @@ func (this_ *Executor) datasourceToTxt(from DataSource) (err error) {
 func (this_ *Executor) datasourceToExcel(from DataSource) (err error) {
 	util.Logger.Info("datasource to excel start")
 	to := NewDataSourceExcel()
-	to.ColumnList = this_.ColumnList
+	to.ColumnList = this_.To.ColumnList
 	to.ShouldTrimSpace = this_.To.ShouldTrimSpace
-	to.FilePath = this_.getFilePath("", this_.GetFileName(), "xlsx")
+	to.FilePath = this_.getFilePath("", this_.To.GetFileName(), "xlsx")
 	err = DateMove(this_.Progress, from, to)
 	if err != nil {
 		util.Logger.Error("datasource to excel error", zap.Error(err))
@@ -166,11 +167,11 @@ func (this_ *Executor) datasourceToExcel(from DataSource) (err error) {
 func (this_ *Executor) datasourceToDb(from DataSource) (err error) {
 	util.Logger.Info("datasource to excel start")
 	to := NewDataSourceDb()
-	to.ColumnList = this_.ColumnList
-	to.OwnerName = this_.OwnerName
-	to.TableName = this_.TableName
-	to.ParamModel = this_.GetDialectParam()
-	to.Service, err = this_.newDbService(*this_.To.DbConfig, this_.To.Username, this_.To.Password, this_.OwnerName)
+	to.ColumnList = this_.To.ColumnList
+	to.OwnerName = this_.To.OwnerName
+	to.TableName = this_.To.TableName
+	to.ParamModel = this_.To.GetDialectParam()
+	to.Service, err = this_.newDbService(*this_.To.DbConfig, this_.To.Username, this_.To.Password, this_.To.OwnerName)
 	if err != nil {
 		return
 	}
@@ -187,10 +188,10 @@ func (this_ *Executor) datasourceToDb(from DataSource) (err error) {
 func (this_ *Executor) datasourceToEs(from DataSource) (err error) {
 	util.Logger.Info("datasource to es start")
 	to := NewDataSourceEs()
-	to.ColumnList = this_.ColumnList
-	to.IndexName = this_.IndexName
-	to.IdName = this_.IdName
-	to.IdScript = this_.IdScript
+	to.ColumnList = this_.To.ColumnList
+	to.IndexName = this_.To.IndexName
+	to.IndexIdName = this_.To.IndexIdName
+	to.IndexIdScript = this_.To.IndexIdScript
 	to.Service, err = elasticsearch.New(this_.To.EsConfig)
 	if err != nil {
 		util.Logger.Error("elasticsearch client new error", zap.Error(err))
@@ -202,5 +203,49 @@ func (this_ *Executor) datasourceToEs(from DataSource) (err error) {
 		return
 	}
 	util.Logger.Info("datasource to es end")
+	return
+}
+
+func (this_ *Executor) datasourceToKafka(from DataSource) (err error) {
+	util.Logger.Info("datasource to kafka start")
+	to := NewDataSourceKafka()
+	to.ColumnList = this_.To.ColumnList
+	to.TopicName = this_.To.TopicName
+	to.TopicGroupName = this_.To.TopicGroupName
+	to.TopicKey = this_.To.TopicKey
+	to.TopicValue = this_.To.TopicValue
+	to.Service, err = kafka.New(this_.To.KafkaConfig)
+	if err != nil {
+		util.Logger.Error("kafka client new error", zap.Error(err))
+		return
+	}
+	err = DateMove(this_.Progress, from, to)
+	if err != nil {
+		util.Logger.Error("datasource to kafka error", zap.Error(err))
+		return
+	}
+	util.Logger.Info("datasource to kafka end")
+	return
+}
+
+func (this_ *Executor) datasourceToRedis(from DataSource) (err error) {
+	util.Logger.Info("datasource to redis start")
+	to := NewDataSourceKafka()
+	to.ColumnList = this_.To.ColumnList
+	to.TopicName = this_.To.TopicName
+	to.TopicGroupName = this_.To.TopicGroupName
+	to.TopicKey = this_.To.TopicKey
+	to.TopicValue = this_.To.TopicValue
+	to.Service, err = kafka.New(this_.To.KafkaConfig)
+	if err != nil {
+		util.Logger.Error("kafka client new error", zap.Error(err))
+		return
+	}
+	err = DateMove(this_.Progress, from, to)
+	if err != nil {
+		util.Logger.Error("datasource to redis error", zap.Error(err))
+		return
+	}
+	util.Logger.Info("datasource to redis end")
 	return
 }

@@ -1,6 +1,7 @@
 package javascript
 
 import (
+	"errors"
 	"github.com/team-ide/go-tool/javascript/context_map"
 	"github.com/team-ide/go-tool/util"
 	"github.com/team-ide/goja"
@@ -40,19 +41,19 @@ func (this_ *Script) Set(name string, value interface{}) (err error) {
 	}
 	return
 }
-func (this_ *Script) GetScriptValue(script string) (value interface{}, err error) {
+func (this_ *Script) GetScriptValue(script string) (interface{}, error) {
 	if script == "" {
-		value = ""
-		return
+		return nil, nil
 	}
 
 	var scriptValue goja.Value
-	if scriptValue, err = this_.vm.RunString(script); err != nil {
-		util.Logger.Error("表达式执行异常", zap.Any("script", script), zap.Error(err))
-		return
+	scriptValue, err := this_.vm.RunString(script)
+	if err != nil {
+		err = errors.New("get script [" + script + "] value error:" + err.Error())
+		util.Logger.Error("表达式执行异常", zap.Error(err))
+		return nil, err
 	}
-	value = scriptValue.Export()
-	return
+	return scriptValue.Export(), nil
 }
 
 func (this_ *Script) GetStringScriptValue(script string) (value string, err error) {

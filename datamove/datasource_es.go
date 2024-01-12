@@ -17,10 +17,10 @@ func NewDataSourceEs() *DataSourceEs {
 
 type DataSourceEs struct {
 	*DataSourceBase
-	IndexName string `json:"indexName"`
-	IdName    string `json:"idName"`
-	IdScript  string `json:"idScript"`
-	SelectSql string `json:"selectSql"`
+	IndexName     string `json:"indexName"`
+	IndexIdName   string `json:"indexIdName"`
+	IndexIdScript string `json:"indexIdScript"`
+	SelectSql     string `json:"selectSql"`
 
 	Service elasticsearch.IService
 }
@@ -161,8 +161,20 @@ func (this_ *DataSourceEs) Write(progress *Progress, data *Data) (err error) {
 						return
 					}
 				} else {
-					var id = util.GetStringValue(d[this_.IdName])
-					_, e = this_.Service.InsertNotWait(this_.IndexName, id, d)
+					var id string
+					if this_.IndexIdScript != "" {
+						this_.SetScriptContextData(d)
+						id, e = this_.GetStringValueByScript(this_.IndexIdScript)
+					} else {
+						id = util.GetStringValue(d[this_.IndexIdName])
+					}
+					if e == nil {
+						if id == "" {
+							e = errors.New("id is empty")
+						} else {
+							_, e = this_.Service.InsertNotWait(this_.IndexName, id, d)
+						}
+					}
 					if e != nil {
 						progress.WriteCount.AddError(1, e)
 						if !progress.ErrorContinue {

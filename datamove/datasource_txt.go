@@ -5,24 +5,34 @@ import (
 	"errors"
 	"fmt"
 	"github.com/team-ide/go-tool/util"
+	"go.uber.org/zap"
 	"io"
+	"os"
 	"strings"
 )
 
 func NewDataSourceTxt() *DataSourceTxt {
 	return &DataSourceTxt{
-		DataSourceFile: &DataSourceFile{
-			DataSourceBase: &DataSourceBase{},
-		},
+		DataSourceBase: &DataSourceBase{},
+		DataSourceFile: &DataSourceFile{},
 	}
 }
 
 type DataSourceTxt struct {
+	*DataSourceBase
 	*DataSourceFile
-	headerRead  bool
-	headerWrite bool
-	ReplaceCol  string `json:"replaceCol"`  //
-	ReplaceLine string `json:"replaceLine"` //
+	headerRead   bool
+	headerWrite  bool
+	ColSeparator string `json:"colSeparator"` // 列 分隔符 默认 `,`
+	ReplaceCol   string `json:"replaceCol"`   //
+	ReplaceLine  string `json:"replaceLine"`  //
+}
+
+func (this_ *DataSourceTxt) GetColSeparator() string {
+	if this_.ColSeparator == "" {
+		return ","
+	}
+	return this_.ColSeparator
 }
 
 func (this_ *DataSourceTxt) StringsToValues(progress *Progress, cols []string) (res []interface{}, err error) {
@@ -69,6 +79,32 @@ func (this_ *DataSourceTxt) ValuesToStrings(progress *Progress, cols []interface
 	return
 }
 
+func (this_ *DataSourceTxt) ReadTitles(progress *Progress) (titles []string, err error) {
+	file, err := os.Open(this_.GetFilePath())
+	if err != nil {
+		err = errors.New("open file [" + this_.GetFilePath() + "] error:" + err.Error())
+		return
+	}
+	defer func() { _ = file.Close() }()
+	scanner := bufio.NewScanner(file)
+	scanner.Split(this_.ScanLines)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "" {
+			continue
+		}
+		cols := strings.Split(line, this_.GetColSeparator())
+		for _, c := range cols {
+			if this_.ShouldTrimSpace {
+				c = strings.TrimSpace(c)
+			}
+			titles = append(titles, c)
+		}
+		break
+	}
+	util.Logger.Info("file data source read titles", zap.Any("titles", titles))
+	return
+}
 func (this_ *DataSourceTxt) ReadStart(progress *Progress) (err error) {
 	err = this_.DataSourceFile.ReadStart(progress)
 	if err != nil {

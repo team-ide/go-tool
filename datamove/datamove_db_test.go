@@ -12,16 +12,16 @@ import (
 
 func newTestDataMoveDbToOptions() *Options {
 	options := &Options{
-		Source: &DataSourceConfig{},
-		Target: &DataSourceConfig{},
+		From: &DataSourceConfig{},
+		To:   &DataSourceConfig{},
 	}
 	options.Key = util.GetUUID()
-	options.Source.Type = "database"
-	options.Source.DbConfig = &db.Config{
+	options.From.Type = "database"
+	options.From.DbConfig = &db.Config{
 		Type:         "sqlite",
 		DatabasePath: "out/db",
 	}
-	options.AllOwner = true
+	options.From.AllOwner = true
 	options.BatchNumber = 1000
 
 	return options
@@ -41,9 +41,9 @@ func TestSqlValue(t *testing.T) {
 
 func TestDataMoveDbToTxt(t *testing.T) {
 	options := newTestDataMoveDbToOptions()
-	options.Target.Type = "txt"
+	options.To.Type = "txt"
 	options.Dir = "out/txt/"
-	options.FileNameSplice = "-"
+	options.To.FileNameSplice = "-"
 	_ = os.MkdirAll(options.Dir, os.ModePerm)
 
 	task, err := New(options)
@@ -56,12 +56,12 @@ func TestDataMoveDbToTxt(t *testing.T) {
 
 func TestDataMoveDbToSql(t *testing.T) {
 	options := newTestDataMoveDbToOptions()
-	options.Target.Type = "sql"
+	options.To.Type = "sql"
 	options.Dir = "out/sql/"
 	_ = os.MkdirAll(options.Dir, os.ModePerm)
-	options.SqlFileMergeType = "one"
-	options.ShouldOwner = true
-	options.ShouldTable = true
+	options.To.SqlFileMergeType = "one"
+	options.From.ShouldOwner = true
+	options.From.ShouldTable = true
 	task, err := New(options)
 	if err != nil {
 		panic(err)
@@ -72,9 +72,9 @@ func TestDataMoveDbToSql(t *testing.T) {
 
 func TestDataMoveDbToExcel(t *testing.T) {
 	options := newTestDataMoveDbToOptions()
-	options.Target.Type = "excel"
+	options.To.Type = "excel"
 	options.Dir = "out/excel/"
-	options.FileNameSplice = "-"
+	options.To.FileNameSplice = "-"
 	_ = os.MkdirAll(options.Dir, os.ModePerm)
 
 	task, err := New(options)

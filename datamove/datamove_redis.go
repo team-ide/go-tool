@@ -1,6 +1,10 @@
 package datamove
 
-import "github.com/team-ide/go-tool/util"
+import (
+	"github.com/team-ide/go-tool/redis"
+	"github.com/team-ide/go-tool/util"
+	"go.uber.org/zap"
+)
 
 func (this_ *Executor) redisToDb() (err error) {
 	util.Logger.Info("redis to db start")
@@ -13,6 +17,20 @@ func (this_ *Executor) redisToEs() (err error) {
 	util.Logger.Info("redis to es start")
 	err = this_.onRedisSourceData(this_.datasourceToEs)
 	util.Logger.Info("redis to es end")
+	return
+}
+
+func (this_ *Executor) redisToKafka() (err error) {
+	util.Logger.Info("redis to kafka start")
+	err = this_.onRedisSourceData(this_.datasourceToKafka)
+	util.Logger.Info("redis to kafka end")
+	return
+}
+
+func (this_ *Executor) redisToRedis() (err error) {
+	util.Logger.Info("redis to redis start")
+	err = this_.onRedisSourceData(this_.datasourceToRedis)
+	util.Logger.Info("redis to redis end")
 	return
 }
 
@@ -39,6 +57,11 @@ func (this_ *Executor) redisToExcel() (err error) {
 
 func (this_ *Executor) onRedisSourceData(on func(datasource DataSource) (err error)) (err error) {
 	datasource := NewDataSourceRedis()
+	datasource.Service, err = redis.New(this_.From.RedisConfig)
+	if err != nil {
+		util.Logger.Error("redis client new error", zap.Error(err))
+		return
+	}
 	err = on(datasource)
 	return
 }

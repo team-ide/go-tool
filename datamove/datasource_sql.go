@@ -11,13 +11,13 @@ import (
 
 func NewDataSourceSql() *DataSourceSql {
 	return &DataSourceSql{
-		DataSourceFile: &DataSourceFile{
-			DataSourceBase: &DataSourceBase{},
-		},
+		DataSourceBase: &DataSourceBase{},
+		DataSourceFile: &DataSourceFile{},
 	}
 }
 
 type DataSourceSql struct {
+	*DataSourceBase
 	*DataSourceFile
 	*dialect.ParamModel
 	DialectType string `json:"databaseType"`

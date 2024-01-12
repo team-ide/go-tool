@@ -16,6 +16,20 @@ func (this_ *Executor) txtToEs() (err error) {
 	return
 }
 
+func (this_ *Executor) txtToKafka() (err error) {
+	util.Logger.Info("txt to kafka start")
+	err = this_.onTxtSourceData(this_.datasourceToKafka)
+	util.Logger.Info("txt to kafka end")
+	return
+}
+
+func (this_ *Executor) txtToRedis() (err error) {
+	util.Logger.Info("txt to redis start")
+	err = this_.onTxtSourceData(this_.datasourceToRedis)
+	util.Logger.Info("txt to redis end")
+	return
+}
+
 func (this_ *Executor) txtToSql() (err error) {
 	util.Logger.Info("txt to sql start")
 	err = this_.onTxtSourceData(this_.datasourceToSql)
@@ -39,8 +53,8 @@ func (this_ *Executor) txtToExcel() (err error) {
 
 func (this_ *Executor) onTxtSourceData(on func(datasource DataSource) (err error)) (err error) {
 	datasource := NewDataSourceTxt()
-	datasource.FilePath = this_.FilePath
-	datasource.ColumnList = this_.ColumnList
+	datasource.FilePath = this_.From.FilePath
+	datasource.ColumnList = this_.From.ColumnList
 	err = on(datasource)
 	return
 }

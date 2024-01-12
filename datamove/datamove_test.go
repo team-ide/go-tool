@@ -202,7 +202,7 @@ func GetDataSourceDbExcel() *DataSourceExcel {
 func GetDataSourceEs() *DataSourceEs {
 	d := NewDataSourceEs()
 	d.IndexName = "index_xxx"
-	d.IdName = "logId"
+	d.IndexIdName = "logId"
 
 	var err error
 	d.Service, err = elasticsearch.New(&elasticsearch.Config{
@@ -235,7 +235,7 @@ func GetDataSourceEs() *DataSourceEs {
 func GetDataSourceEs2() *DataSourceEs {
 	d := NewDataSourceEs()
 	d.IndexName = "index_2"
-	d.IdName = "logId"
+	d.IndexIdName = "logId"
 	var err error
 	d.Service, err = elasticsearch.New(&elasticsearch.Config{
 		Url: "http://127.0.0.1:9200/",
@@ -294,7 +294,6 @@ func TestDataToData(t *testing.T) {
 		panic(err)
 	}
 	fmt.Println(util.GetStringValue(p))
-	fmt.Println(util.GetStringValue(to.Total))
 	fmt.Println(util.GetStringValue(to.DataList))
 
 	p = testNewProgress()
@@ -303,7 +302,6 @@ func TestDataToData(t *testing.T) {
 		panic(err)
 	}
 	fmt.Println(util.GetStringValue(p))
-	fmt.Println(util.GetStringValue(to.Total))
 	fmt.Println(util.GetStringValue(to.DataList))
 }
 
@@ -351,7 +349,6 @@ func TestTxtToData(t *testing.T) {
 		panic(err)
 	}
 	fmt.Println(util.GetStringValue(p))
-	fmt.Println(util.GetStringValue(to.Total))
 	fmt.Println(util.GetStringValue(to.DataList))
 }
 
@@ -367,7 +364,6 @@ func TestExcelToData(t *testing.T) {
 		panic(err)
 	}
 	fmt.Println(util.GetStringValue(p))
-	fmt.Println(util.GetStringValue(to.Total))
 	fmt.Println(util.GetStringValue(to.DataList))
 }
 

@@ -7,25 +7,25 @@ import (
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"os"
-	"strings"
 )
 
+func NewDataSourceFile(filePath string) *DataSourceFile {
+	return &DataSourceFile{
+		FilePath: filePath,
+	}
+}
+
 type DataSourceFile struct {
-	*DataSourceBase
-	FilePath        string `json:"filePath"`
-	ColSeparator    string `json:"colSeparator"`    // 列 分隔符 默认 `,`
-	ShouldTrimSpace bool   `json:"shouldTrimSpace"` // 是否需要去除空白字符
+	FilePath        string
+	ShouldTrimSpace bool `json:"shouldTrimSpace"` // 是否需要去除空白字符
 
 	readFile  *os.File
 	writeFile *os.File
 	bufWriter *bufio.Writer
 }
 
-func (this_ *DataSourceFile) GetColSeparator() string {
-	if this_.ColSeparator == "" {
-		return ","
-	}
-	return this_.ColSeparator
+func (this_ *DataSourceFile) GetFilePath() string {
+	return this_.FilePath
 }
 
 func (this_ *DataSourceFile) Stop(progress *Progress) {
@@ -60,9 +60,9 @@ func (this_ *DataSourceFile) GetReadFile() (file *os.File, err error) {
 		return
 	}
 	//fmt.Println("open read file:" + this_.FilePath)
-	file, err = os.Open(this_.FilePath)
+	file, err = os.Open(this_.GetFilePath())
 	if err != nil {
-		err = errors.New("open file [" + this_.FilePath + "] error:" + err.Error())
+		err = errors.New("open file [" + this_.GetFilePath() + "] error:" + err.Error())
 		return
 	}
 	this_.readFile = file
@@ -76,7 +76,7 @@ func (this_ *DataSourceFile) CloseReadFile() {
 	if file != nil {
 		err := file.Close()
 		if err != nil {
-			util.Logger.Error("close read file ["+this_.FilePath+"] error", zap.Error(err))
+			util.Logger.Error("close read file ["+this_.GetFilePath()+"] error", zap.Error(err))
 			return
 		}
 	}
@@ -90,23 +90,23 @@ func (this_ *DataSourceFile) GetWriteFile() (file *os.File, err error) {
 		return
 	}
 
-	ex, err := util.PathExists(this_.FilePath)
+	ex, err := util.PathExists(this_.GetFilePath())
 	if err != nil {
 		return
 	}
 	if !ex {
-		file, err = os.Create(this_.FilePath)
+		file, err = os.Create(this_.GetFilePath())
 		if err != nil {
-			err = errors.New("create file [" + this_.FilePath + "] error:" + err.Error())
+			err = errors.New("create file [" + this_.GetFilePath() + "] error:" + err.Error())
 			return
 		}
 		_ = file.Close()
 	}
 	//fmt.Println("open write file:" + this_.FilePath)
 	// 打开 只写 创建 追加
-	file, err = os.OpenFile(this_.FilePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	file, err = os.OpenFile(this_.GetFilePath(), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		err = errors.New("create file [" + this_.FilePath + "] error:" + err.Error())
+		err = errors.New("create file [" + this_.GetFilePath() + "] error:" + err.Error())
 		return
 	}
 	this_.writeFile = file
@@ -140,7 +140,7 @@ func (this_ *DataSourceFile) CloseWriteFile() {
 		this_.writeFile = nil
 		err := file.Close()
 		if err != nil {
-			util.Logger.Error("close write file ["+this_.FilePath+"] error", zap.Error(err))
+			util.Logger.Error("close write file ["+this_.GetFilePath()+"] error", zap.Error(err))
 			return
 		}
 	}
@@ -171,9 +171,9 @@ func (this_ *DataSourceFile) ScanLines(data []byte, atEOF bool) (advance int, to
 }
 
 func (this_ *DataSourceFile) ReadLineCount() (lineCount int64, err error) {
-	file, err := os.Open(this_.FilePath)
+	file, err := os.Open(this_.GetFilePath())
 	if err != nil {
-		err = errors.New("open file [" + this_.FilePath + "] error:" + err.Error())
+		err = errors.New("open file [" + this_.GetFilePath() + "] error:" + err.Error())
 		return
 	}
 	defer func() { _ = file.Close() }()
@@ -186,32 +186,5 @@ func (this_ *DataSourceFile) ReadLineCount() (lineCount int64, err error) {
 		lineCount++
 	}
 	util.Logger.Info("txt data source read line count", zap.Any("lineCount", lineCount))
-	return
-}
-
-func (this_ *DataSourceFile) ReadTitles(progress *Progress) (titles []string, err error) {
-	file, err := os.Open(this_.FilePath)
-	if err != nil {
-		err = errors.New("open file [" + this_.FilePath + "] error:" + err.Error())
-		return
-	}
-	defer func() { _ = file.Close() }()
-	scanner := bufio.NewScanner(file)
-	scanner.Split(this_.ScanLines)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if line == "" {
-			continue
-		}
-		cols := strings.Split(line, this_.GetColSeparator())
-		for _, c := range cols {
-			if this_.ShouldTrimSpace {
-				c = strings.TrimSpace(c)
-			}
-			titles = append(titles, c)
-		}
-		break
-	}
-	util.Logger.Info("file data source read titles", zap.Any("titles", titles))
 	return
 }

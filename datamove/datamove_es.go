@@ -20,6 +20,20 @@ func (this_ *Executor) esToEs() (err error) {
 	return
 }
 
+func (this_ *Executor) esToKafka() (err error) {
+	util.Logger.Info("es to kafka start")
+	err = this_.onEsSourceData(this_.datasourceToKafka)
+	util.Logger.Info("es to kafka end")
+	return
+}
+
+func (this_ *Executor) esToRedis() (err error) {
+	util.Logger.Info("es to redis start")
+	err = this_.onEsSourceData(this_.datasourceToRedis)
+	util.Logger.Info("es to redis end")
+	return
+}
+
 func (this_ *Executor) esToSql() (err error) {
 	util.Logger.Info("es to sql start")
 	err = this_.onEsSourceData(this_.datasourceToSql)
@@ -44,10 +58,10 @@ func (this_ *Executor) esToExcel() (err error) {
 func (this_ *Executor) onEsSourceData(on func(datasource DataSource) (err error)) (err error) {
 	datasource := NewDataSourceEs()
 
-	datasource.ColumnList = this_.ColumnList
-	datasource.IndexName = this_.IndexName
-	datasource.IdName = this_.IdName
-	datasource.IdScript = this_.IdScript
+	datasource.ColumnList = this_.From.ColumnList
+	datasource.IndexName = this_.From.IndexName
+	datasource.IndexIdName = this_.From.IndexIdName
+	datasource.IndexIdScript = this_.From.IndexIdScript
 	datasource.Service, err = elasticsearch.New(this_.From.EsConfig)
 	if err != nil {
 		util.Logger.Error("elasticsearch client new error", zap.Error(err))

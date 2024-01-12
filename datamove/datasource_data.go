@@ -13,8 +13,11 @@ func NewDataSourceData() *DataSourceData {
 
 type DataSourceData struct {
 	*DataSourceBase
-	Total    int64                    `json:"total"`
-	DataList []map[string]interface{} `json:"dataList"`
+	DataList []map[string]interface{}
+}
+
+func (this_ *DataSourceData) GetDataList() []map[string]interface{} {
+	return this_.DataList
 }
 
 func (this_ *DataSourceData) Stop(progress *Progress) {
@@ -23,9 +26,9 @@ func (this_ *DataSourceData) Stop(progress *Progress) {
 
 func (this_ *DataSourceData) ReadStart(progress *Progress) (err error) {
 
-	this_.Total = int64(len(this_.DataList))
-	progress.DataTotal += this_.Total
-	if this_.Total > 0 {
+	size := int64(len(this_.GetDataList()))
+	progress.DataTotal += size
+	if size > 0 {
 		err = this_.initColumnListByData(progress, this_.DataList[0])
 		if err != nil {
 			return
@@ -99,7 +102,6 @@ func (this_ *DataSourceData) ReadEnd(progress *Progress) (err error) {
 }
 
 func (this_ *DataSourceData) WriteStart(progress *Progress) (err error) {
-	this_.Total = 0
 	this_.DataList = nil
 	return
 }
@@ -132,7 +134,6 @@ func (this_ *DataSourceData) Write(progress *Progress, data *Data) (err error) {
 		return
 	}
 	progress.WriteCount.AddSuccess(data.Total)
-	this_.Total += data.Total
 	return
 }
 

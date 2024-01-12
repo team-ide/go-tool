@@ -16,6 +16,20 @@ func (this_ *Executor) scriptToEs() (err error) {
 	return
 }
 
+func (this_ *Executor) scriptToKafka() (err error) {
+	util.Logger.Info("script to kafka start")
+	err = this_.onScriptSourceData(this_.datasourceToKafka)
+	util.Logger.Info("script to kafka end")
+	return
+}
+
+func (this_ *Executor) scriptToRedis() (err error) {
+	util.Logger.Info("script to redis start")
+	err = this_.onScriptSourceData(this_.datasourceToRedis)
+	util.Logger.Info("script to redis end")
+	return
+}
+
 func (this_ *Executor) scriptToSql() (err error) {
 	util.Logger.Info("script to sql start")
 	err = this_.onScriptSourceData(this_.datasourceToSql)
@@ -39,8 +53,8 @@ func (this_ *Executor) scriptToExcel() (err error) {
 
 func (this_ *Executor) onScriptSourceData(on func(datasource DataSource) (err error)) (err error) {
 	datasource := NewDataSourceScript()
-	datasource.Total = this_.Total
-	datasource.ColumnList = this_.ColumnList
+	datasource.Total = this_.From.Total
+	datasource.ColumnList = this_.From.ColumnList
 	err = on(datasource)
 	return
 }

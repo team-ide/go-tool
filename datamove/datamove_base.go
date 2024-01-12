@@ -16,36 +16,8 @@ type Options struct {
 	From *DataSourceConfig `json:"from"` // 源 数据配置
 	To   *DataSourceConfig `json:"to"`   // 目标 数据配置
 
-	AllOwner       bool       `json:"allOwner"`
-	Owners         []*DbOwner `json:"owners"`
-	SkipOwnerNames []string   `json:"skipOwnerNames"`
-
-	OwnerName  string    `json:"ownerName"`
-	TableName  string    `json:"tableName"`
-	BySql      bool      `json:"bySql"` // 根据 SQL 语句导出
-	SelectSql  string    `json:"selectSql"`
-	ColumnList []*Column `json:"columnList"`
-
-	IndexName string `json:"indexName"`
-	IdName    string `json:"IdName"`
-	IdScript  string `json:"idScript"`
-
-	DataList []map[string]interface{} `json:"dataList"`
-
-	Total int64 `json:"total"`
-
-	FilePath    string `json:"filePath"`
-	ShouldOwner bool   `json:"shouldOwner"` // 需要 建库
-	ShouldTable bool   `json:"shouldTable"` // 需要 建表
-
-	FileNameSplice string `json:"fileNameSplice"` // 文件名拼接字符 如：/ :库作为目录 表作为名称 默认
-	FileName       string `json:"fileName"`
-
 	ErrorContinue bool  `json:"errorContinue"`
 	BatchNumber   int64 `json:"batchNumber"`
-	RowNumber     int64 `json:"rowNumber"`
-
-	*dialect.ParamModel
 }
 
 func (this_ *Options) getFilePath(dirName string, fileName string, suffix string) (path string) {
@@ -62,14 +34,14 @@ func (this_ *Options) getFilePath(dirName string, fileName string, suffix string
 	return
 }
 
-func (this_ *Options) GetDialectParam() *dialect.ParamModel {
+func (this_ *DataSourceConfig) GetDialectParam() *dialect.ParamModel {
 	if this_.ParamModel == nil {
 		this_.ParamModel = &dialect.ParamModel{}
 	}
 	return this_.ParamModel
 }
 
-func (this_ *Options) GetFileName() string {
+func (this_ *DataSourceConfig) GetFileName() string {
 	if this_.FileName == "" {
 		return "导出"
 	}
@@ -77,6 +49,7 @@ func (this_ *Options) GetFileName() string {
 }
 
 type DataSourceConfig struct {
+	*dialect.ParamModel
 	Type             string `json:"type"`
 	SqlFileMergeType string `json:"sqlFileMergeType"` // SQL 的文件合并类型 如：one：一个文件， owner：每个库一个文件，table：每个表一个文件
 	ShouldTrimSpace  bool   `json:"shouldTrimSpace"`  // 是否需要去除空白字符
@@ -97,6 +70,38 @@ type DataSourceConfig struct {
 	RedisConfig *redis.Config `json:"-"`
 
 	KafkaConfig *kafka.Config `json:"-"`
+
+	OwnerName string `json:"ownerName"`
+	TableName string `json:"tableName"`
+	BySql     bool   `json:"bySql"` // 根据 SQL 语句导出
+	SelectSql string `json:"selectSql"`
+
+	IndexName     string `json:"indexName"`
+	IndexIdName   string `json:"indexIdName"`
+	IndexIdScript string `json:"indexIdScript"`
+
+	TopicName      string `json:"topicName"`
+	TopicGroupName string `json:"topicGroupName"`
+	TopicKey       string `json:"topicKey"`
+	TopicValue     string `json:"topicValue"`
+
+	DataList []map[string]interface{} `json:"dataList"`
+
+	Total int64 `json:"total"`
+
+	ColumnList []*Column `json:"columnList"`
+
+	AllOwner       bool       `json:"allOwner"`
+	Owners         []*DbOwner `json:"owners"`
+	SkipOwnerNames []string   `json:"skipOwnerNames"`
+
+	FilePath    string `json:"filePath"`
+	ShouldOwner bool   `json:"shouldOwner"` // 需要 建库
+	ShouldTable bool   `json:"shouldTable"` // 需要 建表
+
+	FileNameSplice string `json:"fileNameSplice"` // 文件名拼接字符 如：/ :库作为目录 表作为名称 默认
+	FileName       string `json:"fileName"`
+	RowNumber      int64  `json:"rowNumber"`
 }
 
 func (this_ *DataSourceConfig) GetTxtFileType() string {
@@ -152,9 +157,12 @@ type DbTable struct {
 	AllColumn       bool                `json:"allColumn"`
 	appended        bool
 
-	IndexName string `json:"indexName"`
-	IdName    string `json:"idName"`
-	IdScript  string `json:"idScript"`
+	IndexIdName   string `json:"indexIdName"`
+	IndexIdScript string `json:"indexIdScript"`
+
+	TopicGroupName string `json:"topicGroupName"`
+	TopicKey       string `json:"topicKey"`
+	TopicValue     string `json:"topicValue"`
 }
 
 func (this_ *DbTable) GetToDialectTable() *dialect.TableModel {
