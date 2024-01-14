@@ -146,6 +146,7 @@ func (this_ *Executor) dbToSql() (err error) {
 			sqlList = append(sqlList, ss...)
 		}
 		if len(sqlList) > 0 {
+			this_.ReadCount.AddSuccess(int64(len(sqlList)))
 			err = to.Write(this_.Progress, &Data{
 				DataType: DataTypeSql,
 				Total:    int64(len(sqlList)),
@@ -253,11 +254,13 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 
 	if this_.From.BySql {
 
+		from := NewDataSourceDb()
+		from.ShouldSelectPage = this_.From.ShouldSelectPage
 		if len(this_.From.ColumnList) == 0 && len(this_.To.ColumnList) == 0 {
 
 			str := strings.TrimSpace(this_.From.SelectSql)
-			if strings.HasPrefix(str, "select") {
-				str = this_.From.dbService.GetDialect().PackPageSql(str, 1, 1)
+			if this_.From.ShouldSelectPage {
+				str = this_.From.GetDialect().PackPageSql(str, 1, 1)
 			}
 
 			rows, e := this_.From.dbService.GetDb().Query(str)
@@ -308,7 +311,6 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 			IndexIdName:   this_.To.IndexIdName,
 			IndexIdScript: this_.To.IndexIdScript,
 		}
-		from := NewDataSourceDb()
 		from.ParamModel = this_.From.GetDialectParam()
 		from.OwnerName = owner.From.OwnerName
 		from.TableName = table.From.TableName
@@ -325,7 +327,7 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 
 	if this_.From.AllOwner {
 		var list []*dialect.OwnerModel
-		list, err = worker.OwnersSelect(this_.From.dbService.GetDb(), this_.From.dbService.GetDialect(), this_.From.GetDialectParam())
+		list, err = worker.OwnersSelect(this_.From.dbService.GetDb(), this_.From.GetDialect(), this_.From.GetDialectParam())
 		if err != nil {
 			return
 		}
@@ -420,12 +422,12 @@ func (this_ *Executor) forEachOwnerTables(owner *DbOwner, on func(owner *DbOwner
 			owner.appended = true
 			// 同步结构
 			var toOwnerOne *dialect.OwnerModel
-			toOwnerOne, err = worker.OwnerSelect(this_.To.dbService.GetDb(), this_.To.dbService.GetDialect(), this_.To.GetDialectParam(), owner.To.OwnerName)
+			toOwnerOne, err = worker.OwnerSelect(this_.To.dbService.GetDb(), this_.To.GetDialect(), this_.To.GetDialectParam(), owner.To.OwnerName)
 			if err != nil {
 				return
 			}
 			if toOwnerOne == nil {
-				_, err = worker.OwnerCreate(this_.To.dbService.GetDb(), this_.To.dbService.GetDialect(), this_.To.GetDialectParam(), &dialect.OwnerModel{
+				_, err = worker.OwnerCreate(this_.To.dbService.GetDb(), this_.To.GetDialect(), this_.To.GetDialectParam(), &dialect.OwnerModel{
 					OwnerName:             owner.To.OwnerName,
 					OwnerPassword:         owner.To.OwnerPassword,
 					OwnerCharacterSetName: "utf8mb4",
@@ -618,7 +620,7 @@ func (this_ *Executor) doOwnerTable(owner *DbOwner, table *DbTable, on func(owne
 			var oldTableDetail *dialect.TableModel
 			oldTableDetail, err = worker.TableDetail(
 				this_.To.dbService.GetDb(),
-				this_.To.dbService.GetDialect(),
+				this_.To.GetDialect(),
 				this_.To.GetDialectParam(),
 				owner.To.OwnerName,
 				table.To.TableName,
@@ -634,7 +636,7 @@ func (this_ *Executor) doOwnerTable(owner *DbOwner, table *DbTable, on func(owne
 			if len(oldTableDetail.ColumnList) == 0 {
 				err = worker.TableCreate(
 					this_.To.dbService.GetDb(),
-					this_.To.dbService.GetDialect(),
+					this_.To.GetDialect(),
 					this_.To.GetDialectParam(),
 					owner.To.OwnerName,
 					table.GetToDialectTable(),
@@ -646,9 +648,9 @@ func (this_ *Executor) doOwnerTable(owner *DbOwner, table *DbTable, on func(owne
 			} else {
 				err = worker.TableUpdate(
 					this_.To.dbService.GetDb(),
-					this_.To.dbService.GetDialect(),
+					this_.To.GetDialect(),
 					oldTableDetail,
-					this_.To.dbService.GetDialect(),
+					this_.To.GetDialect(),
 					table.GetToDialectTable(),
 				)
 				if err != nil {

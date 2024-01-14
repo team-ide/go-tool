@@ -60,7 +60,7 @@ type DataSourceConfig struct {
 
 	// 数据库 配置
 	DbConfig    *db.Config `json:"-"`
-	DialectType string     `json:"databaseType"`
+	DialectType string     `json:"dialectType"`
 
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -71,10 +71,11 @@ type DataSourceConfig struct {
 
 	KafkaConfig *kafka.Config `json:"-"`
 
-	OwnerName string `json:"ownerName"`
-	TableName string `json:"tableName"`
-	BySql     bool   `json:"bySql"` // 根据 SQL 语句导出
-	SelectSql string `json:"selectSql"`
+	OwnerName        string `json:"ownerName"`
+	TableName        string `json:"tableName"`
+	BySql            bool   `json:"bySql"` // 根据 SQL 语句导出
+	SelectSql        string `json:"selectSql"`
+	ShouldSelectPage bool   `json:"shouldSelectPage"`
 
 	IndexName     string `json:"indexName"`
 	IndexIdName   string `json:"indexIdName"`
@@ -104,6 +105,18 @@ type DataSourceConfig struct {
 	RowNumber      int64  `json:"rowNumber"`
 
 	dbService db.IService
+	dia_      dialect.Dialect
+}
+
+func (this_ *DataSourceConfig) GetDialect() dialect.Dialect {
+	if this_.dia_ == nil {
+		if this_.DialectType == "" {
+			return this_.dbService.GetDialect()
+		} else {
+			this_.dia_, _ = dialect.NewDialect(this_.DialectType)
+		}
+	}
+	return this_.dia_
 }
 
 func (this_ *DataSourceConfig) GetTxtFileType() string {

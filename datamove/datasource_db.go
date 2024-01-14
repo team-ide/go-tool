@@ -20,9 +20,10 @@ type DataSourceDb struct {
 	*dialect.ParamModel
 	*DataSourceBase
 
-	OwnerName string `json:"ownerName"`
-	TableName string `json:"tableName"`
-	SelectSql string `json:"selectSql"`
+	OwnerName        string `json:"ownerName"`
+	TableName        string `json:"tableName"`
+	SelectSql        string `json:"selectSql"`
+	ShouldSelectPage bool   `json:"shouldSelectPage"`
 
 	Service db.IService
 }
@@ -46,6 +47,7 @@ func (this_ *DataSourceDb) ReadStart(progress *Progress) (err error) {
 		if err != nil {
 			return
 		}
+		this_.ShouldSelectPage = true
 	}
 
 	countSql, e := dialect.FormatCountSql(this_.SelectSql)
@@ -56,7 +58,7 @@ func (this_ *DataSourceDb) ReadStart(progress *Progress) (err error) {
 
 	if len(this_.ColumnList) == 0 {
 		str := strings.TrimSpace(this_.SelectSql)
-		if strings.HasPrefix(str, "select") {
+		if this_.ShouldSelectPage {
 			str = this_.Service.GetDialect().PackPageSql(str, 1, 1)
 		}
 
@@ -104,14 +106,16 @@ func (this_ *DataSourceDb) Read(progress *Progress, dataChan chan *Data) (err er
 			return
 		}
 
-		str := strings.TrimSpace(this_.SelectSql)
-		if strings.HasPrefix(str, "select") {
-			str = this_.Service.GetDialect().PackPageSql(str, int(pageSize), pageNo)
+		selectSql := strings.TrimSpace(this_.SelectSql)
+		var hasPage = false
+		if this_.ShouldSelectPage {
+			selectSql = this_.Service.GetDialect().PackPageSql(selectSql, int(pageSize), pageNo)
+			hasPage = true
 		}
 		util.Logger.Info("datasource db read",
-			zap.Any("pageSql", str),
+			zap.Any("selectSql", selectSql),
 		)
-		list, err = this_.Service.QueryMap(str, nil)
+		list, err = this_.Service.QueryMap(selectSql, nil)
 		if err != nil {
 			util.Logger.Error("datasource db read error",
 				zap.Error(err),
@@ -138,7 +142,7 @@ func (this_ *DataSourceDb) Read(progress *Progress, dataChan chan *Data) (err er
 		}
 
 		dataChan <- lastData
-		if lastData.Total >= pageSize {
+		if hasPage && lastData.Total >= pageSize {
 			pageNo++
 			err = doQuery()
 			if err != nil {
