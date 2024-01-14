@@ -82,20 +82,11 @@ func (this_ *Executor) dbToDb() (err error) {
 	util.Logger.Info("db to db start")
 	err = this_.forEachOwnersTables(func(owner *DbOwner, table *DbTable, from *DataSourceDb) (err error) {
 		to := NewDataSourceDb()
+		to.ColumnList = from.ColumnList
 		to.ParamModel = this_.To.GetDialectParam()
 		to.OwnerName = owner.To.OwnerName
 		to.TableName = table.To.TableName
 		to.Service = owner.toService
-		// 需要建库
-		if this_.From.ShouldOwner && !owner.appended {
-			owner.appended = true
-			// 同步结构
-		}
-		// 需要建表
-		if this_.From.ShouldTable && !table.appended {
-			table.appended = true
-			// 同步结构
-		}
 		err = DateMove(this_.Progress, from, to)
 		return
 	})
@@ -110,21 +101,27 @@ func (this_ *Executor) dbToSql() (err error) {
 		to := NewDataSourceSql()
 		to.ParamModel = this_.To.GetDialectParam()
 		to.ColumnList = from.ColumnList
+		to.OwnerName = owner.To.OwnerName
+		to.TableName = table.To.TableName
 		to.DialectType = this_.To.DialectType
-		switch this_.To.SqlFileMergeType {
-		case "", "owner":
-			to.FilePath = this_.getFilePath("", owner.To.OwnerName, "sql")
-			break
-		case "one":
+		if this_.From.BySql {
 			to.FilePath = this_.getFilePath("", this_.To.GetFileName(), "sql")
-			break
-		case "table":
-			owner.appended = false
-			to.FilePath = this_.getFilePath(owner.To.OwnerName, table.To.TableName, "sql")
-			break
-		default:
-			err = errors.New("不支持的SQL文件合并类型")
-			return
+		} else {
+			switch this_.To.SqlFileMergeType {
+			case "", "owner":
+				to.FilePath = this_.getFilePath("", owner.To.OwnerName, "sql")
+				break
+			case "one":
+				to.FilePath = this_.getFilePath("", this_.To.GetFileName(), "sql")
+				break
+			case "table":
+				owner.appended = false
+				to.FilePath = this_.getFilePath(owner.To.OwnerName, table.To.TableName, "sql")
+				break
+			default:
+				err = errors.New("不支持的SQL文件合并类型")
+				return
+			}
 		}
 
 		var sqlList []string
@@ -175,14 +172,17 @@ func (this_ *Executor) dbToTxt() (err error) {
 		to.ReplaceCol = this_.To.ReplaceCol
 		to.ReplaceLine = this_.To.ReplaceLine
 		to.ShouldTrimSpace = this_.To.ShouldTrimSpace
-
-		switch this_.To.FileNameSplice {
-		case "", "/":
-			to.FilePath = this_.getFilePath(owner.To.OwnerName, table.To.TableName, this_.To.GetTxtFileType())
-			break
-		default:
-			to.FilePath = this_.getFilePath("", owner.To.OwnerName+this_.To.FileNameSplice+table.To.TableName, this_.To.GetTxtFileType())
-			break
+		if this_.From.BySql {
+			to.FilePath = this_.getFilePath("", this_.To.GetFileName(), this_.To.GetTxtFileType())
+		} else {
+			switch this_.To.FileNameSplice {
+			case "", "/":
+				to.FilePath = this_.getFilePath(owner.To.OwnerName, table.To.TableName, this_.To.GetTxtFileType())
+				break
+			default:
+				to.FilePath = this_.getFilePath("", owner.To.OwnerName+this_.To.FileNameSplice+table.To.TableName, this_.To.GetTxtFileType())
+				break
+			}
 		}
 		err = DateMove(this_.Progress, from, to)
 		return
@@ -199,14 +199,17 @@ func (this_ *Executor) dbToExcel() (err error) {
 		to := NewDataSourceExcel()
 		to.ColumnList = from.ColumnList
 		to.ShouldTrimSpace = this_.To.ShouldTrimSpace
-
-		switch this_.To.FileNameSplice {
-		case "", "/":
-			to.FilePath = this_.getFilePath(owner.To.OwnerName, table.To.TableName, "xlsx")
-			break
-		default:
-			to.FilePath = this_.getFilePath("", owner.To.OwnerName+this_.To.FileNameSplice+table.To.TableName, "xlsx")
-			break
+		if this_.From.BySql {
+			to.FilePath = this_.getFilePath("", this_.To.GetFileName(), "xlsx")
+		} else {
+			switch this_.To.FileNameSplice {
+			case "", "/":
+				to.FilePath = this_.getFilePath(owner.To.OwnerName, table.To.TableName, "xlsx")
+				break
+			default:
+				to.FilePath = this_.getFilePath("", owner.To.OwnerName+this_.To.FileNameSplice+table.To.TableName, "xlsx")
+				break
+			}
 		}
 		err = DateMove(this_.Progress, from, to)
 		return
@@ -223,18 +226,69 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 			util.Logger.Error("for each owners to do panic error", zap.Error(err))
 		}
 	}()
+	if this_.ShouldStop() {
+		return
+	}
 
-	if this_.From.BySql {
-		var service db.IService
-		service, err = this_.newDbService(*this_.From.DbConfig, this_.From.Username, this_.From.Password, "")
+	this_.From.dbService, err = this_.newDbService(*this_.From.DbConfig, this_.From.Username, this_.From.Password, "")
+	if err != nil {
+		return
+	}
+	defer func() {
+		if this_.From.dbService != nil {
+			_ = this_.From.dbService.GetDb().Close()
+		}
+	}()
+	if this_.To.IsDb() {
+		this_.To.dbService, err = this_.newDbService(*this_.To.DbConfig, this_.To.Username, this_.To.Password, "")
 		if err != nil {
 			return
 		}
 		defer func() {
-			if service != nil {
-				_ = service.GetDb().Close()
+			if this_.To.dbService != nil {
+				_ = this_.To.dbService.GetDb().Close()
 			}
 		}()
+	}
+
+	if this_.From.BySql {
+
+		if len(this_.From.ColumnList) == 0 && len(this_.To.ColumnList) == 0 {
+
+			str := strings.TrimSpace(this_.From.SelectSql)
+			if strings.HasPrefix(str, "select") {
+				str = this_.From.dbService.GetDialect().PackPageSql(str, 1, 1)
+			}
+
+			rows, e := this_.From.dbService.GetDb().Query(str)
+			if e == nil {
+				defer func() { _ = rows.Close() }()
+				columnTypes, _ := rows.ColumnTypes()
+				if columnTypes != nil {
+					for _, columnType := range columnTypes {
+						column := &Column{
+							ColumnModel: &dialect.ColumnModel{},
+						}
+						column.ColumnName = columnType.Name()
+						if precision, scale, ok := columnType.DecimalSize(); ok {
+							column.ColumnPrecision = int(precision)
+							column.ColumnScale = int(scale)
+						}
+						column.ColumnDataType = columnType.DatabaseTypeName()
+						if length, ok := columnType.Length(); ok {
+							column.ColumnLength = int(length)
+						}
+						if nullable, ok := columnType.Nullable(); ok {
+							column.ColumnNotNull = !nullable
+						}
+
+						this_.From.ColumnList = append(this_.From.ColumnList, column)
+						this_.To.ColumnList = append(this_.To.ColumnList, column)
+					}
+				}
+			}
+
+		}
 
 		owner := &DbOwner{
 			From: &dialect.OwnerModel{
@@ -259,7 +313,8 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 		from.OwnerName = owner.From.OwnerName
 		from.TableName = table.From.TableName
 		from.ColumnList = this_.From.ColumnList
-		from.Service = service
+		from.Service = this_.From.dbService
+		from.SelectSql = this_.From.SelectSql
 		err = on(owner, table, from)
 
 		return
@@ -270,23 +325,10 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 
 	if this_.From.AllOwner {
 		var list []*dialect.OwnerModel
-		var service db.IService
-		service, err = this_.newDbService(*this_.From.DbConfig, this_.From.Username, this_.From.Password, "")
+		list, err = worker.OwnersSelect(this_.From.dbService.GetDb(), this_.From.dbService.GetDialect(), this_.From.GetDialectParam())
 		if err != nil {
 			return
 		}
-		defer func() {
-			if service != nil {
-				_ = service.GetDb().Close()
-			}
-		}()
-		list, err = worker.OwnersSelect(service.GetDb(), service.GetDialect(), this_.From.GetDialectParam())
-		if err != nil {
-			return
-		}
-
-		_ = service.GetDb().Close()
-		service = nil
 
 		for _, one := range list {
 			var find *DbOwner
@@ -338,6 +380,9 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 	this_.OwnerTotal += int64(len(owners))
 
 	for _, owner := range owners {
+		if this_.ShouldStop() {
+			return
+		}
 		e := this_.forEachOwnerTables(owner, on)
 		if e != nil {
 			this_.OwnerCount.AddError(1, e)
@@ -359,6 +404,9 @@ func (this_ *Executor) forEachOwnerTables(owner *DbOwner, on func(owner *DbOwner
 			util.Logger.Error("for each owner tables to do panic error", zap.Error(err))
 		}
 	}()
+	if this_.ShouldStop() {
+		return
+	}
 	util.Logger.Info("for each owner tables to do", zap.Any("owner", owner.From.OwnerName))
 
 	owner.fromService, err = this_.newDbService(*this_.From.DbConfig, owner.From.OwnerUsername, owner.From.OwnerPassword, owner.From.OwnerName)
@@ -366,6 +414,28 @@ func (this_ *Executor) forEachOwnerTables(owner *DbOwner, on func(owner *DbOwner
 		return
 	}
 	if this_.To.IsDb() {
+
+		// 需要建库
+		if this_.From.ShouldOwner && !owner.appended {
+			owner.appended = true
+			// 同步结构
+			var toOwnerOne *dialect.OwnerModel
+			toOwnerOne, err = worker.OwnerSelect(this_.To.dbService.GetDb(), this_.To.dbService.GetDialect(), this_.To.GetDialectParam(), owner.To.OwnerName)
+			if err != nil {
+				return
+			}
+			if toOwnerOne == nil {
+				_, err = worker.OwnerCreate(this_.To.dbService.GetDb(), this_.To.dbService.GetDialect(), this_.To.GetDialectParam(), &dialect.OwnerModel{
+					OwnerName:             owner.To.OwnerName,
+					OwnerPassword:         owner.To.OwnerPassword,
+					OwnerCharacterSetName: "utf8mb4",
+				})
+				if err != nil {
+					return
+				}
+			}
+		}
+
 		owner.toService, err = this_.newDbService(*this_.To.DbConfig, owner.To.OwnerUsername, owner.To.OwnerPassword, owner.To.OwnerName)
 		if err != nil {
 			return
@@ -445,6 +515,9 @@ func (this_ *Executor) forEachOwnerTables(owner *DbOwner, on func(owner *DbOwner
 	this_.TableTotal += int64(len(tables))
 
 	for _, table := range tables {
+		if this_.ShouldStop() {
+			return
+		}
 
 		e := this_.doOwnerTable(owner, table, on)
 		if e != nil {
@@ -468,6 +541,9 @@ func (this_ *Executor) doOwnerTable(owner *DbOwner, table *DbTable, on func(owne
 			util.Logger.Error("owner table to do panic error", zap.Error(err))
 		}
 	}()
+	if this_.ShouldStop() {
+		return
+	}
 	util.Logger.Info("owner table to do", zap.Any("ownerName", owner.From.OwnerName), zap.Any("tableName", table.From.TableName))
 
 	var detail *dialect.TableModel
@@ -532,6 +608,55 @@ func (this_ *Executor) doOwnerTable(owner *DbOwner, table *DbTable, on func(owne
 			ColumnModel: c.From,
 			Value:       c.Value,
 		})
+	}
+
+	if this_.To.IsDb() {
+		// 需要建表
+		if this_.From.ShouldTable && !table.appended {
+			table.appended = true
+			// 同步结构
+			var oldTableDetail *dialect.TableModel
+			oldTableDetail, err = worker.TableDetail(
+				this_.To.dbService.GetDb(),
+				this_.To.dbService.GetDialect(),
+				this_.To.GetDialectParam(),
+				owner.To.OwnerName,
+				table.To.TableName,
+				false,
+			)
+			if err != nil {
+				util.Logger.Error("to owner table select detail error", zap.Error(err))
+				return
+			}
+			if oldTableDetail == nil {
+				oldTableDetail = &dialect.TableModel{}
+			}
+			if len(oldTableDetail.ColumnList) == 0 {
+				err = worker.TableCreate(
+					this_.To.dbService.GetDb(),
+					this_.To.dbService.GetDialect(),
+					this_.To.GetDialectParam(),
+					owner.To.OwnerName,
+					table.GetToDialectTable(),
+				)
+				if err != nil {
+					util.Logger.Error("to owner table create table error", zap.Error(err))
+					return
+				}
+			} else {
+				err = worker.TableUpdate(
+					this_.To.dbService.GetDb(),
+					this_.To.dbService.GetDialect(),
+					oldTableDetail,
+					this_.To.dbService.GetDialect(),
+					table.GetToDialectTable(),
+				)
+				if err != nil {
+					util.Logger.Error("to owner table update table error", zap.Error(err))
+					return
+				}
+			}
+		}
 	}
 
 	err = on(owner, table, datasource)

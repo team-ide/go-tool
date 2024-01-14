@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/tealeg/xlsx"
+	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"strings"
@@ -67,7 +68,9 @@ func (this_ *DataSourceExcel) ReadStart(progress *Progress) (err error) {
 
 	if len(this_.ColumnList) == 0 {
 		for _, title := range titles {
-			column := &Column{}
+			column := &Column{
+				ColumnModel: &dialect.ColumnModel{},
+			}
 			column.ColumnName = title
 			this_.ColumnList = append(this_.ColumnList, column)
 		}

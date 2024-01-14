@@ -3,6 +3,7 @@ package datamove
 import (
 	"errors"
 	"fmt"
+	"github.com/team-ide/go-dialect/dialect"
 )
 
 func NewDataSourceData() *DataSourceData {
@@ -48,7 +49,9 @@ func (this_ *DataSourceData) initColumnListByData(progress *Progress, data map[s
 	}
 	if len(this_.ColumnList) == 0 {
 		for _, title := range titles {
-			column := &Column{}
+			column := &Column{
+				ColumnModel: &dialect.ColumnModel{},
+			}
 			column.ColumnName = title
 			this_.ColumnList = append(this_.ColumnList, column)
 		}

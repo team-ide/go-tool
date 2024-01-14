@@ -45,6 +45,14 @@ func (this_ *Executor) execute() (err error) {
 			util.Logger.Error("execute error", zap.Error(err))
 			return
 		}
+	} else if this_.From.IsSql() {
+		if this_.To.IsDb() {
+			err = this_.sqlToDb()
+		} else {
+			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
+			util.Logger.Error("execute error", zap.Error(err))
+			return
+		}
 	} else if this_.From.IsData() {
 		if this_.To.IsSql() {
 			err = this_.dataToSql()
@@ -126,7 +134,7 @@ func (this_ *Executor) execute() (err error) {
 			return
 		}
 	} else {
-		err = errors.New(fmt.Sprintf("不支持的 源 类型[%s]", this_.To.Type))
+		err = errors.New(fmt.Sprintf("不支持的 源 类型[%s]", this_.From.Type))
 		util.Logger.Error("execute error", zap.Error(err))
 		return
 	}

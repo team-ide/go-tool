@@ -102,6 +102,8 @@ type DataSourceConfig struct {
 	FileNameSplice string `json:"fileNameSplice"` // 文件名拼接字符 如：/ :库作为目录 表作为名称 默认
 	FileName       string `json:"fileName"`
 	RowNumber      int64  `json:"rowNumber"`
+
+	dbService db.IService
 }
 
 func (this_ *DataSourceConfig) GetTxtFileType() string {
@@ -187,6 +189,9 @@ func (this_ *DbTable) GetToDialectTable() *dialect.TableModel {
 	}
 	table.PrimaryKeys = this_.From.PrimaryKeys
 	table.IndexList = this_.From.IndexList
+	for _, one := range table.IndexList {
+		one.IndexName = ""
+	}
 	return table
 }
 

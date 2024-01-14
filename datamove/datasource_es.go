@@ -57,7 +57,9 @@ func (this_ *DataSourceEs) ReadStart(progress *Progress) (err error) {
 		r, _ := this_.Service.QuerySql(pageSql)
 		if r != nil {
 			for _, columnType := range r.Columns {
-				column := &Column{}
+				column := &Column{
+					ColumnModel: &dialect.ColumnModel{},
+				}
 				column.ColumnName = columnType.Name
 				column.ColumnDataType = columnType.Type
 				this_.ColumnList = append(this_.ColumnList, column)

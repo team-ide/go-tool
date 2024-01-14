@@ -2,7 +2,6 @@ package datamove
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
@@ -147,29 +146,6 @@ func (this_ *DataSourceFile) CloseWriteFile() {
 	return
 }
 
-func dropCR(data []byte) []byte {
-	if len(data) > 0 && data[len(data)-1] == '\r' {
-		return data[0 : len(data)-1]
-	}
-	return data
-}
-
-func (this_ *DataSourceFile) ScanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
-	if atEOF && len(data) == 0 {
-		return 0, nil, nil
-	}
-	if i := bytes.IndexByte(data, '\n'); i >= 0 {
-		// We have a full newline-terminated line.
-		return i + 1, dropCR(data[0:i]), nil
-	}
-	// If we're at EOF, we have a final, non-terminated line. Return it.
-	if atEOF {
-		return len(data), dropCR(data), nil
-	}
-	// Request more data.
-	return 0, nil, nil
-}
-
 func (this_ *DataSourceFile) ReadLineCount() (lineCount int64, err error) {
 	file, err := os.Open(this_.GetFilePath())
 	if err != nil {
@@ -178,7 +154,6 @@ func (this_ *DataSourceFile) ReadLineCount() (lineCount int64, err error) {
 	}
 	defer func() { _ = file.Close() }()
 	scanner := bufio.NewScanner(file)
-	scanner.Split(this_.ScanLines)
 	for scanner.Scan() {
 		if scanner.Text() == "" {
 			continue

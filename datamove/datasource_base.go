@@ -40,7 +40,9 @@ func (this_ *DataSourceBase) GetDialectColumnList() []*dialect.ColumnModel {
 	var columns []*dialect.ColumnModel
 	list := this_.GetColumnList()
 	for _, c := range list {
-		columns = append(columns, c.ColumnModel)
+		if c.ColumnModel != nil && c.ColumnName != "" {
+			columns = append(columns, c.ColumnModel)
+		}
 	}
 	return columns
 }
@@ -90,7 +92,10 @@ func (this_ *DataSourceBase) GetStringValueByScript(script string) (res string, 
 func (this_ *DataSourceBase) ValuesToValues(progress *Progress, cols []interface{}) (res []interface{}, err error) {
 	vSize := len(cols)
 	list := this_.GetColumnList()
-	for index, _ := range list {
+	for index, c := range list {
+		if c.ColumnName == "" {
+			continue
+		}
 		var v interface{}
 		if vSize > index {
 			v = cols[index]
@@ -115,12 +120,15 @@ func (this_ *DataSourceBase) ValuesToData(progress *Progress, cols []interface{}
 	list := this_.GetColumnList()
 	data = map[string]interface{}{}
 	vSize := len(cols)
-	for index, column := range list {
+	for index, c := range list {
+		if c.ColumnName == "" {
+			continue
+		}
 		var v interface{}
 		if vSize > index {
 			v = cols[index]
 		}
-		data[column.ColumnName] = v
+		data[c.ColumnName] = v
 	}
 	return
 }

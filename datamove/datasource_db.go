@@ -7,6 +7,7 @@ import (
 	"github.com/team-ide/go-tool/db"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
+	"strings"
 )
 
 func NewDataSourceDb() *DataSourceDb {
@@ -54,15 +55,20 @@ func (this_ *DataSourceDb) ReadStart(progress *Progress) (err error) {
 	}
 
 	if len(this_.ColumnList) == 0 {
-		pageSql := this_.Service.GetDialect().PackPageSql(this_.SelectSql, 1, 1)
+		str := strings.TrimSpace(this_.SelectSql)
+		if strings.HasPrefix(str, "select") {
+			str = this_.Service.GetDialect().PackPageSql(str, 1, 1)
+		}
 
-		rows, e := this_.Service.GetDb().Query(pageSql)
+		rows, e := this_.Service.GetDb().Query(str)
 		if e == nil {
 			defer func() { _ = rows.Close() }()
 			columnTypes, _ := rows.ColumnTypes()
 			if columnTypes != nil {
 				for _, columnType := range columnTypes {
-					column := &Column{}
+					column := &Column{
+						ColumnModel: &dialect.ColumnModel{},
+					}
 					column.ColumnName = columnType.Name()
 					if precision, scale, ok := columnType.DecimalSize(); ok {
 						column.ColumnPrecision = int(precision)
@@ -97,11 +103,15 @@ func (this_ *DataSourceDb) Read(progress *Progress, dataChan chan *Data) (err er
 		if progress.ShouldStop() {
 			return
 		}
-		pageSql := this_.Service.GetDialect().PackPageSql(this_.SelectSql, int(pageSize), pageNo)
+
+		str := strings.TrimSpace(this_.SelectSql)
+		if strings.HasPrefix(str, "select") {
+			str = this_.Service.GetDialect().PackPageSql(str, int(pageSize), pageNo)
+		}
 		util.Logger.Info("datasource db read",
-			zap.Any("pageSql", pageSql),
+			zap.Any("pageSql", str),
 		)
-		list, err = this_.Service.QueryMap(pageSql, nil)
+		list, err = this_.Service.QueryMap(str, nil)
 		if err != nil {
 			util.Logger.Error("datasource db read error",
 				zap.Error(err),

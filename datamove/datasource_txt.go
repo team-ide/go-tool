@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"io"
@@ -59,7 +60,10 @@ func (this_ *DataSourceTxt) StringsToValues(progress *Progress, cols []string) (
 func (this_ *DataSourceTxt) ValuesToStrings(progress *Progress, cols []interface{}) (res []string, err error) {
 
 	vSize := len(cols)
-	for index, _ := range this_.ColumnList {
+	for index, c := range this_.ColumnList {
+		if c.ColumnName == "" {
+			continue
+		}
 		var v string
 		if vSize > index {
 			v = util.GetStringValue(cols[index])
@@ -87,7 +91,6 @@ func (this_ *DataSourceTxt) ReadTitles(progress *Progress) (titles []string, err
 	}
 	defer func() { _ = file.Close() }()
 	scanner := bufio.NewScanner(file)
-	scanner.Split(this_.ScanLines)
 	for scanner.Scan() {
 		line := scanner.Text()
 		if line == "" {
@@ -105,6 +108,7 @@ func (this_ *DataSourceTxt) ReadTitles(progress *Progress) (titles []string, err
 	util.Logger.Info("file data source read titles", zap.Any("titles", titles))
 	return
 }
+
 func (this_ *DataSourceTxt) ReadStart(progress *Progress) (err error) {
 	err = this_.DataSourceFile.ReadStart(progress)
 	if err != nil {
@@ -117,7 +121,9 @@ func (this_ *DataSourceTxt) ReadStart(progress *Progress) (err error) {
 	}
 	if len(this_.ColumnList) == 0 {
 		for _, title := range titles {
-			column := &Column{}
+			column := &Column{
+				ColumnModel: &dialect.ColumnModel{},
+			}
 			column.ColumnName = title
 			this_.ColumnList = append(this_.ColumnList, column)
 		}
