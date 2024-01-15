@@ -56,10 +56,6 @@ func (this_ *DataSourceData) initColumnListByData(progress *Progress, data map[s
 			this_.ColumnList = append(this_.ColumnList, column)
 		}
 	}
-	if len(this_.ColumnList) != len(titles) {
-		err = errors.New(fmt.Sprintf("字段长度[%d]头部长度[%d]，长度不一致", len(this_.ColumnList), len(titles)))
-		return
-	}
 
 	return
 }

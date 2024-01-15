@@ -231,7 +231,7 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 		return
 	}
 
-	this_.From.dbService, err = this_.newDbService(*this_.From.DbConfig, this_.From.Username, this_.From.Password, "")
+	this_.From.dbService, err = this_.newDbService(*this_.From.DbConfig, this_.From.Username, this_.From.Password, this_.From.OwnerName)
 	if err != nil {
 		return
 	}
@@ -241,7 +241,7 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 		}
 	}()
 	if this_.To.IsDb() {
-		this_.To.dbService, err = this_.newDbService(*this_.To.DbConfig, this_.To.Username, this_.To.Password, "")
+		this_.To.dbService, err = this_.newDbService(*this_.To.DbConfig, this_.To.Username, this_.To.Password, this_.To.OwnerName)
 		if err != nil {
 			return
 		}

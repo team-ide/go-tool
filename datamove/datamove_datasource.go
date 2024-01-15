@@ -95,7 +95,7 @@ func startWrite(progress *Progress, to DataSource, dataChan chan *Data) (err err
 		if !ok {
 			break
 		}
-		if err != nil || data == nil || data.Total <= 0 {
+		if err != nil || data == nil {
 			continue
 		}
 
@@ -119,6 +119,8 @@ func (this_ *Executor) datasourceToSql(from DataSource) (err error) {
 	util.Logger.Info("datasource to sql start")
 	to := NewDataSourceSql()
 	to.ParamModel = this_.To.GetDialectParam()
+	to.OwnerName = this_.To.OwnerName
+	to.TableName = this_.To.TableName
 	to.ColumnList = this_.To.ColumnList
 	to.DialectType = this_.To.DialectType
 	to.FilePath = this_.getFilePath("", this_.To.GetFileName(), "sql")

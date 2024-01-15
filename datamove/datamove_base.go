@@ -11,13 +11,13 @@ import (
 )
 
 type Options struct {
-	Key  string            `json:"key"`  // 任务的 key
-	Dir  string            `json:"dir"`  // 任务过程中 生成文件的目录
-	From *DataSourceConfig `json:"from"` // 源 数据配置
-	To   *DataSourceConfig `json:"to"`   // 目标 数据配置
+	Key  string            `json:"key,omitempty"`  // 任务的 key
+	Dir  string            `json:"dir,omitempty"`  // 任务过程中 生成文件的目录
+	From *DataSourceConfig `json:"from,omitempty"` // 源 数据配置
+	To   *DataSourceConfig `json:"to,omitempty"`   // 目标 数据配置
 
-	ErrorContinue bool  `json:"errorContinue"`
-	BatchNumber   int64 `json:"batchNumber"`
+	ErrorContinue bool  `json:"errorContinue,omitempty"`
+	BatchNumber   int64 `json:"batchNumber,omitempty"`
 }
 
 func (this_ *Options) getFilePath(dirName string, fileName string, suffix string) (path string) {
@@ -50,20 +50,20 @@ func (this_ *DataSourceConfig) GetFileName() string {
 
 type DataSourceConfig struct {
 	*dialect.ParamModel
-	Type             string `json:"type"`
-	SqlFileMergeType string `json:"sqlFileMergeType"` // SQL 的文件合并类型 如：one：一个文件， owner：每个库一个文件，table：每个表一个文件
-	ShouldTrimSpace  bool   `json:"shouldTrimSpace"`  // 是否需要去除空白字符
-	ColSeparator     string `json:"colSeparator"`     // 列 分隔符 默认 `,`
-	ReplaceCol       string `json:"replaceCol"`       //
-	ReplaceLine      string `json:"replaceLine"`      //
-	TxtFileType      string `json:"txtFileType"`      //
+	Type             string `json:"type,omitempty"`
+	SqlFileMergeType string `json:"sqlFileMergeType,omitempty"` // SQL 的文件合并类型 如：one：一个文件， owner：每个库一个文件，table：每个表一个文件
+	ShouldTrimSpace  bool   `json:"shouldTrimSpace,omitempty"`  // 是否需要去除空白字符
+	ColSeparator     string `json:"colSeparator,omitempty"`     // 列 分隔符 默认 `,`
+	ReplaceCol       string `json:"replaceCol,omitempty"`       //
+	ReplaceLine      string `json:"replaceLine,omitempty"`      //
+	TxtFileType      string `json:"txtFileType,omitempty"`      //
 
 	// 数据库 配置
 	DbConfig    *db.Config `json:"-"`
-	DialectType string     `json:"dialectType"`
+	DialectType string     `json:"dialectType,omitempty"`
 
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
 
 	EsConfig *elasticsearch.Config `json:"-"`
 
@@ -71,38 +71,38 @@ type DataSourceConfig struct {
 
 	KafkaConfig *kafka.Config `json:"-"`
 
-	OwnerName        string `json:"ownerName"`
-	TableName        string `json:"tableName"`
-	BySql            bool   `json:"bySql"` // 根据 SQL 语句导出
-	SelectSql        string `json:"selectSql"`
-	ShouldSelectPage bool   `json:"shouldSelectPage"`
+	OwnerName        string `json:"ownerName,omitempty"`
+	TableName        string `json:"tableName,omitempty"`
+	BySql            bool   `json:"bySql,omitempty"` // 根据 SQL 语句导出
+	SelectSql        string `json:"selectSql,omitempty"`
+	ShouldSelectPage bool   `json:"shouldSelectPage,omitempty"`
 
-	IndexName     string `json:"indexName"`
-	IndexIdName   string `json:"indexIdName"`
-	IndexIdScript string `json:"indexIdScript"`
+	IndexName     string `json:"indexName,omitempty"`
+	IndexIdName   string `json:"indexIdName,omitempty"`
+	IndexIdScript string `json:"indexIdScript,omitempty"`
 
-	TopicName      string `json:"topicName"`
-	TopicGroupName string `json:"topicGroupName"`
-	TopicKey       string `json:"topicKey"`
-	TopicValue     string `json:"topicValue"`
+	TopicName      string `json:"topicName,omitempty"`
+	TopicGroupName string `json:"topicGroupName,omitempty"`
+	TopicKey       string `json:"topicKey,omitempty"`
+	TopicValue     string `json:"topicValue,omitempty"`
 
-	DataList []map[string]interface{} `json:"dataList"`
+	DataList []map[string]interface{} `json:"dataList,omitempty"`
 
-	Total int64 `json:"total"`
+	Total int64 `json:"total,omitempty"`
 
-	ColumnList []*Column `json:"columnList"`
+	ColumnList []*Column `json:"columnList,omitempty"`
 
-	AllOwner       bool       `json:"allOwner"`
-	Owners         []*DbOwner `json:"owners"`
-	SkipOwnerNames []string   `json:"skipOwnerNames"`
+	AllOwner       bool       `json:"allOwner,omitempty"`
+	Owners         []*DbOwner `json:"owners,omitempty"`
+	SkipOwnerNames []string   `json:"skipOwnerNames,omitempty"`
 
-	FilePath    string `json:"filePath"`
-	ShouldOwner bool   `json:"shouldOwner"` // 需要 建库
-	ShouldTable bool   `json:"shouldTable"` // 需要 建表
+	FilePath    string `json:"filePath,omitempty"`
+	ShouldOwner bool   `json:"shouldOwner,omitempty"` // 需要 建库
+	ShouldTable bool   `json:"shouldTable,omitempty"` // 需要 建表
 
-	FileNameSplice string `json:"fileNameSplice"` // 文件名拼接字符 如：/ :库作为目录 表作为名称 默认
-	FileName       string `json:"fileName"`
-	RowNumber      int64  `json:"rowNumber"`
+	FileNameSplice string `json:"fileNameSplice,omitempty"` // 文件名拼接字符 如：/ :库作为目录 表作为名称 默认
+	FileName       string `json:"fileName,omitempty"`
+	RowNumber      int64  `json:"rowNumber,omitempty"`
 
 	dbService db.IService
 	dia_      dialect.Dialect
@@ -154,30 +154,30 @@ func (this_ *DataSourceConfig) IsScript() bool {
 }
 
 type DbOwner struct {
-	From           *dialect.OwnerModel `json:"from"`
-	To             *dialect.OwnerModel `json:"to"`
-	SkipTableNames []string            `json:"skipTableNames"`
-	AllTable       bool                `json:"allTable"`
-	Tables         []*DbTable          `json:"tables"`
+	From           *dialect.OwnerModel `json:"from,omitempty"`
+	To             *dialect.OwnerModel `json:"to,omitempty"`
+	SkipTableNames []string            `json:"skipTableNames,omitempty"`
+	AllTable       bool                `json:"allTable,omitempty"`
+	Tables         []*DbTable          `json:"tables,omitempty"`
 	fromService    db.IService
 	toService      db.IService
 	appended       bool
 }
 
 type DbTable struct {
-	From            *dialect.TableModel `json:"from"`
-	To              *dialect.TableModel `json:"to"`
-	Columns         []*DbColumn         `json:"columns"`
-	SkipColumnNames []string            `json:"skipColumnNames"`
-	AllColumn       bool                `json:"allColumn"`
+	From            *dialect.TableModel `json:"from,omitempty"`
+	To              *dialect.TableModel `json:"to,omitempty"`
+	Columns         []*DbColumn         `json:"columns,omitempty"`
+	SkipColumnNames []string            `json:"skipColumnNames,omitempty"`
+	AllColumn       bool                `json:"allColumn,omitempty"`
 	appended        bool
 
-	IndexIdName   string `json:"indexIdName"`
-	IndexIdScript string `json:"indexIdScript"`
+	IndexIdName   string `json:"indexIdName,omitempty"`
+	IndexIdScript string `json:"indexIdScript,omitempty"`
 
-	TopicGroupName string `json:"topicGroupName"`
-	TopicKey       string `json:"topicKey"`
-	TopicValue     string `json:"topicValue"`
+	TopicGroupName string `json:"topicGroupName,omitempty"`
+	TopicKey       string `json:"topicKey,omitempty"`
+	TopicValue     string `json:"topicValue,omitempty"`
 }
 
 func (this_ *DbTable) GetToDialectTable() *dialect.TableModel {
@@ -209,7 +209,7 @@ func (this_ *DbTable) GetToDialectTable() *dialect.TableModel {
 }
 
 type DbColumn struct {
-	From  *dialect.ColumnModel `json:"from"`
-	To    *dialect.ColumnModel `json:"to"`
-	Value string               `json:"value"`
+	From  *dialect.ColumnModel `json:"from,omitempty"`
+	To    *dialect.ColumnModel `json:"to,omitempty"`
+	Value string               `json:"value,omitempty"`
 }

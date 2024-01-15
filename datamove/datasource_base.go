@@ -1,9 +1,11 @@
 package datamove
 
 import (
+	"encoding/json"
 	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-tool/javascript"
 	"github.com/team-ide/go-tool/util"
+	"strings"
 )
 
 func NewDataSourceBase(columnList []*Column) *DataSourceBase {
@@ -20,7 +22,8 @@ type DataSourceBase struct {
 
 type Column struct {
 	*dialect.ColumnModel
-	Value string `json:"value"`
+	Value       string `json:"value"`
+	SubProperty bool   `json:"subProperty"`
 }
 
 func (this_ *DataSourceBase) GetColumnList() []*Column {
@@ -108,8 +111,27 @@ func (this_ *DataSourceBase) ValuesToValues(progress *Progress, cols []interface
 func (this_ *DataSourceBase) DataToValues(progress *Progress, data map[string]interface{}) (res []interface{}, err error) {
 
 	list := this_.GetColumnList()
+	subData := map[string]map[string]interface{}{}
 	for _, column := range list {
 		v := data[column.ColumnName]
+		if column.SubProperty {
+			v = nil
+			ss := strings.Split(column.ColumnName, ".")
+			if len(ss) == 2 {
+				if find, ok := subData[ss[0]]; ok {
+					v = find[ss[1]]
+				} else {
+					if find, ok := data[ss[0]]; ok && find != nil {
+						bs, _ := json.Marshal(find)
+						sub := map[string]interface{}{}
+						_ = json.Unmarshal(bs, &sub)
+						subData[ss[0]] = sub
+						v = sub[ss[1]]
+					}
+
+				}
+			}
+		}
 		res = append(res, v)
 	}
 	return
