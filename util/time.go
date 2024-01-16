@@ -1,6 +1,9 @@
 package util
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 // GetNow 获取当前时间
 // GetNow()
@@ -75,4 +78,36 @@ func TimeFormat(v time.Time, layout string) string {
 		layout = DefaultTimeFormatLayout
 	}
 	return v.Format(layout)
+}
+
+type tS struct {
+	Size int64
+	Unit string
+}
+
+var (
+	tList = []*tS{
+		{Size: 1000 * 60 * 60 * 24, Unit: "天"},
+		{Size: 1000 * 60 * 60, Unit: "时"},
+		{Size: 1000 * 60, Unit: "分"},
+		{Size: 1000, Unit: "秒"},
+	}
+)
+
+// MilliToTimeText 将 毫秒 转为 `xx天xx时xx分xx秒xx毫秒`
+func MilliToTimeText(milli int64) (v string) {
+
+	var timeV = milli
+
+	for _, s := range tList {
+		if timeV >= s.Size {
+			tV := timeV / s.Size
+			timeV -= tV * s.Size
+			v += fmt.Sprintf("%d%s", tV, s.Unit)
+		}
+	}
+	if timeV > 0 {
+		v += fmt.Sprintf("%d%s", timeV, "毫秒")
+	}
+	return
 }
