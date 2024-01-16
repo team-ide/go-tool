@@ -168,7 +168,11 @@ func (this_ *DataSourceEs) Write(progress *Progress, data *Data) (err error) {
 						this_.SetScriptContextData(d)
 						id, e = this_.GetStringValueByScript(this_.IndexIdScript)
 					} else {
-						id = util.GetStringValue(d[this_.IndexIdName])
+						if this_.IndexIdName == "" {
+							e = errors.New("index id name is empty")
+						} else {
+							id = util.GetStringValue(d[this_.IndexIdName])
+						}
 					}
 					if e == nil {
 						if id == "" {
