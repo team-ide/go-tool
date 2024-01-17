@@ -117,6 +117,22 @@ func (this_ *Executor) execute() (err error) {
 			util.Logger.Error("execute error", zap.Error(err))
 			return
 		}
+	} else if this_.From.IsKafka() {
+		if this_.To.IsSql() {
+			err = this_.kafkaToSql()
+		} else if this_.To.IsExcel() {
+			err = this_.kafkaToExcel()
+		} else if this_.To.IsTxt() {
+			err = this_.kafkaToTxt()
+		} else if this_.To.IsDb() {
+			err = this_.kafkaToDb()
+		} else if this_.To.IsEs() {
+			err = this_.kafkaToEs()
+		} else {
+			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
+			util.Logger.Error("execute error", zap.Error(err))
+			return
+		}
 	} else if this_.From.IsScript() {
 		if this_.To.IsSql() {
 			err = this_.scriptToSql()

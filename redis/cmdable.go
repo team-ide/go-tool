@@ -409,6 +409,24 @@ func (this_ *CmdService) HashGet(key string, field string, args ...Arg) (value s
 	return
 }
 
+func (this_ *CmdService) ScriptRun(src string, KEYS []string, ARGV interface{}, args ...Arg) (value interface{}, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	script := redis.NewScript(src)
+	ret, err := script.Run(param.Ctx, client, KEYS, ARGV).Result()
+	if err != nil {
+		return
+	}
+	value = ret
+	return
+}
+
 func (this_ *CmdService) HashGetAll(key string, args ...Arg) (value map[string]string, err error) {
 	argCache := getArgCache(args...)
 	param := formatParam(argCache.Param)

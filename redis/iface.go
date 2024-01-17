@@ -63,6 +63,7 @@ type IService interface {
 	BitSet(key string, offset int64, value int, args ...Arg) (err error)
 	// BitCount 在 bitmap 中 统计 所有 值
 	BitCount(key string, args ...Arg) (count int64, err error)
+	ScriptRun(src string, KEYS []string, ARGV interface{}, args ...Arg) (value interface{}, err error)
 }
 
 type Arg interface {
