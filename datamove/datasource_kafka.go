@@ -55,14 +55,15 @@ func (this_ *DataSourceKafka) Read(progress *Progress, dataChan chan *Data) (err
 		return
 	}
 
+	var topics []string
+	topics = append(topics, this_.TopicName)
+	ctx, cancel := context.WithCancel(context.Background())
 	handler := &consumerGroupHandler{
 		DataSourceKafka: this_,
 		Progress:        progress,
 		dataChan:        dataChan,
+		cancel:          cancel,
 	}
-	var topics []string
-	topics = append(topics, this_.TopicName)
-	ctx, cancel := context.WithCancel(context.Background())
 	var isConsumeEnd bool
 	go func() {
 		defer func() { _ = group.Close() }()
@@ -106,10 +107,9 @@ func (this_ *DataSourceKafka) Read(progress *Progress, dataChan chan *Data) (err
 type consumerGroupHandler struct {
 	*DataSourceKafka
 	*Progress
-	messages []*sarama.ConsumerMessage
 	dataChan chan *Data
-	size     int
 	lastTime int64
+	cancel   context.CancelFunc
 }
 
 func (*consumerGroupHandler) Setup(_ sarama.ConsumerGroupSession) error   { return nil }
@@ -127,11 +127,17 @@ func (this_ *consumerGroupHandler) ConsumeClaim(session sarama.ConsumerGroupSess
 		}
 		select {
 		case msg := <-chanMessages:
+			if msg == nil {
+				break
+			}
 			err = this_.onMsg(msg)
 		}
 		if err != nil {
 			break
 		}
+	}
+	if this_.cancel != nil {
+		this_.cancel()
 	}
 	if this_.lastData != nil && this_.lastData.Total > 0 {
 		this_.dataChan <- this_.lastData
@@ -143,15 +149,18 @@ func (this_ *consumerGroupHandler) onMsg(msg *sarama.ConsumerMessage) (err error
 	pageSize := this_.Progress.BatchNumber
 	data := map[string]interface{}{}
 
-	data[this_.TopicKey] = string(msg.Key)
-	data[this_.TopicValue] = string(msg.Value)
 	for _, h := range msg.Headers {
 		name := string(h.Key)
 		data[name] = string(h.Value)
 	}
-
+	if msg.Key != nil {
+		data[this_.TopicKey] = string(msg.Key)
+	}
 	if msg.Value != nil {
-		_ = util.JSONDecodeUseNumber(msg.Value, &data)
+		data[this_.TopicValue] = string(msg.Value)
+		if msg.Value != nil {
+			_ = util.JSONDecodeUseNumber(msg.Value, &data)
+		}
 	}
 
 	values, e := this_.DataToValues(this_.Progress, data)
