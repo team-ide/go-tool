@@ -150,6 +150,10 @@ func (this_ *DataSourceEs) WriteStart(progress *Progress) (err error) {
 
 func (this_ *DataSourceEs) Write(progress *Progress, data *Data) (err error) {
 
+	if data.columnList != nil {
+		this_.ColumnList = *data.columnList
+	}
+
 	switch data.DataType {
 	case DataTypeCols:
 		data.Total = int64(len(data.ColsList))

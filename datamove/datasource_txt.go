@@ -198,9 +198,10 @@ func (this_ *DataSourceTxt) Read(progress *Progress, dataChan chan *Data) (err e
 
 func (this_ *DataSourceTxt) Write(progress *Progress, data *Data) (err error) {
 
-	if err = ValidateDataType(data.DataType); err != nil {
-		return
+	if data.columnList != nil {
+		this_.ColumnList = *data.columnList
 	}
+
 	colSeparator := this_.GetColSeparator()
 
 	buf, err := this_.GetWriteBuf()

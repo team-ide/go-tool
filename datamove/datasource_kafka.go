@@ -63,13 +63,13 @@ func (this_ *DataSourceKafka) Read(progress *Progress, dataChan chan *Data) (err
 		Progress:        progress,
 		dataChan:        dataChan,
 		cancel:          cancel,
+		lastTime:        time.Now().UnixMilli(),
 	}
-	var isConsumeEnd bool
 	go func() {
 		defer func() { _ = group.Close() }()
 		util.Logger.Info("kafka pull start", zap.Any("topics", topics), zap.Any("groupId", this_.TopicGroupName))
 		err = group.Consume(ctx, topics, handler)
-		isConsumeEnd = true
+		handler.isConsumeEnd = true
 		util.Logger.Info("kafka pull end", zap.Any("topics", topics), zap.Any("groupId", this_.TopicGroupName))
 		if err != nil {
 			util.Logger.Error("group consume error", zap.Error(err))
@@ -77,13 +77,13 @@ func (this_ *DataSourceKafka) Read(progress *Progress, dataChan chan *Data) (err
 	}()
 	var pullWait = this_.PullWait
 	if pullWait <= 0 {
-		pullWait = 10
+		pullWait = 2
 	}
 	pullWait = pullWait * 1000
 	var isTimeout bool
 	for {
 		time.Sleep(time.Second)
-		if isConsumeEnd {
+		if handler.isConsumeEnd {
 			break
 		}
 		if isTimeout {
@@ -95,8 +95,16 @@ func (this_ *DataSourceKafka) Read(progress *Progress, dataChan chan *Data) (err
 			if cancel != nil {
 				cancel()
 			}
+			if group != nil {
+				_ = group.Close()
+				group = nil
+			}
 			isTimeout = true
 		}
+	}
+	if group != nil {
+		_ = group.Close()
+		group = nil
 	}
 	if cancel != nil {
 		cancel()
@@ -107,17 +115,28 @@ func (this_ *DataSourceKafka) Read(progress *Progress, dataChan chan *Data) (err
 type consumerGroupHandler struct {
 	*DataSourceKafka
 	*Progress
-	dataChan chan *Data
-	lastTime int64
-	cancel   context.CancelFunc
+	dataChan     chan *Data
+	lastTime     int64
+	cancel       context.CancelFunc
+	isConsumeEnd bool
 }
 
 func (*consumerGroupHandler) Setup(_ sarama.ConsumerGroupSession) error   { return nil }
 func (*consumerGroupHandler) Cleanup(_ sarama.ConsumerGroupSession) error { return nil }
 func (this_ *consumerGroupHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	defer func() {
+		this_.isConsumeEnd = true
+		if this_.cancel != nil {
+			this_.cancel()
+		}
+		if this_.lastData != nil && this_.lastData.Total > 0 {
+			this_.dataChan <- this_.lastData
+		}
+	}()
 	if session == nil || claim == nil {
 		return nil
 	}
+	this_.lastTime = time.Now().UnixMilli()
 	chanMessages := claim.Messages()
 	var err error
 	for {
@@ -128,19 +147,13 @@ func (this_ *consumerGroupHandler) ConsumeClaim(session sarama.ConsumerGroupSess
 		select {
 		case msg := <-chanMessages:
 			if msg == nil {
-				break
+				return nil
 			}
 			err = this_.onMsg(msg)
 		}
 		if err != nil {
-			break
+			return nil
 		}
-	}
-	if this_.cancel != nil {
-		this_.cancel()
-	}
-	if this_.lastData != nil && this_.lastData.Total > 0 {
-		this_.dataChan <- this_.lastData
 	}
 	return nil
 }
@@ -149,18 +162,30 @@ func (this_ *consumerGroupHandler) onMsg(msg *sarama.ConsumerMessage) (err error
 	pageSize := this_.Progress.BatchNumber
 	data := map[string]interface{}{}
 
-	for _, h := range msg.Headers {
-		name := string(h.Key)
-		data[name] = string(h.Value)
+	if msg.Value != nil {
+		value := string(msg.Value)
+		e := util.JSONDecodeUseNumber([]byte(value), &data)
+		if e != nil {
+			data = map[string]interface{}{}
+		}
+		if _, ok := data[this_.TopicValue]; !ok {
+			data[this_.TopicValue] = value
+		}
 	}
 	if msg.Key != nil {
-		data[this_.TopicKey] = string(msg.Key)
-	}
-	if msg.Value != nil {
-		data[this_.TopicValue] = string(msg.Value)
-		if msg.Value != nil {
-			_ = util.JSONDecodeUseNumber(msg.Value, &data)
+		if _, ok := data[this_.TopicKey]; !ok {
+			data[this_.TopicKey] = string(msg.Key)
 		}
+	}
+	for _, h := range msg.Headers {
+		name := string(h.Key)
+		if _, ok := data[name]; !ok {
+			data[name] = string(h.Value)
+		}
+	}
+	err = this_.fullColumnListByData(this_.Progress, data)
+	if err != nil {
+		return
 	}
 
 	values, e := this_.DataToValues(this_.Progress, data)
@@ -173,7 +198,8 @@ func (this_ *consumerGroupHandler) onMsg(msg *sarama.ConsumerMessage) (err error
 	} else {
 		if this_.lastData == nil {
 			this_.lastData = &Data{
-				DataType: DataTypeCols,
+				DataType:   DataTypeCols,
+				columnList: &this_.ColumnList,
 			}
 		}
 		this_.lastData.ColsList = append(this_.lastData.ColsList, values)
@@ -182,7 +208,8 @@ func (this_ *consumerGroupHandler) onMsg(msg *sarama.ConsumerMessage) (err error
 		if this_.lastData.Total >= pageSize {
 			this_.dataChan <- this_.lastData
 			this_.lastData = &Data{
-				DataType: DataTypeCols,
+				DataType:   DataTypeCols,
+				columnList: &this_.ColumnList,
 			}
 		}
 	}

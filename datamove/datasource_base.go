@@ -92,6 +92,46 @@ func (this_ *DataSourceBase) GetStringValueByScript(script string) (res string, 
 	return
 }
 
+func (this_ *DataSourceBase) initColumnListByData(progress *Progress, data map[string]interface{}) (err error) {
+
+	var titles []string
+	if data != nil {
+		for k := range data {
+			titles = append(titles, k)
+		}
+	}
+	if len(this_.ColumnList) == 0 {
+		for _, title := range titles {
+			column := &Column{
+				ColumnModel: &dialect.ColumnModel{},
+			}
+			column.ColumnName = title
+			this_.ColumnList = append(this_.ColumnList, column)
+		}
+	}
+
+	return
+}
+
+func (this_ *DataSourceBase) fullColumnListByData(progress *Progress, data map[string]interface{}) (err error) {
+
+	columnNames := this_.GetColumnNames()
+	if data != nil {
+		for columnName := range data {
+			if util.StringIndexOf(columnNames, columnName) < 0 {
+				columnNames = append(columnNames, columnName)
+				column := &Column{
+					ColumnModel: &dialect.ColumnModel{},
+				}
+				column.ColumnName = columnName
+				this_.ColumnList = append(this_.ColumnList, column)
+			}
+		}
+	}
+
+	return
+}
+
 func (this_ *DataSourceBase) ValuesToValues(progress *Progress, cols []interface{}) (res []interface{}, err error) {
 	vSize := len(cols)
 	list := this_.GetColumnList()

@@ -225,8 +225,8 @@ func (this_ *DataSourceExcel) Read(progress *Progress, dataChan chan *Data) (err
 
 func (this_ *DataSourceExcel) Write(progress *Progress, data *Data) (err error) {
 
-	if err = ValidateDataType(data.DataType); err != nil {
-		return
+	if data.columnList != nil {
+		this_.ColumnList = *data.columnList
 	}
 
 	if !this_.headerWrite {

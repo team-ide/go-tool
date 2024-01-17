@@ -168,6 +168,10 @@ func (this_ *DataSourceDb) WriteStart(progress *Progress) (err error) {
 
 func (this_ *DataSourceDb) Write(progress *Progress, data *Data) (err error) {
 
+	if data.columnList != nil {
+		this_.ColumnList = *data.columnList
+	}
+
 	var sqlList []string
 	var paramList [][]interface{}
 	switch data.DataType {

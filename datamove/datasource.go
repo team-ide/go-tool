@@ -21,6 +21,7 @@ type Data struct {
 	ColsList     [][]interface{} `json:"colsList"`
 	SqlList      []string        `json:"sqlList"`
 	SqlAndParams []*SqlAndParam  `json:"sqlAndParams"`
+	columnList   *[]*Column
 }
 
 type SqlAndParam struct {
