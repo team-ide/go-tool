@@ -13,6 +13,7 @@ func (this_ *Executor) onSqlSourceData(on func(datasource DataSource) (err error
 	datasource := NewDataSourceSql()
 	datasource.FilePath = this_.From.FilePath
 	datasource.ColumnList = this_.From.ColumnList
+	datasource.FillColumn = this_.From.FillColumn
 	err = on(datasource)
 	return
 }

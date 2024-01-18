@@ -40,6 +40,8 @@ func (this_ *Executor) execute() (err error) {
 			err = this_.dbToDb()
 		} else if this_.To.IsEs() {
 			err = this_.dbToEs()
+		} else if this_.To.IsKafka() {
+			err = this_.dbToKafka()
 		} else {
 			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
 			util.Logger.Error("execute error", zap.Error(err))
@@ -64,6 +66,8 @@ func (this_ *Executor) execute() (err error) {
 			err = this_.dataToDb()
 		} else if this_.To.IsEs() {
 			err = this_.dataToEs()
+		} else if this_.To.IsKafka() {
+			err = this_.dataToKafka()
 		} else {
 			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
 			util.Logger.Error("execute error", zap.Error(err))
@@ -80,6 +84,8 @@ func (this_ *Executor) execute() (err error) {
 			err = this_.txtToDb()
 		} else if this_.To.IsEs() {
 			err = this_.txtToEs()
+		} else if this_.To.IsKafka() {
+			err = this_.txtToKafka()
 		} else {
 			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
 			util.Logger.Error("execute error", zap.Error(err))
@@ -96,6 +102,8 @@ func (this_ *Executor) execute() (err error) {
 			err = this_.excelToDb()
 		} else if this_.To.IsEs() {
 			err = this_.excelToEs()
+		} else if this_.To.IsKafka() {
+			err = this_.excelToKafka()
 		} else {
 			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
 			util.Logger.Error("execute error", zap.Error(err))
@@ -112,6 +120,8 @@ func (this_ *Executor) execute() (err error) {
 			err = this_.esToDb()
 		} else if this_.To.IsEs() {
 			err = this_.esToEs()
+		} else if this_.To.IsKafka() {
+			err = this_.esToKafka()
 		} else {
 			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
 			util.Logger.Error("execute error", zap.Error(err))
@@ -128,6 +138,8 @@ func (this_ *Executor) execute() (err error) {
 			err = this_.kafkaToDb()
 		} else if this_.To.IsEs() {
 			err = this_.kafkaToEs()
+		} else if this_.To.IsKafka() {
+			err = this_.kafkaToKafka()
 		} else {
 			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
 			util.Logger.Error("execute error", zap.Error(err))
@@ -144,6 +156,8 @@ func (this_ *Executor) execute() (err error) {
 			err = this_.scriptToDb()
 		} else if this_.To.IsEs() {
 			err = this_.scriptToEs()
+		} else if this_.To.IsKafka() {
+			err = this_.scriptToKafka()
 		} else {
 			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
 			util.Logger.Error("execute error", zap.Error(err))

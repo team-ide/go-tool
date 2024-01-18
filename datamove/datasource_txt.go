@@ -176,6 +176,7 @@ func (this_ *DataSourceTxt) Read(progress *Progress, dataChan chan *Data) (err e
 				lastData.Total++
 				progress.ReadCount.AddSuccess(1)
 				if lastData.Total >= pageSize {
+					lastData.columnList = &this_.ColumnList
 					dataChan <- lastData
 					lastData = &Data{
 						DataType: DataTypeCols,
@@ -191,6 +192,7 @@ func (this_ *DataSourceTxt) Read(progress *Progress, dataChan chan *Data) (err e
 		}
 	}
 	if lastData.Total > 0 {
+		lastData.columnList = &this_.ColumnList
 		dataChan <- lastData
 	}
 	return
@@ -198,8 +200,8 @@ func (this_ *DataSourceTxt) Read(progress *Progress, dataChan chan *Data) (err e
 
 func (this_ *DataSourceTxt) Write(progress *Progress, data *Data) (err error) {
 
-	if data.columnList != nil {
-		this_.ColumnList = *data.columnList
+	if this_.FillColumn && data.columnList != nil {
+		this_.fullColumnListByColumnList(progress, data.columnList)
 	}
 
 	colSeparator := this_.GetColSeparator()

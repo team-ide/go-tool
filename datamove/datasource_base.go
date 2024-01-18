@@ -18,6 +18,7 @@ type DataSourceBase struct {
 	ColumnList    []*Column
 	script        *javascript.Script
 	ScriptContext map[string]interface{}
+	FillColumn    bool `json:"fillColumn"`
 }
 
 type Column struct {
@@ -113,19 +114,35 @@ func (this_ *DataSourceBase) initColumnListByData(progress *Progress, data map[s
 	return
 }
 
-func (this_ *DataSourceBase) fullColumnListByData(progress *Progress, data map[string]interface{}) (err error) {
+func (this_ *DataSourceBase) fullColumnListByData(progress *Progress, data map[string]interface{}) {
+	if data == nil || len(data) == 0 {
+		return
+	}
+	columnNames := this_.GetColumnNames()
+	for columnName := range data {
+		if util.StringIndexOf(columnNames, columnName) < 0 {
+			columnNames = append(columnNames, columnName)
+			column := &Column{
+				ColumnModel: &dialect.ColumnModel{},
+			}
+			column.ColumnName = columnName
+			this_.ColumnList = append(this_.ColumnList, column)
+		}
+	}
+
+	return
+}
+
+func (this_ *DataSourceBase) fullColumnListByColumnList(progress *Progress, columnList *[]*Column) {
+	if columnList == nil {
+		return
+	}
 
 	columnNames := this_.GetColumnNames()
-	if data != nil {
-		for columnName := range data {
-			if util.StringIndexOf(columnNames, columnName) < 0 {
-				columnNames = append(columnNames, columnName)
-				column := &Column{
-					ColumnModel: &dialect.ColumnModel{},
-				}
-				column.ColumnName = columnName
-				this_.ColumnList = append(this_.ColumnList, column)
-			}
+	for _, column := range *columnList {
+		if util.StringIndexOf(columnNames, column.ColumnName) < 0 {
+			columnNames = append(columnNames, column.ColumnName)
+			this_.ColumnList = append(this_.ColumnList, column)
 		}
 	}
 

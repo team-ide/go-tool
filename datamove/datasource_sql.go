@@ -112,8 +112,8 @@ func (this_ *DataSourceSql) Read(progress *Progress, dataChan chan *Data) (err e
 
 func (this_ *DataSourceSql) Write(progress *Progress, data *Data) (err error) {
 
-	if data.columnList != nil {
-		this_.ColumnList = *data.columnList
+	if this_.FillColumn && data.columnList != nil {
+		this_.fullColumnListByColumnList(progress, data.columnList)
 	}
 
 	buf, err := this_.GetWriteBuf()

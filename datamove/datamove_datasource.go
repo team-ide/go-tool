@@ -123,6 +123,7 @@ func (this_ *Executor) datasourceToSql(from DataSource) (err error) {
 	to.TableName = this_.To.TableName
 	to.ColumnList = this_.To.ColumnList
 	to.DialectType = this_.To.DialectType
+	to.FillColumn = this_.To.FillColumn
 	to.FilePath = this_.getFilePath("", this_.To.GetFileName(), "sql")
 	err = DateMove(this_.Progress, from, to)
 	if err != nil {
@@ -141,6 +142,7 @@ func (this_ *Executor) datasourceToTxt(from DataSource) (err error) {
 	to.ReplaceLine = this_.To.ReplaceLine
 	to.ShouldTrimSpace = this_.To.ShouldTrimSpace
 	to.ColumnList = this_.To.ColumnList
+	to.FillColumn = this_.To.FillColumn
 	to.FilePath = this_.getFilePath("", this_.To.GetFileName(), this_.To.GetTxtFileType())
 	err = DateMove(this_.Progress, from, to)
 	if err != nil {
@@ -156,6 +158,7 @@ func (this_ *Executor) datasourceToExcel(from DataSource) (err error) {
 	to := NewDataSourceExcel()
 	to.ColumnList = this_.To.ColumnList
 	to.ShouldTrimSpace = this_.To.ShouldTrimSpace
+	to.FillColumn = this_.To.FillColumn
 	to.FilePath = this_.getFilePath("", this_.To.GetFileName(), "xlsx")
 	err = DateMove(this_.Progress, from, to)
 	if err != nil {
@@ -172,6 +175,7 @@ func (this_ *Executor) datasourceToDb(from DataSource) (err error) {
 	to.ColumnList = this_.To.ColumnList
 	to.OwnerName = this_.To.OwnerName
 	to.TableName = this_.To.TableName
+	to.FillColumn = this_.To.FillColumn
 	to.ParamModel = this_.To.GetDialectParam()
 	to.Service, err = this_.newDbService(*this_.To.DbConfig, this_.To.Username, this_.To.Password, this_.To.OwnerName)
 	if err != nil {
@@ -194,6 +198,7 @@ func (this_ *Executor) datasourceToEs(from DataSource) (err error) {
 	to.IndexName = this_.To.IndexName
 	to.IndexIdName = this_.To.IndexIdName
 	to.IndexIdScript = this_.To.IndexIdScript
+	to.FillColumn = this_.To.FillColumn
 	to.Service, err = elasticsearch.New(this_.To.EsConfig)
 	if err != nil {
 		util.Logger.Error("elasticsearch client new error", zap.Error(err))
@@ -216,6 +221,8 @@ func (this_ *Executor) datasourceToKafka(from DataSource) (err error) {
 	to.TopicGroupName = this_.To.TopicGroupName
 	to.TopicKey = this_.To.TopicKey
 	to.TopicValue = this_.To.TopicValue
+	to.TopicValueByData = this_.To.TopicValueByData
+	to.FillColumn = this_.To.FillColumn
 	to.Service, err = kafka.New(this_.To.KafkaConfig)
 	if err != nil {
 		util.Logger.Error("kafka client new error", zap.Error(err))
@@ -238,6 +245,8 @@ func (this_ *Executor) datasourceToRedis(from DataSource) (err error) {
 	to.TopicGroupName = this_.To.TopicGroupName
 	to.TopicKey = this_.To.TopicKey
 	to.TopicValue = this_.To.TopicValue
+	to.TopicValueByData = this_.To.TopicValueByData
+	to.FillColumn = this_.To.FillColumn
 	to.Service, err = kafka.New(this_.To.KafkaConfig)
 	if err != nil {
 		util.Logger.Error("kafka client new error", zap.Error(err))

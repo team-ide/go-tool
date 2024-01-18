@@ -41,6 +41,10 @@ func (this_ *DataSourceRedis) WriteStart(progress *Progress) (err error) {
 
 func (this_ *DataSourceRedis) Write(progress *Progress, data *Data) (err error) {
 
+	if this_.FillColumn && data.columnList != nil {
+		this_.fullColumnListByColumnList(progress, data.columnList)
+	}
+
 	return
 }
 

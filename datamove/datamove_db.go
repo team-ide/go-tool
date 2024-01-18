@@ -43,6 +43,8 @@ func (this_ *Executor) dbToKafka() (err error) {
 		to.TopicGroupName = table.TopicGroupName
 		to.TopicKey = table.TopicKey
 		to.TopicValue = table.TopicValue
+		to.TopicValueByData = this_.To.TopicValueByData
+		to.FillColumn = this_.To.FillColumn
 		to.Service, err = kafka.New(this_.To.KafkaConfig)
 		if err != nil {
 			util.Logger.Error("kafka client new error", zap.Error(err))
@@ -65,6 +67,7 @@ func (this_ *Executor) dbToEs() (err error) {
 		to.IndexName = table.To.TableName
 		to.IndexIdName = table.IndexIdName
 		to.IndexIdScript = table.IndexIdScript
+		to.FillColumn = this_.To.FillColumn
 		to.Service, err = elasticsearch.New(this_.To.EsConfig)
 		if err != nil {
 			util.Logger.Error("elasticsearch client new error", zap.Error(err))
@@ -87,6 +90,7 @@ func (this_ *Executor) dbToDb() (err error) {
 		to.OwnerName = owner.To.OwnerName
 		to.TableName = table.To.TableName
 		to.Service = owner.toService
+		to.FillColumn = this_.To.FillColumn
 		err = DateMove(this_.Progress, from, to)
 		return
 	})
@@ -104,6 +108,7 @@ func (this_ *Executor) dbToSql() (err error) {
 		to.OwnerName = owner.To.OwnerName
 		to.TableName = table.To.TableName
 		to.DialectType = this_.To.DialectType
+		to.FillColumn = this_.To.FillColumn
 		if this_.From.BySql {
 			to.FilePath = this_.getFilePath("", this_.To.GetFileName(), "sql")
 		} else {
@@ -173,6 +178,7 @@ func (this_ *Executor) dbToTxt() (err error) {
 		to.ReplaceCol = this_.To.ReplaceCol
 		to.ReplaceLine = this_.To.ReplaceLine
 		to.ShouldTrimSpace = this_.To.ShouldTrimSpace
+		to.FillColumn = this_.To.FillColumn
 		if this_.From.BySql {
 			to.FilePath = this_.getFilePath("", this_.To.GetFileName(), this_.To.GetTxtFileType())
 		} else {
@@ -200,6 +206,7 @@ func (this_ *Executor) dbToExcel() (err error) {
 		to := NewDataSourceExcel()
 		to.ColumnList = from.ColumnList
 		to.ShouldTrimSpace = this_.To.ShouldTrimSpace
+		to.FillColumn = this_.To.FillColumn
 		if this_.From.BySql {
 			to.FilePath = this_.getFilePath("", this_.To.GetFileName(), "xlsx")
 		} else {
@@ -317,6 +324,7 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 		from.ColumnList = this_.From.ColumnList
 		from.Service = this_.From.dbService
 		from.SelectSql = this_.From.SelectSql
+		from.FillColumn = this_.From.FillColumn
 		err = on(owner, table, from)
 
 		return
@@ -604,6 +612,7 @@ func (this_ *Executor) doOwnerTable(owner *DbOwner, table *DbTable, on func(owne
 	datasource.OwnerName = owner.From.OwnerName
 	datasource.TableName = table.From.TableName
 	datasource.Service = owner.fromService
+	datasource.FillColumn = this_.From.FillColumn
 
 	for _, c := range table.Columns {
 		datasource.ColumnList = append(datasource.ColumnList, &Column{

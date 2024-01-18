@@ -49,6 +49,11 @@ func (this_ *DataSourceData) Read(progress *Progress, dataChan chan *Data) (err 
 		if progress.ShouldStop() {
 			return
 		}
+
+		if this_.FillColumn {
+			this_.fullColumnListByData(progress, data)
+		}
+
 		values, e := this_.DataToValues(progress, data)
 		if e != nil {
 			progress.ReadCount.AddError(1, e)
@@ -61,6 +66,7 @@ func (this_ *DataSourceData) Read(progress *Progress, dataChan chan *Data) (err 
 			lastData.Total++
 			progress.ReadCount.AddSuccess(1)
 			if lastData.Total >= pageSize {
+				lastData.columnList = &this_.ColumnList
 				dataChan <- lastData
 				lastData = &Data{
 					DataType: DataTypeCols,
@@ -69,6 +75,7 @@ func (this_ *DataSourceData) Read(progress *Progress, dataChan chan *Data) (err 
 		}
 	}
 	if lastData.Total > 0 {
+		lastData.columnList = &this_.ColumnList
 		dataChan <- lastData
 	}
 
@@ -85,6 +92,10 @@ func (this_ *DataSourceData) WriteStart(progress *Progress) (err error) {
 }
 
 func (this_ *DataSourceData) Write(progress *Progress, data *Data) (err error) {
+
+	if this_.FillColumn && data.columnList != nil {
+		this_.fullColumnListByColumnList(progress, data.columnList)
+	}
 
 	switch data.DataType {
 	case DataTypeCols:

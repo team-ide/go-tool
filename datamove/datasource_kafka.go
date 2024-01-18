@@ -28,7 +28,8 @@ type DataSourceKafka struct {
 
 	Service kafka.IService
 
-	lastData *Data
+	lastData     *Data
+	syncProducer sarama.SyncProducer
 }
 
 func (this_ *DataSourceKafka) Stop(progress *Progress) {
@@ -130,6 +131,7 @@ func (this_ *consumerGroupHandler) ConsumeClaim(session sarama.ConsumerGroupSess
 			this_.cancel()
 		}
 		if this_.lastData != nil && this_.lastData.Total > 0 {
+			this_.lastData.columnList = &this_.ColumnList
 			this_.dataChan <- this_.lastData
 		}
 	}()
@@ -164,9 +166,11 @@ func (this_ *consumerGroupHandler) onMsg(msg *sarama.ConsumerMessage) (err error
 
 	if msg.Value != nil {
 		value := string(msg.Value)
-		e := util.JSONDecodeUseNumber([]byte(value), &data)
-		if e != nil {
-			data = map[string]interface{}{}
+		if this_.TopicValueByData {
+			e := util.JSONDecodeUseNumber([]byte(value), &data)
+			if e != nil {
+				data = map[string]interface{}{}
+			}
 		}
 		if _, ok := data[this_.TopicValue]; !ok {
 			data[this_.TopicValue] = value
@@ -183,9 +187,8 @@ func (this_ *consumerGroupHandler) onMsg(msg *sarama.ConsumerMessage) (err error
 			data[name] = string(h.Value)
 		}
 	}
-	err = this_.fullColumnListByData(this_.Progress, data)
-	if err != nil {
-		return
+	if this_.FillColumn {
+		this_.fullColumnListByData(this_.Progress, data)
 	}
 
 	values, e := this_.DataToValues(this_.Progress, data)
@@ -206,6 +209,7 @@ func (this_ *consumerGroupHandler) onMsg(msg *sarama.ConsumerMessage) (err error
 		this_.lastData.Total++
 		this_.Progress.ReadCount.AddSuccess(1)
 		if this_.lastData.Total >= pageSize {
+			this_.lastData.columnList = &this_.ColumnList
 			this_.dataChan <- this_.lastData
 			this_.lastData = &Data{
 				DataType:   DataTypeCols,
@@ -221,11 +225,23 @@ func (this_ *DataSourceKafka) ReadEnd(progress *Progress) (err error) {
 }
 
 func (this_ *DataSourceKafka) WriteStart(progress *Progress) (err error) {
-
+	this_.syncProducer, err = this_.Service.NewSyncProducer()
+	if err != nil {
+		return
+	}
 	return
 }
 
 func (this_ *DataSourceKafka) Write(progress *Progress, data *Data) (err error) {
+	if this_.syncProducer == nil {
+		this_.syncProducer, err = this_.Service.NewSyncProducer()
+		if err != nil {
+			return
+		}
+	}
+	if this_.FillColumn && data.columnList != nil {
+		this_.fullColumnListByColumnList(progress, data.columnList)
+	}
 
 	switch data.DataType {
 	case DataTypeCols:
@@ -250,10 +266,11 @@ func (this_ *DataSourceKafka) Write(progress *Progress, data *Data) (err error) 
 					} else if this_.TopicValue != "" {
 						value = util.GetStringValue(d[this_.TopicValue])
 					}
-					msg := &kafka.Message{}
-					msg.Key = key
-					msg.Value = value
-					e = this_.Service.Push(msg)
+					msg := &sarama.ProducerMessage{}
+					msg.Topic = this_.TopicName
+					msg.Key = sarama.ByteEncoder(key)
+					msg.Value = sarama.ByteEncoder(value)
+					_, _, e = this_.syncProducer.SendMessage(msg)
 					if e != nil {
 						progress.WriteCount.AddError(1, e)
 						if !progress.ErrorContinue {
@@ -278,5 +295,11 @@ func (this_ *DataSourceKafka) Write(progress *Progress, data *Data) (err error) 
 }
 
 func (this_ *DataSourceKafka) WriteEnd(progress *Progress) (err error) {
+	syncProducer := this_.syncProducer
+	this_.syncProducer = nil
+	if syncProducer != nil {
+		_ = syncProducer.Close()
+	}
+
 	return
 }

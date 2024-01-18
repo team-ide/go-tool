@@ -55,6 +55,7 @@ func (this_ *Executor) onExcelSourceData(on func(datasource DataSource) (err err
 	datasource := NewDataSourceExcel()
 	datasource.FilePath = this_.From.FilePath
 	datasource.ColumnList = this_.From.ColumnList
+	datasource.FillColumn = this_.From.FillColumn
 	err = on(datasource)
 	return
 }

@@ -62,6 +62,7 @@ func (this_ *Executor) onEsSourceData(on func(datasource DataSource) (err error)
 	datasource.IndexName = this_.From.IndexName
 	datasource.IndexIdName = this_.From.IndexIdName
 	datasource.IndexIdScript = this_.From.IndexIdScript
+	datasource.FillColumn = this_.From.FillColumn
 	datasource.Service, err = elasticsearch.New(this_.From.EsConfig)
 	if err != nil {
 		util.Logger.Error("elasticsearch client new error", zap.Error(err))

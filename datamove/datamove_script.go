@@ -55,6 +55,7 @@ func (this_ *Executor) onScriptSourceData(on func(datasource DataSource) (err er
 	datasource := NewDataSourceScript()
 	datasource.Total = this_.From.Total
 	datasource.ColumnList = this_.From.ColumnList
+	datasource.FillColumn = this_.From.FillColumn
 	err = on(datasource)
 	return
 }

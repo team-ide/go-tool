@@ -127,6 +127,11 @@ func (this_ *DataSourceDb) Read(progress *Progress, dataChan chan *Data) (err er
 			DataType: DataTypeCols,
 		}
 		for _, data := range list {
+
+			if this_.FillColumn {
+				this_.fullColumnListByData(progress, data)
+			}
+
 			values, e := this_.DataToValues(progress, data)
 			if e != nil {
 				progress.ReadCount.AddError(1, e)
@@ -141,6 +146,7 @@ func (this_ *DataSourceDb) Read(progress *Progress, dataChan chan *Data) (err er
 			}
 		}
 
+		lastData.columnList = &this_.ColumnList
 		dataChan <- lastData
 		if hasPage && lastData.Total >= pageSize {
 			pageNo++
@@ -168,8 +174,8 @@ func (this_ *DataSourceDb) WriteStart(progress *Progress) (err error) {
 
 func (this_ *DataSourceDb) Write(progress *Progress, data *Data) (err error) {
 
-	if data.columnList != nil {
-		this_.ColumnList = *data.columnList
+	if this_.FillColumn && data.columnList != nil {
+		this_.fullColumnListByColumnList(progress, data.columnList)
 	}
 
 	var sqlList []string

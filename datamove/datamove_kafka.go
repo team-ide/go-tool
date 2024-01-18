@@ -63,6 +63,8 @@ func (this_ *Executor) onKafkaSourceData(on func(datasource DataSource) (err err
 	datasource.TopicGroupName = this_.From.TopicGroupName
 	datasource.TopicKey = this_.From.TopicKey
 	datasource.TopicValue = this_.From.TopicValue
+	datasource.TopicValueByData = this_.From.TopicValueByData
+	datasource.FillColumn = this_.From.FillColumn
 	datasource.Service, err = kafka.New(this_.From.KafkaConfig)
 	if err != nil {
 		util.Logger.Error("kafka client new error", zap.Error(err))

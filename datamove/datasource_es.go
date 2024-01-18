@@ -3,10 +3,8 @@ package datamove
 import (
 	"errors"
 	"fmt"
-	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-tool/elasticsearch"
 	"github.com/team-ide/go-tool/util"
-	"strings"
 )
 
 func NewDataSourceEs() *DataSourceEs {
@@ -30,42 +28,6 @@ func (this_ *DataSourceEs) Stop(progress *Progress) {
 }
 
 func (this_ *DataSourceEs) ReadStart(progress *Progress) (err error) {
-
-	if this_.SelectSql == "" {
-
-		var names = this_.GetColumnNames()
-		this_.SelectSql += "SELECT "
-		if len(names) == 0 {
-			this_.SelectSql += "* "
-		} else {
-			this_.SelectSql += strings.Join(names, ",")
-		}
-		this_.SelectSql += "FROM " + this_.IndexName
-	}
-
-	countSql, e := dialect.FormatCountSql(this_.SelectSql)
-	if e == nil {
-		r, _ := this_.Service.QuerySql(countSql)
-		if r != nil && len(r.Rows) > 0 && len(r.Rows[0]) > 0 {
-			progress.DataTotal += util.StringToInt64(util.GetStringValue(r.Rows[0][0]))
-		}
-	}
-
-	if len(this_.ColumnList) == 0 {
-		pageSql := this_.SelectSql + " LIMIT 0"
-
-		r, _ := this_.Service.QuerySql(pageSql)
-		if r != nil {
-			for _, columnType := range r.Columns {
-				column := &Column{
-					ColumnModel: &dialect.ColumnModel{},
-				}
-				column.ColumnName = columnType.Name
-				column.ColumnDataType = columnType.Type
-				this_.ColumnList = append(this_.ColumnList, column)
-			}
-		}
-	}
 
 	return
 }
@@ -96,6 +58,9 @@ func (this_ *DataSourceEs) Read(progress *Progress, dataChan chan *Data) (err er
 
 			data := map[string]interface{}{}
 
+			data["_id"] = h.Id
+			data["_source"] = h.Source
+
 			e := util.JSONDecodeUseNumber([]byte(h.Source), &data)
 			if e != nil {
 				progress.WriteCount.AddError(1, e)
@@ -104,6 +69,9 @@ func (this_ *DataSourceEs) Read(progress *Progress, dataChan chan *Data) (err er
 					return
 				}
 			} else {
+				if this_.FillColumn {
+					this_.fullColumnListByData(progress, data)
+				}
 				values, e := this_.DataToValues(progress, data)
 				if e != nil {
 					progress.ReadCount.AddError(1, e)
@@ -119,7 +87,7 @@ func (this_ *DataSourceEs) Read(progress *Progress, dataChan chan *Data) (err er
 			}
 
 		}
-
+		lastData.columnList = &this_.ColumnList
 		dataChan <- lastData
 		if lastData.Total >= pageSize {
 			err = doQuery()
@@ -150,8 +118,8 @@ func (this_ *DataSourceEs) WriteStart(progress *Progress) (err error) {
 
 func (this_ *DataSourceEs) Write(progress *Progress, data *Data) (err error) {
 
-	if data.columnList != nil {
-		this_.ColumnList = *data.columnList
+	if this_.FillColumn && data.columnList != nil {
+		this_.fullColumnListByColumnList(progress, data.columnList)
 	}
 
 	switch data.DataType {

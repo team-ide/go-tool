@@ -77,14 +77,17 @@ type DataSourceConfig struct {
 	SelectSql        string `json:"selectSql,omitempty"`
 	ShouldSelectPage bool   `json:"shouldSelectPage,omitempty"`
 
+	FillColumn bool `json:"fillColumn"` // 自动填充列
+
 	IndexName     string `json:"indexName,omitempty"`
 	IndexIdName   string `json:"indexIdName,omitempty"`
 	IndexIdScript string `json:"indexIdScript,omitempty"`
 
-	TopicName      string `json:"topicName,omitempty"`
-	TopicGroupName string `json:"topicGroupName,omitempty"`
-	TopicKey       string `json:"topicKey,omitempty"`
-	TopicValue     string `json:"topicValue,omitempty"`
+	TopicName        string `json:"topicName,omitempty"`
+	TopicGroupName   string `json:"topicGroupName,omitempty"`
+	TopicKey         string `json:"topicKey,omitempty"`
+	TopicValue       string `json:"topicValue,omitempty"`
+	TopicValueByData bool   `json:"topicValueByData"`
 
 	DataList []map[string]interface{} `json:"dataList,omitempty"`
 

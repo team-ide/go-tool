@@ -57,6 +57,7 @@ func (this_ *Executor) redisToExcel() (err error) {
 
 func (this_ *Executor) onRedisSourceData(on func(datasource DataSource) (err error)) (err error) {
 	datasource := NewDataSourceRedis()
+	datasource.FillColumn = this_.From.FillColumn
 	datasource.Service, err = redis.New(this_.From.RedisConfig)
 	if err != nil {
 		util.Logger.Error("redis client new error", zap.Error(err))
