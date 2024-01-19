@@ -112,6 +112,17 @@ func (this_ *ClusterService) Keys(pattern string, args ...Arg) (keysResult *Keys
 	return ClusterKeys(param.Ctx, client.(*redis.ClusterClient), param.Database, pattern, size)
 }
 
+func (this_ *ClusterService) ValueType(key string, args ...Arg) (valueType string, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+	return ValueType(param.Ctx, client, key)
+}
+
 func (this_ *ClusterService) GetValueInfo(key string, args ...Arg) (valueInfo *ValueInfo, err error) {
 	argCache := getArgCache(args...)
 	param := formatParam(argCache.Param)

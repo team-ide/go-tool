@@ -1,6 +1,9 @@
 package datamove
 
-import "github.com/team-ide/go-tool/util"
+import (
+	"github.com/team-ide/go-tool/util"
+	"go.uber.org/zap"
+)
 
 func (this_ *Executor) txtToDb() (err error) {
 	util.Logger.Info("txt to db start")
@@ -56,6 +59,28 @@ func (this_ *Executor) onTxtSourceData(on func(datasource DataSource) (err error
 	datasource.FilePath = this_.From.FilePath
 	datasource.ColumnList = this_.From.ColumnList
 	datasource.FillColumn = this_.From.FillColumn
+	if this_.From.DataSourceTxtParam != nil {
+		datasource.DataSourceTxtParam = this_.From.DataSourceTxtParam
+	}
 	err = on(datasource)
+	return
+}
+
+func (this_ *Executor) datasourceToTxt(from DataSource) (err error) {
+	util.Logger.Info("datasource to text start")
+	to := NewDataSourceTxt()
+	to.ColumnList = this_.To.ColumnList
+	to.FillColumn = this_.To.FillColumn
+	if this_.To.DataSourceTxtParam != nil {
+		to.DataSourceTxtParam = this_.To.DataSourceTxtParam
+	}
+
+	to.FilePath = this_.getFilePath("", this_.To.GetFileName(), this_.To.GetTxtFileType())
+	err = DateMove(this_.Progress, from, to)
+	if err != nil {
+		util.Logger.Error("datasource to text error", zap.Error(err))
+		return
+	}
+	util.Logger.Info("datasource to text end")
 	return
 }

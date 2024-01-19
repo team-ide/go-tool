@@ -57,12 +57,54 @@ func (this_ *Executor) redisToExcel() (err error) {
 
 func (this_ *Executor) onRedisSourceData(on func(datasource DataSource) (err error)) (err error) {
 	datasource := NewDataSourceRedis()
+	defer func() {
+		if datasource.Service != nil {
+			datasource.Service.Close()
+		}
+		if this_.From.RedisConfig.SSHClient != nil {
+			_ = this_.From.RedisConfig.SSHClient.Close()
+		}
+	}()
 	datasource.FillColumn = this_.From.FillColumn
+	datasource.ColumnList = this_.From.ColumnList
+	if this_.From.DataSourceRedisParam != nil {
+		datasource.DataSourceRedisParam = this_.From.DataSourceRedisParam
+	}
 	datasource.Service, err = redis.New(this_.From.RedisConfig)
 	if err != nil {
 		util.Logger.Error("redis client new error", zap.Error(err))
 		return
 	}
 	err = on(datasource)
+	return
+}
+
+func (this_ *Executor) datasourceToRedis(from DataSource) (err error) {
+	util.Logger.Info("datasource to redis start")
+	to := NewDataSourceRedis()
+	defer func() {
+		if to.Service != nil {
+			to.Service.Close()
+		}
+		if this_.To.RedisConfig.SSHClient != nil {
+			_ = this_.To.RedisConfig.SSHClient.Close()
+		}
+	}()
+	to.ColumnList = this_.To.ColumnList
+	to.FillColumn = this_.To.FillColumn
+	if this_.To.DataSourceRedisParam != nil {
+		to.DataSourceRedisParam = this_.To.DataSourceRedisParam
+	}
+	to.Service, err = redis.New(this_.To.RedisConfig)
+	if err != nil {
+		util.Logger.Error("redis client new error", zap.Error(err))
+		return
+	}
+	err = DateMove(this_.Progress, from, to)
+	if err != nil {
+		util.Logger.Error("datasource to redis error", zap.Error(err))
+		return
+	}
+	util.Logger.Info("datasource to redis end")
 	return
 }

@@ -53,9 +53,11 @@ func (this_ *Executor) scriptToExcel() (err error) {
 
 func (this_ *Executor) onScriptSourceData(on func(datasource DataSource) (err error)) (err error) {
 	datasource := NewDataSourceScript()
-	datasource.Total = this_.From.Total
 	datasource.ColumnList = this_.From.ColumnList
 	datasource.FillColumn = this_.From.FillColumn
+	if this_.From.DataSourceScriptParam != nil {
+		datasource.DataSourceScriptParam = this_.From.DataSourceScriptParam
+	}
 	err = on(datasource)
 	return
 }

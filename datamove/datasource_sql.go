@@ -11,19 +11,24 @@ import (
 
 func NewDataSourceSql() *DataSourceSql {
 	return &DataSourceSql{
-		DataSourceBase: &DataSourceBase{},
-		DataSourceFile: &DataSourceFile{},
+		DataSourceBase:     &DataSourceBase{},
+		DataSourceFile:     &DataSourceFile{},
+		DataSourceSqlParam: &DataSourceSqlParam{},
 	}
+}
+
+type DataSourceSqlParam struct {
+	DialectType string `json:"dialectType"`
+	OwnerName   string `json:"ownerName"`
+	TableName   string `json:"tableName"`
 }
 
 type DataSourceSql struct {
 	*DataSourceBase
 	*DataSourceFile
+	*DataSourceSqlParam
 	*dialect.ParamModel
-	DialectType string `json:"databaseType"`
-	OwnerName   string `json:"ownerName"`
-	TableName   string `json:"tableName"`
-	dia_        dialect.Dialect
+	dia_ dialect.Dialect
 
 	sqlList []string
 }

@@ -22,6 +22,7 @@ type IService interface {
 	Persist(key string, args ...Arg) (res bool, err error)
 	// Exists 判断 key 是否存在
 	Exists(key string, args ...Arg) (res int64, err error)
+	ValueType(key string, args ...Arg) (valueType string, err error)
 	// GetValueInfo 获取 key 的值信息  string、set、list、hash等值 多个值的情况下 使用 StartArg 和 SizeArg 查询一定数量的值
 	GetValueInfo(key string, args ...Arg) (valueInfo *ValueInfo, err error)
 

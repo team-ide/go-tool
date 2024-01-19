@@ -7,13 +7,18 @@ import (
 
 func NewDataSourceData() *DataSourceData {
 	return &DataSourceData{
-		DataSourceBase: &DataSourceBase{},
+		DataSourceBase:      &DataSourceBase{},
+		DataSourceDataParam: &DataSourceDataParam{},
 	}
+}
+
+type DataSourceDataParam struct {
+	DataList []map[string]interface{} `json:"dataList,omitempty"`
 }
 
 type DataSourceData struct {
 	*DataSourceBase
-	DataList []map[string]interface{}
+	*DataSourceDataParam
 }
 
 func (this_ *DataSourceData) GetDataList() []map[string]interface{} {

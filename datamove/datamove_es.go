@@ -57,17 +57,48 @@ func (this_ *Executor) esToExcel() (err error) {
 
 func (this_ *Executor) onEsSourceData(on func(datasource DataSource) (err error)) (err error) {
 	datasource := NewDataSourceEs()
-
+	defer func() {
+		if datasource.Service != nil {
+			datasource.Service.Close()
+		}
+	}()
 	datasource.ColumnList = this_.From.ColumnList
-	datasource.IndexName = this_.From.IndexName
-	datasource.IndexIdName = this_.From.IndexIdName
-	datasource.IndexIdScript = this_.From.IndexIdScript
 	datasource.FillColumn = this_.From.FillColumn
+	if this_.From.DataSourceEsParam != nil {
+		datasource.DataSourceEsParam = this_.From.DataSourceEsParam
+	}
 	datasource.Service, err = elasticsearch.New(this_.From.EsConfig)
 	if err != nil {
 		util.Logger.Error("elasticsearch client new error", zap.Error(err))
 		return
 	}
 	err = on(datasource)
+	return
+}
+
+func (this_ *Executor) datasourceToEs(from DataSource) (err error) {
+	util.Logger.Info("datasource to es start")
+	to := NewDataSourceEs()
+	defer func() {
+		if to.Service != nil {
+			to.Service.Close()
+		}
+	}()
+	to.ColumnList = this_.To.ColumnList
+	to.FillColumn = this_.To.FillColumn
+	if this_.To.DataSourceEsParam != nil {
+		to.DataSourceEsParam = this_.To.DataSourceEsParam
+	}
+	to.Service, err = elasticsearch.New(this_.To.EsConfig)
+	if err != nil {
+		util.Logger.Error("elasticsearch client new error", zap.Error(err))
+		return
+	}
+	err = DateMove(this_.Progress, from, to)
+	if err != nil {
+		util.Logger.Error("datasource to es error", zap.Error(err))
+		return
+	}
+	util.Logger.Info("datasource to es end")
 	return
 }

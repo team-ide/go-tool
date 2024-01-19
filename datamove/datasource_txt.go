@@ -14,19 +14,25 @@ import (
 
 func NewDataSourceTxt() *DataSourceTxt {
 	return &DataSourceTxt{
-		DataSourceBase: &DataSourceBase{},
-		DataSourceFile: &DataSourceFile{},
+		DataSourceBase:     &DataSourceBase{},
+		DataSourceFile:     &DataSourceFile{},
+		DataSourceTxtParam: &DataSourceTxtParam{},
 	}
+}
+
+type DataSourceTxtParam struct {
+	ColSeparator    string `json:"colSeparator"`    // 列 分隔符 默认 `,`
+	ReplaceCol      string `json:"replaceCol"`      //
+	ReplaceLine     string `json:"replaceLine"`     //
+	ShouldTrimSpace bool   `json:"shouldTrimSpace"` // 是否需要去除空白字符
 }
 
 type DataSourceTxt struct {
 	*DataSourceBase
 	*DataSourceFile
-	headerRead   bool
-	headerWrite  bool
-	ColSeparator string `json:"colSeparator"` // 列 分隔符 默认 `,`
-	ReplaceCol   string `json:"replaceCol"`   //
-	ReplaceLine  string `json:"replaceLine"`  //
+	*DataSourceTxtParam
+	headerRead  bool
+	headerWrite bool
 }
 
 func (this_ *DataSourceTxt) GetColSeparator() string {

@@ -38,10 +38,6 @@ func (this_ *Executor) execute() (err error) {
 			err = this_.dbToTxt()
 		} else if this_.To.IsDb() {
 			err = this_.dbToDb()
-		} else if this_.To.IsEs() {
-			err = this_.dbToEs()
-		} else if this_.To.IsKafka() {
-			err = this_.dbToKafka()
 		} else {
 			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
 			util.Logger.Error("execute error", zap.Error(err))
@@ -68,6 +64,8 @@ func (this_ *Executor) execute() (err error) {
 			err = this_.dataToEs()
 		} else if this_.To.IsKafka() {
 			err = this_.dataToKafka()
+		} else if this_.To.IsRedis() {
+			err = this_.dataToRedis()
 		} else {
 			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
 			util.Logger.Error("execute error", zap.Error(err))
@@ -86,6 +84,8 @@ func (this_ *Executor) execute() (err error) {
 			err = this_.txtToEs()
 		} else if this_.To.IsKafka() {
 			err = this_.txtToKafka()
+		} else if this_.To.IsRedis() {
+			err = this_.txtToRedis()
 		} else {
 			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
 			util.Logger.Error("execute error", zap.Error(err))
@@ -104,6 +104,8 @@ func (this_ *Executor) execute() (err error) {
 			err = this_.excelToEs()
 		} else if this_.To.IsKafka() {
 			err = this_.excelToKafka()
+		} else if this_.To.IsRedis() {
+			err = this_.excelToRedis()
 		} else {
 			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
 			util.Logger.Error("execute error", zap.Error(err))
@@ -122,6 +124,8 @@ func (this_ *Executor) execute() (err error) {
 			err = this_.esToEs()
 		} else if this_.To.IsKafka() {
 			err = this_.esToKafka()
+		} else if this_.To.IsRedis() {
+			err = this_.esToRedis()
 		} else {
 			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
 			util.Logger.Error("execute error", zap.Error(err))
@@ -140,6 +144,28 @@ func (this_ *Executor) execute() (err error) {
 			err = this_.kafkaToEs()
 		} else if this_.To.IsKafka() {
 			err = this_.kafkaToKafka()
+		} else if this_.To.IsRedis() {
+			err = this_.kafkaToRedis()
+		} else {
+			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
+			util.Logger.Error("execute error", zap.Error(err))
+			return
+		}
+	} else if this_.From.IsRedis() {
+		if this_.To.IsSql() {
+			err = this_.redisToSql()
+		} else if this_.To.IsExcel() {
+			err = this_.redisToExcel()
+		} else if this_.To.IsTxt() {
+			err = this_.redisToTxt()
+		} else if this_.To.IsDb() {
+			err = this_.redisToDb()
+		} else if this_.To.IsEs() {
+			err = this_.redisToEs()
+		} else if this_.To.IsKafka() {
+			err = this_.redisToKafka()
+		} else if this_.To.IsRedis() {
+			err = this_.redisToRedis()
 		} else {
 			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
 			util.Logger.Error("execute error", zap.Error(err))
@@ -158,6 +184,8 @@ func (this_ *Executor) execute() (err error) {
 			err = this_.scriptToEs()
 		} else if this_.To.IsKafka() {
 			err = this_.scriptToKafka()
+		} else if this_.To.IsRedis() {
+			err = this_.scriptToRedis()
 		} else {
 			err = errors.New(fmt.Sprintf("不支持的 目标 类型[%s]", this_.To.Type))
 			util.Logger.Error("execute error", zap.Error(err))

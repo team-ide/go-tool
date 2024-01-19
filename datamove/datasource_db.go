@@ -12,18 +12,23 @@ import (
 
 func NewDataSourceDb() *DataSourceDb {
 	return &DataSourceDb{
-		DataSourceBase: &DataSourceBase{},
+		DataSourceBase:     &DataSourceBase{},
+		DataSourceSqlParam: &DataSourceSqlParam{},
+		DataSourceDbParam:  &DataSourceDbParam{},
 	}
+}
+
+type DataSourceDbParam struct {
+	BySql            bool   `json:"bySql,omitempty"` // 根据 SQL 语句导出
+	SelectSql        string `json:"selectSql"`
+	ShouldSelectPage bool   `json:"shouldSelectPage"`
 }
 
 type DataSourceDb struct {
 	*dialect.ParamModel
 	*DataSourceBase
-
-	OwnerName        string `json:"ownerName"`
-	TableName        string `json:"tableName"`
-	SelectSql        string `json:"selectSql"`
-	ShouldSelectPage bool   `json:"shouldSelectPage"`
+	*DataSourceDbParam
+	*DataSourceSqlParam
 
 	Service db.IService
 }

@@ -52,15 +52,29 @@ type DataSourceConfig struct {
 	*dialect.ParamModel
 	Type             string `json:"type,omitempty"`
 	SqlFileMergeType string `json:"sqlFileMergeType,omitempty"` // SQL 的文件合并类型 如：one：一个文件， owner：每个库一个文件，table：每个表一个文件
-	ShouldTrimSpace  bool   `json:"shouldTrimSpace,omitempty"`  // 是否需要去除空白字符
-	ColSeparator     string `json:"colSeparator,omitempty"`     // 列 分隔符 默认 `,`
-	ReplaceCol       string `json:"replaceCol,omitempty"`       //
-	ReplaceLine      string `json:"replaceLine,omitempty"`      //
-	TxtFileType      string `json:"txtFileType,omitempty"`      //
+
+	*DataSourceSqlParam
+
+	*DataSourceTxtParam
+
+	*DataSourceScriptParam
+
+	*DataSourceRedisParam
+
+	*DataSourceExcelParam
+
+	*DataSourceKafkaParam
+
+	*DataSourceEsParam
+
+	*DataSourceDbParam
+
+	*DataSourceDataParam
+
+	TxtFileType string `json:"txtFileType,omitempty"` //
 
 	// 数据库 配置
-	DbConfig    *db.Config `json:"-"`
-	DialectType string     `json:"dialectType,omitempty"`
+	DbConfig *db.Config `json:"-"`
 
 	Username string `json:"username,omitempty"`
 	Password string `json:"password,omitempty"`
@@ -71,27 +85,7 @@ type DataSourceConfig struct {
 
 	KafkaConfig *kafka.Config `json:"-"`
 
-	OwnerName        string `json:"ownerName,omitempty"`
-	TableName        string `json:"tableName,omitempty"`
-	BySql            bool   `json:"bySql,omitempty"` // 根据 SQL 语句导出
-	SelectSql        string `json:"selectSql,omitempty"`
-	ShouldSelectPage bool   `json:"shouldSelectPage,omitempty"`
-
 	FillColumn bool `json:"fillColumn"` // 自动填充列
-
-	IndexName     string `json:"indexName,omitempty"`
-	IndexIdName   string `json:"indexIdName,omitempty"`
-	IndexIdScript string `json:"indexIdScript,omitempty"`
-
-	TopicName        string `json:"topicName,omitempty"`
-	TopicGroupName   string `json:"topicGroupName,omitempty"`
-	TopicKey         string `json:"topicKey,omitempty"`
-	TopicValue       string `json:"topicValue,omitempty"`
-	TopicValueByData bool   `json:"topicValueByData"`
-
-	DataList []map[string]interface{} `json:"dataList,omitempty"`
-
-	Total int64 `json:"total,omitempty"`
 
 	ColumnList []*Column `json:"columnList,omitempty"`
 
@@ -174,13 +168,6 @@ type DbTable struct {
 	SkipColumnNames []string            `json:"skipColumnNames,omitempty"`
 	AllColumn       bool                `json:"allColumn,omitempty"`
 	appended        bool
-
-	IndexIdName   string `json:"indexIdName,omitempty"`
-	IndexIdScript string `json:"indexIdScript,omitempty"`
-
-	TopicGroupName string `json:"topicGroupName,omitempty"`
-	TopicKey       string `json:"topicKey,omitempty"`
-	TopicValue     string `json:"topicValue,omitempty"`
 }
 
 func (this_ *DbTable) GetToDialectTable() *dialect.TableModel {

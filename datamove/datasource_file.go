@@ -15,8 +15,7 @@ func NewDataSourceFile(filePath string) *DataSourceFile {
 }
 
 type DataSourceFile struct {
-	FilePath        string
-	ShouldTrimSpace bool `json:"shouldTrimSpace"` // 是否需要去除空白字符
+	FilePath string
 
 	readFile  *os.File
 	writeFile *os.File

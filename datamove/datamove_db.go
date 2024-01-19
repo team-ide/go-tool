@@ -6,80 +6,46 @@ import (
 	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-dialect/worker"
 	"github.com/team-ide/go-tool/db"
-	"github.com/team-ide/go-tool/elasticsearch"
-	"github.com/team-ide/go-tool/kafka"
-	"github.com/team-ide/go-tool/redis"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"strings"
 )
 
-func (this_ *Executor) dbToRedis() (err error) {
-
-	util.Logger.Info("db to redis start")
-	err = this_.forEachOwnersTables(func(owner *DbOwner, table *DbTable, from *DataSourceDb) (err error) {
-		to := NewDataSourceRedis()
-		to.ColumnList = from.ColumnList
-		to.Service, err = redis.New(this_.To.RedisConfig)
-		if err != nil {
-			util.Logger.Error("redis client new error", zap.Error(err))
-			return
+func (this_ *Executor) datasourceToDb(from DataSource) (err error) {
+	util.Logger.Info("datasource to excel start")
+	to := NewDataSourceDb()
+	defer func() {
+		if to.Service != nil {
+			to.Service.Close()
 		}
-		err = DateMove(this_.Progress, from, to)
-		return
-	})
-	util.Logger.Info("db to redis end")
+		if this_.To.DbConfig.SSHClient != nil {
+			_ = this_.To.DbConfig.SSHClient.Close()
+		}
+	}()
 
+	to.ColumnList = this_.To.ColumnList
+	to.FillColumn = this_.To.FillColumn
+	if this_.To.DataSourceSqlParam != nil {
+		to.DataSourceSqlParam = this_.To.DataSourceSqlParam
+	}
+	if this_.To.DataSourceDbParam != nil {
+		to.DataSourceDbParam = this_.To.DataSourceDbParam
+	}
+	to.ParamModel = this_.To.GetDialectParam()
+	to.Service, err = this_.newDbService(*this_.To.DbConfig, this_.To.Username, this_.To.Password, this_.To.OwnerName)
+	if err != nil {
+		return
+	}
+	defer func() { _ = to.Service.GetDb().Close() }()
+	err = DateMove(this_.Progress, from, to)
+	if err != nil {
+		util.Logger.Error("datasource to excel error", zap.Error(err))
+		return
+	}
+	util.Logger.Info("datasource to excel end")
 	return
 }
 
-func (this_ *Executor) dbToKafka() (err error) {
-
-	util.Logger.Info("db to kafka start")
-	err = this_.forEachOwnersTables(func(owner *DbOwner, table *DbTable, from *DataSourceDb) (err error) {
-		to := NewDataSourceKafka()
-		to.ColumnList = from.ColumnList
-		to.TopicName = table.To.TableName
-		to.TopicGroupName = table.TopicGroupName
-		to.TopicKey = table.TopicKey
-		to.TopicValue = table.TopicValue
-		to.TopicValueByData = this_.To.TopicValueByData
-		to.FillColumn = this_.To.FillColumn
-		to.Service, err = kafka.New(this_.To.KafkaConfig)
-		if err != nil {
-			util.Logger.Error("kafka client new error", zap.Error(err))
-			return
-		}
-		err = DateMove(this_.Progress, from, to)
-		return
-	})
-	util.Logger.Info("db to kafka end")
-
-	return
-}
-
-func (this_ *Executor) dbToEs() (err error) {
-
-	util.Logger.Info("db to es start")
-	err = this_.forEachOwnersTables(func(owner *DbOwner, table *DbTable, from *DataSourceDb) (err error) {
-		to := NewDataSourceEs()
-		to.ColumnList = from.ColumnList
-		to.IndexName = table.To.TableName
-		to.IndexIdName = table.IndexIdName
-		to.IndexIdScript = table.IndexIdScript
-		to.FillColumn = this_.To.FillColumn
-		to.Service, err = elasticsearch.New(this_.To.EsConfig)
-		if err != nil {
-			util.Logger.Error("elasticsearch client new error", zap.Error(err))
-			return
-		}
-		err = DateMove(this_.Progress, from, to)
-		return
-	})
-	util.Logger.Info("db to es end")
-
-	return
-}
 func (this_ *Executor) dbToDb() (err error) {
 
 	util.Logger.Info("db to db start")
@@ -89,8 +55,8 @@ func (this_ *Executor) dbToDb() (err error) {
 		to.ParamModel = this_.To.GetDialectParam()
 		to.OwnerName = owner.To.OwnerName
 		to.TableName = table.To.TableName
-		to.Service = owner.toService
 		to.FillColumn = this_.To.FillColumn
+		to.Service = owner.toService
 		err = DateMove(this_.Progress, from, to)
 		return
 	})
@@ -174,11 +140,10 @@ func (this_ *Executor) dbToTxt() (err error) {
 	err = this_.forEachOwnersTables(func(owner *DbOwner, table *DbTable, from *DataSourceDb) (err error) {
 		to := NewDataSourceTxt()
 		to.ColumnList = from.ColumnList
-		to.ColSeparator = this_.To.ColSeparator
-		to.ReplaceCol = this_.To.ReplaceCol
-		to.ReplaceLine = this_.To.ReplaceLine
-		to.ShouldTrimSpace = this_.To.ShouldTrimSpace
 		to.FillColumn = this_.To.FillColumn
+		if this_.To.DataSourceTxtParam != nil {
+			to.DataSourceTxtParam = this_.To.DataSourceTxtParam
+		}
 		if this_.From.BySql {
 			to.FilePath = this_.getFilePath("", this_.To.GetFileName(), this_.To.GetTxtFileType())
 		} else {
@@ -205,8 +170,10 @@ func (this_ *Executor) dbToExcel() (err error) {
 	err = this_.forEachOwnersTables(func(owner *DbOwner, table *DbTable, from *DataSourceDb) (err error) {
 		to := NewDataSourceExcel()
 		to.ColumnList = from.ColumnList
-		to.ShouldTrimSpace = this_.To.ShouldTrimSpace
 		to.FillColumn = this_.To.FillColumn
+		if this_.To.DataSourceExcelParam != nil {
+			to.DataSourceExcelParam = this_.To.DataSourceExcelParam
+		}
 		if this_.From.BySql {
 			to.FilePath = this_.getFilePath("", this_.To.GetFileName(), "xlsx")
 		} else {
@@ -246,6 +213,9 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 		if this_.From.dbService != nil {
 			_ = this_.From.dbService.GetDb().Close()
 		}
+		if this_.From.DbConfig.SSHClient != nil {
+			_ = this_.From.DbConfig.SSHClient.Close()
+		}
 	}()
 	if this_.To.IsDb() {
 		this_.To.dbService, err = this_.newDbService(*this_.To.DbConfig, this_.To.Username, this_.To.Password, this_.To.OwnerName)
@@ -255,6 +225,9 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 		defer func() {
 			if this_.To.dbService != nil {
 				_ = this_.To.dbService.GetDb().Close()
+			}
+			if this_.To.DbConfig.SSHClient != nil {
+				_ = this_.To.DbConfig.SSHClient.Close()
 			}
 		}()
 	}
@@ -315,16 +288,17 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 			To: &dialect.TableModel{
 				TableName: this_.To.TableName,
 			},
-			IndexIdName:   this_.To.IndexIdName,
-			IndexIdScript: this_.To.IndexIdScript,
 		}
 		from.ParamModel = this_.From.GetDialectParam()
-		from.OwnerName = owner.From.OwnerName
-		from.TableName = table.From.TableName
 		from.ColumnList = this_.From.ColumnList
-		from.Service = this_.From.dbService
-		from.SelectSql = this_.From.SelectSql
 		from.FillColumn = this_.From.FillColumn
+		if this_.From.DataSourceSqlParam != nil {
+			from.DataSourceSqlParam = this_.From.DataSourceSqlParam
+		}
+		if this_.From.DataSourceDbParam != nil {
+			from.DataSourceDbParam = this_.From.DataSourceDbParam
+		}
+		from.Service = this_.From.dbService
 		err = on(owner, table, from)
 
 		return
@@ -423,6 +397,14 @@ func (this_ *Executor) forEachOwnerTables(owner *DbOwner, on func(owner *DbOwner
 	if err != nil {
 		return
 	}
+
+	defer func() {
+		if owner.fromService != nil {
+			_ = owner.fromService.GetDb().Close()
+			owner.fromService = nil
+		}
+
+	}()
 	if this_.To.IsDb() {
 
 		// 需要建库
@@ -452,12 +434,6 @@ func (this_ *Executor) forEachOwnerTables(owner *DbOwner, on func(owner *DbOwner
 		}
 	}
 	defer func() {
-
-		if owner.fromService != nil {
-			_ = owner.fromService.GetDb().Close()
-			owner.fromService = nil
-		}
-
 		if owner.toService != nil {
 			_ = owner.toService.GetDb().Close()
 			owner.toService = nil
@@ -609,10 +585,14 @@ func (this_ *Executor) doOwnerTable(owner *DbOwner, table *DbTable, on func(owne
 
 	datasource := NewDataSourceDb()
 	datasource.ParamModel = this_.From.GetDialectParam()
-	datasource.OwnerName = owner.From.OwnerName
-	datasource.TableName = table.From.TableName
-	datasource.Service = owner.fromService
 	datasource.FillColumn = this_.From.FillColumn
+	if this_.From.DataSourceSqlParam != nil {
+		datasource.DataSourceSqlParam = this_.From.DataSourceSqlParam
+	}
+	if this_.From.DataSourceDbParam != nil {
+		datasource.DataSourceDbParam = this_.From.DataSourceDbParam
+	}
+	datasource.Service = owner.fromService
 
 	for _, c := range table.Columns {
 		datasource.ColumnList = append(datasource.ColumnList, &Column{

@@ -9,16 +9,20 @@ import (
 
 func NewDataSourceEs() *DataSourceEs {
 	return &DataSourceEs{
-		DataSourceBase: &DataSourceBase{},
+		DataSourceBase:    &DataSourceBase{},
+		DataSourceEsParam: &DataSourceEsParam{},
 	}
+}
+
+type DataSourceEsParam struct {
+	IndexName     string `json:"indexName"`
+	IndexIdName   string `json:"indexIdName"`
+	IndexIdScript string `json:"indexIdScript"`
 }
 
 type DataSourceEs struct {
 	*DataSourceBase
-	IndexName     string `json:"indexName"`
-	IndexIdName   string `json:"indexIdName"`
-	IndexIdScript string `json:"indexIdScript"`
-	SelectSql     string `json:"selectSql"`
+	*DataSourceEsParam
 
 	Service elasticsearch.IService
 }

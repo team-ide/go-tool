@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"errors"
 	"github.com/go-redis/redis/v8"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
@@ -12,7 +13,7 @@ func ValueType(ctx context.Context, client redis.Cmdable, key string) (ValueType
 
 	cmdType := client.Type(ctx, key)
 	ValueType, err = cmdType.Result()
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		err = nil
 		return
 	}
@@ -66,6 +67,9 @@ func GetValueInfo(ctx context.Context, client redis.Cmdable, database int, key s
 		}
 		valueInfo.ValueStart = valueStart
 		valueInfo.ValueEnd = valueInfo.ValueStart + valueSize
+		if valueSize <= 0 {
+			valueInfo.ValueEnd = valueInfo.ValueCount
+		}
 
 		var list []string
 		cmdRange := client.LRange(ctx, key, valueInfo.ValueStart, valueInfo.ValueEnd)
@@ -75,7 +79,7 @@ func GetValueInfo(ctx context.Context, client redis.Cmdable, database int, key s
 			return
 		}
 
-		if int64(len(list)) <= valueSize || valueSize < 0 {
+		if int64(len(list)) <= valueSize || valueSize <= 0 {
 			value = list
 		} else {
 			value = list[0:valueSize]
@@ -91,6 +95,9 @@ func GetValueInfo(ctx context.Context, client redis.Cmdable, database int, key s
 		}
 		valueInfo.ValueStart = valueStart
 		valueInfo.ValueEnd = valueInfo.ValueStart + valueSize
+		if valueSize <= 0 {
+			valueInfo.ValueEnd = valueInfo.ValueCount
+		}
 
 		var list []string
 		cmd := client.SScan(ctx, key, uint64(valueInfo.ValueStart), "*", valueInfo.ValueEnd)
@@ -100,7 +107,7 @@ func GetValueInfo(ctx context.Context, client redis.Cmdable, database int, key s
 			return
 		}
 
-		if int64(len(list)) <= valueSize || valueSize < 0 {
+		if int64(len(list)) <= valueSize || valueSize <= 0 {
 			value = list
 		} else {
 			value = list[0:valueSize]
@@ -112,6 +119,9 @@ func GetValueInfo(ctx context.Context, client redis.Cmdable, database int, key s
 		if err != nil {
 			util.Logger.Error("HLen Error", zap.Any("key", key), zap.Error(err))
 			return
+		}
+		if valueSize <= 0 {
+			valueSize = valueInfo.ValueCount
 		}
 		valueInfo.ValueStart = valueStart * 2
 		valueInfo.ValueEnd = valueInfo.ValueStart + valueSize*2

@@ -123,6 +123,17 @@ func (this_ *V8Service) Keys(pattern string, args ...Arg) (keysResult *KeysResul
 	return Keys(param.Ctx, client, param.Database, pattern, size)
 }
 
+func (this_ *V8Service) ValueType(key string, args ...Arg) (valueType string, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+	return ValueType(param.Ctx, client, key)
+}
+
 func (this_ *V8Service) GetValueInfo(key string, args ...Arg) (valueInfo *ValueInfo, err error) {
 	argCache := getArgCache(args...)
 	param := formatParam(argCache.Param)

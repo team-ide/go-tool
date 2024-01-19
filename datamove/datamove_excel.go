@@ -1,6 +1,9 @@
 package datamove
 
-import "github.com/team-ide/go-tool/util"
+import (
+	"github.com/team-ide/go-tool/util"
+	"go.uber.org/zap"
+)
 
 func (this_ *Executor) excelToDb() (err error) {
 	util.Logger.Info("excel to db start")
@@ -56,6 +59,27 @@ func (this_ *Executor) onExcelSourceData(on func(datasource DataSource) (err err
 	datasource.FilePath = this_.From.FilePath
 	datasource.ColumnList = this_.From.ColumnList
 	datasource.FillColumn = this_.From.FillColumn
+	if this_.From.DataSourceExcelParam != nil {
+		datasource.DataSourceExcelParam = this_.From.DataSourceExcelParam
+	}
 	err = on(datasource)
+	return
+}
+
+func (this_ *Executor) datasourceToExcel(from DataSource) (err error) {
+	util.Logger.Info("datasource to excel start")
+	to := NewDataSourceExcel()
+	to.ColumnList = this_.To.ColumnList
+	to.FillColumn = this_.To.FillColumn
+	if this_.To.DataSourceExcelParam != nil {
+		to.DataSourceExcelParam = this_.To.DataSourceExcelParam
+	}
+	to.FilePath = this_.getFilePath("", this_.To.GetFileName(), "xlsx")
+	err = DateMove(this_.Progress, from, to)
+	if err != nil {
+		util.Logger.Error("datasource to excel error", zap.Error(err))
+		return
+	}
+	util.Logger.Info("datasource to excel end")
 	return
 }

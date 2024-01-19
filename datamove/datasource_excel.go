@@ -7,17 +7,22 @@ import (
 	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
-	"strings"
 )
 
 func NewDataSourceExcel() *DataSourceExcel {
 	return &DataSourceExcel{
-		DataSourceBase: &DataSourceBase{},
+		DataSourceBase:       &DataSourceBase{},
+		DataSourceExcelParam: &DataSourceExcelParam{},
 	}
+}
+
+type DataSourceExcelParam struct {
+	SheetName string `json:"sheetName"`
 }
 
 type DataSourceExcel struct {
 	*DataSourceBase
+	*DataSourceExcelParam
 	FilePath string `json:"filePath"`
 
 	readFile  *xlsx.File
@@ -26,11 +31,8 @@ type DataSourceExcel struct {
 	readSheet  *xlsx.Sheet
 	writeSheet *xlsx.Sheet
 
-	headerRead        bool
-	headerWrite       bool
-	ColumnNameMapping map[string]string `json:"columnNameMapping"`
-	ShouldTrimSpace   bool              `json:"shouldTrimSpace"` // 是否需要去除空白字符
-	SheetName         string            `json:"sheetName"`
+	headerRead  bool
+	headerWrite bool
 }
 
 func (this_ *DataSourceExcel) Stop(progress *Progress) {
@@ -59,9 +61,6 @@ func (this_ *DataSourceExcel) ReadStart(progress *Progress) (err error) {
 	if len(this_.readSheet.Cols) > 0 {
 		for _, c := range this_.readSheet.Rows[0].Cells {
 			s := c.String()
-			if this_.ShouldTrimSpace {
-				s = strings.TrimSpace(s)
-			}
 			titles = append(titles, s)
 		}
 	}

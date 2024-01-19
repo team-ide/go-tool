@@ -7,13 +7,18 @@ import (
 
 func NewDataSourceScript() *DataSourceScript {
 	return &DataSourceScript{
-		DataSourceBase: &DataSourceBase{},
+		DataSourceBase:        &DataSourceBase{},
+		DataSourceScriptParam: &DataSourceScriptParam{},
 	}
+}
+
+type DataSourceScriptParam struct {
+	Total int64 `json:"total"`
 }
 
 type DataSourceScript struct {
 	*DataSourceBase
-	Total int64 `json:"total"`
+	*DataSourceScriptParam
 }
 
 func (this_ *DataSourceScript) Stop(progress *Progress) {

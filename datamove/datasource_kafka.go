@@ -13,18 +13,23 @@ import (
 
 func NewDataSourceKafka() *DataSourceKafka {
 	return &DataSourceKafka{
-		DataSourceBase: &DataSourceBase{},
+		DataSourceBase:       &DataSourceBase{},
+		DataSourceKafkaParam: &DataSourceKafkaParam{},
 	}
 }
 
-type DataSourceKafka struct {
-	*DataSourceBase
+type DataSourceKafkaParam struct {
 	TopicName        string `json:"topicName"`
 	TopicGroupName   string `json:"topicGroupName"`
 	TopicKey         string `json:"topicKey"`
 	TopicValue       string `json:"topicValue"`
 	TopicValueByData bool   `json:"topicValueByData"`
 	PullWait         int64  `json:"pullWait"`
+}
+
+type DataSourceKafka struct {
+	*DataSourceBase
+	*DataSourceKafkaParam
 
 	Service kafka.IService
 

@@ -57,19 +57,48 @@ func (this_ *Executor) kafkaToExcel() (err error) {
 
 func (this_ *Executor) onKafkaSourceData(on func(datasource DataSource) (err error)) (err error) {
 	datasource := NewDataSourceKafka()
-
+	defer func() {
+		if datasource.Service != nil {
+			datasource.Service.Close()
+		}
+	}()
 	datasource.ColumnList = this_.From.ColumnList
-	datasource.TopicName = this_.From.TopicName
-	datasource.TopicGroupName = this_.From.TopicGroupName
-	datasource.TopicKey = this_.From.TopicKey
-	datasource.TopicValue = this_.From.TopicValue
-	datasource.TopicValueByData = this_.From.TopicValueByData
 	datasource.FillColumn = this_.From.FillColumn
+	if this_.From.DataSourceKafkaParam != nil {
+		datasource.DataSourceKafkaParam = this_.From.DataSourceKafkaParam
+	}
 	datasource.Service, err = kafka.New(this_.From.KafkaConfig)
 	if err != nil {
 		util.Logger.Error("kafka client new error", zap.Error(err))
 		return
 	}
 	err = on(datasource)
+	return
+}
+
+func (this_ *Executor) datasourceToKafka(from DataSource) (err error) {
+	util.Logger.Info("datasource to kafka start")
+	to := NewDataSourceKafka()
+	defer func() {
+		if to.Service != nil {
+			to.Service.Close()
+		}
+	}()
+	to.ColumnList = this_.To.ColumnList
+	to.FillColumn = this_.To.FillColumn
+	if this_.To.DataSourceKafkaParam != nil {
+		to.DataSourceKafkaParam = this_.To.DataSourceKafkaParam
+	}
+	to.Service, err = kafka.New(this_.To.KafkaConfig)
+	if err != nil {
+		util.Logger.Error("kafka client new error", zap.Error(err))
+		return
+	}
+	err = DateMove(this_.Progress, from, to)
+	if err != nil {
+		util.Logger.Error("datasource to kafka error", zap.Error(err))
+		return
+	}
+	util.Logger.Info("datasource to kafka end")
 	return
 }
