@@ -15,9 +15,9 @@ func NewDataSourceEs() *DataSourceEs {
 }
 
 type DataSourceEsParam struct {
-	IndexName     string `json:"indexName"`
-	IndexIdName   string `json:"indexIdName"`
-	IndexIdScript string `json:"indexIdScript"`
+	IndexName     string `json:"indexName,omitempty"`
+	IndexIdName   string `json:"indexIdName,omitempty"`
+	IndexIdScript string `json:"indexIdScript,omitempty"`
 }
 
 type DataSourceEs struct {

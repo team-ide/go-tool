@@ -13,7 +13,7 @@ func NewDataSourceScript() *DataSourceScript {
 }
 
 type DataSourceScriptParam struct {
-	Total int64 `json:"total"`
+	Total int64 `json:"total,omitempty"`
 }
 
 type DataSourceScript struct {

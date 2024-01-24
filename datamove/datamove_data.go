@@ -57,7 +57,7 @@ func (this_ *Executor) onDataSourceData(on func(datasource DataSource) (err erro
 	datasource := NewDataSourceData()
 	datasource.ColumnList = this_.From.ColumnList
 	datasource.FillColumn = this_.From.FillColumn
-	datasource.DataSourceDataParam = this_.From.DataSourceDataParam
+	datasource.DataSourceDataParam = &this_.From.DataSourceDataParam
 	err = on(datasource)
 	return
 }

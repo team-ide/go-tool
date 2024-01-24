@@ -19,9 +19,8 @@ func NewDataSourceDb() *DataSourceDb {
 }
 
 type DataSourceDbParam struct {
-	BySql            bool   `json:"bySql,omitempty"` // 根据 SQL 语句导出
-	SelectSql        string `json:"selectSql"`
-	ShouldSelectPage bool   `json:"shouldSelectPage"`
+	SelectSql        string `json:"selectSql,omitempty"`
+	ShouldSelectPage bool   `json:"shouldSelectPage,omitempty"`
 }
 
 type DataSourceDb struct {

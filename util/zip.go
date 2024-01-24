@@ -42,7 +42,7 @@ func UnGzipBytes(data []byte) ([]byte, error) {
 
 // Zip zip压缩 srcFile 文件路径，destZip压缩包保存路径
 func Zip(srcFile string, destZip string) error {
-	srcFiles := srcFile
+	srcRootPath := FormatPath(srcFile)
 	zipFile, err := os.Create(destZip)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func Zip(srcFile string, destZip string) error {
 	defer zipFile.Close()
 	archive := zip.NewWriter(zipFile)
 	defer archive.Close()
-	err = filepath.Walk(srcFile, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(srcRootPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -58,9 +58,10 @@ func Zip(srcFile string, destZip string) error {
 		if err != nil {
 			return err
 		}
-		path = strings.Replace(path, "\\", "/", -1)
-		srcFiles = strings.Replace(srcFiles, "\\", "/", -1)
-		header.Name = strings.Replace(path, srcFiles, "", -1)
+
+		path = FormatPath(path)
+
+		header.Name = strings.TrimPrefix(path, srcRootPath)
 		header.Name = strings.TrimPrefix(header.Name, "/")
 		if header.Name == "" {
 			return nil

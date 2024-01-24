@@ -53,23 +53,25 @@ type DataSourceConfig struct {
 	Type             string `json:"type,omitempty"`
 	SqlFileMergeType string `json:"sqlFileMergeType,omitempty"` // SQL 的文件合并类型 如：one：一个文件， owner：每个库一个文件，table：每个表一个文件
 
-	*DataSourceSqlParam
+	DataSourceSqlParam
 
-	*DataSourceTxtParam
+	DataSourceTxtParam
 
-	*DataSourceScriptParam
+	DataSourceScriptParam
 
-	*DataSourceRedisParam
+	DataSourceRedisParam
 
-	*DataSourceExcelParam
+	DataSourceExcelParam
 
-	*DataSourceKafkaParam
+	DataSourceKafkaParam
 
-	*DataSourceEsParam
+	DataSourceEsParam
 
-	*DataSourceDbParam
+	BySql bool `json:"bySql,omitempty"` // 根据 SQL 语句导出
 
-	*DataSourceDataParam
+	DataSourceDbParam
+
+	DataSourceDataParam
 
 	TxtFileType string `json:"txtFileType,omitempty"` //
 
@@ -85,7 +87,7 @@ type DataSourceConfig struct {
 
 	KafkaConfig *kafka.Config `json:"-"`
 
-	FillColumn bool `json:"fillColumn"` // 自动填充列
+	FillColumn bool `json:"fillColumn,omitempty"` // 自动填充列
 
 	ColumnList []*Column `json:"columnList,omitempty"`
 

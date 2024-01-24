@@ -17,13 +17,13 @@ func NewDataSourceExcel() *DataSourceExcel {
 }
 
 type DataSourceExcelParam struct {
-	SheetName string `json:"sheetName"`
+	SheetName string `json:"sheetName,omitempty"`
 }
 
 type DataSourceExcel struct {
 	*DataSourceBase
 	*DataSourceExcelParam
-	FilePath string `json:"filePath"`
+	FilePath string `json:"filePath,omitempty"`
 
 	readFile  *xlsx.File
 	writeFile *xlsx.File

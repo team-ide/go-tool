@@ -18,13 +18,13 @@ type DataSourceBase struct {
 	ColumnList    []*Column
 	script        *javascript.Script
 	ScriptContext map[string]interface{}
-	FillColumn    bool `json:"fillColumn"`
+	FillColumn    bool `json:"fillColumn,omitempty"`
 }
 
 type Column struct {
 	*dialect.ColumnModel
-	Value       string `json:"value"`
-	SubProperty bool   `json:"subProperty"`
+	Value       string `json:"value,omitempty"`
+	SubProperty bool   `json:"subProperty,omitempty"`
 }
 
 func (this_ *DataSourceBase) GetColumnList() []*Column {

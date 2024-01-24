@@ -242,7 +242,7 @@ func (this_ *CmdService) Ttl(key string, args ...Arg) (res int64, err error) {
 
 	cmd := client.TTL(param.Ctx, key)
 	r, err := cmd.Result()
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		err = nil
 		return
 	}
@@ -266,7 +266,7 @@ func (this_ *CmdService) Get(key string, args ...Arg) (value string, err error) 
 
 	cmd := client.Get(param.Ctx, key)
 	value, err = cmd.Result()
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		err = nil
 		//notFound = true
 		return
@@ -411,7 +411,7 @@ func (this_ *CmdService) HashGet(key string, field string, args ...Arg) (value s
 
 	cmd := client.HGet(param.Ctx, key, field)
 	value, err = cmd.Result()
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		err = nil
 		//notFound = true
 		return
@@ -448,7 +448,7 @@ func (this_ *CmdService) HashGetAll(key string, args ...Arg) (value map[string]s
 
 	cmd := client.HGetAll(param.Ctx, key)
 	value, err = cmd.Result()
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		err = nil
 		//notFound = true
 		return

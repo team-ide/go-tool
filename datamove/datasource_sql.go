@@ -18,9 +18,9 @@ func NewDataSourceSql() *DataSourceSql {
 }
 
 type DataSourceSqlParam struct {
-	DialectType string `json:"dialectType"`
-	OwnerName   string `json:"ownerName"`
-	TableName   string `json:"tableName"`
+	DialectType string `json:"dialectType,omitempty"`
+	OwnerName   string `json:"ownerName,omitempty"`
+	TableName   string `json:"tableName,omitempty"`
 }
 
 type DataSourceSql struct {

@@ -17,9 +17,7 @@ func (this_ *Executor) onSqlSourceData(on func(datasource DataSource) (err error
 	datasource.FilePath = this_.From.FilePath
 	datasource.ColumnList = this_.From.ColumnList
 	datasource.FillColumn = this_.From.FillColumn
-	if this_.From.DataSourceSqlParam != nil {
-		datasource.DataSourceSqlParam = this_.From.DataSourceSqlParam
-	}
+	datasource.DataSourceSqlParam = &this_.From.DataSourceSqlParam
 
 	err = on(datasource)
 	return
@@ -31,9 +29,7 @@ func (this_ *Executor) datasourceToSql(from DataSource) (err error) {
 	to.ParamModel = this_.To.GetDialectParam()
 	to.ColumnList = this_.To.ColumnList
 	to.FillColumn = this_.To.FillColumn
-	if this_.To.DataSourceSqlParam != nil {
-		to.DataSourceSqlParam = this_.To.DataSourceSqlParam
-	}
+	to.DataSourceSqlParam = &this_.To.DataSourceSqlParam
 	to.FilePath = this_.getFilePath("", this_.To.GetFileName(), "sql")
 	err = DateMove(this_.Progress, from, to)
 	if err != nil {

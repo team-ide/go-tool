@@ -64,9 +64,7 @@ func (this_ *Executor) onEsSourceData(on func(datasource DataSource) (err error)
 	}()
 	datasource.ColumnList = this_.From.ColumnList
 	datasource.FillColumn = this_.From.FillColumn
-	if this_.From.DataSourceEsParam != nil {
-		datasource.DataSourceEsParam = this_.From.DataSourceEsParam
-	}
+	datasource.DataSourceEsParam = &this_.From.DataSourceEsParam
 	datasource.Service, err = elasticsearch.New(this_.From.EsConfig)
 	if err != nil {
 		util.Logger.Error("elasticsearch client new error", zap.Error(err))
@@ -86,9 +84,7 @@ func (this_ *Executor) datasourceToEs(from DataSource) (err error) {
 	}()
 	to.ColumnList = this_.To.ColumnList
 	to.FillColumn = this_.To.FillColumn
-	if this_.To.DataSourceEsParam != nil {
-		to.DataSourceEsParam = this_.To.DataSourceEsParam
-	}
+	to.DataSourceEsParam = &this_.To.DataSourceEsParam
 	to.Service, err = elasticsearch.New(this_.To.EsConfig)
 	if err != nil {
 		util.Logger.Error("elasticsearch client new error", zap.Error(err))

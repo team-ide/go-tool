@@ -67,9 +67,7 @@ func (this_ *Executor) onRedisSourceData(on func(datasource DataSource) (err err
 	}()
 	datasource.FillColumn = this_.From.FillColumn
 	datasource.ColumnList = this_.From.ColumnList
-	if this_.From.DataSourceRedisParam != nil {
-		datasource.DataSourceRedisParam = this_.From.DataSourceRedisParam
-	}
+	datasource.DataSourceRedisParam = &this_.From.DataSourceRedisParam
 	datasource.Service, err = redis.New(this_.From.RedisConfig)
 	if err != nil {
 		util.Logger.Error("redis client new error", zap.Error(err))
@@ -92,9 +90,7 @@ func (this_ *Executor) datasourceToRedis(from DataSource) (err error) {
 	}()
 	to.ColumnList = this_.To.ColumnList
 	to.FillColumn = this_.To.FillColumn
-	if this_.To.DataSourceRedisParam != nil {
-		to.DataSourceRedisParam = this_.To.DataSourceRedisParam
-	}
+	to.DataSourceRedisParam = &this_.To.DataSourceRedisParam
 	to.Service, err = redis.New(this_.To.RedisConfig)
 	if err != nil {
 		util.Logger.Error("redis client new error", zap.Error(err))

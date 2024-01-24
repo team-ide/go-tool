@@ -16,16 +16,16 @@ func NewDataSourceRedis() *DataSourceRedis {
 }
 
 type DataSourceRedisParam struct {
-	RedisDatabase      int    `json:"redisDatabase"`
-	RedisKeyPattern    string `json:"redisKeyPattern"`
-	RedisKeyName       string `json:"redisKeyName"`
-	RedisKeyScript     string `json:"redisKeyScript"`
-	RedisFieldName     string `json:"redisFieldName"`
-	RedisFieldScript   string `json:"redisFieldScript"`
-	RedisValueName     string `json:"redisValueName"`
-	RedisValueTypeName string `json:"redisValueTypeName"`
-	RedisValueByData   bool   `json:"redisValueByData"`
-	RedisValueType     string `json:"redisValueType"`
+	RedisDatabase      int    `json:"redisDatabase,omitempty"`
+	RedisKeyPattern    string `json:"redisKeyPattern,omitempty"`
+	RedisKeyName       string `json:"redisKeyName,omitempty"`
+	RedisKeyScript     string `json:"redisKeyScript,omitempty"`
+	RedisFieldName     string `json:"redisFieldName,omitempty"`
+	RedisFieldScript   string `json:"redisFieldScript,omitempty"`
+	RedisValueName     string `json:"redisValueName,omitempty"`
+	RedisValueTypeName string `json:"redisValueTypeName,omitempty"`
+	RedisValueByData   bool   `json:"redisValueByData,omitempty"`
+	RedisValueType     string `json:"redisValueType,omitempty"`
 }
 
 type DataSourceRedis struct {

@@ -59,9 +59,7 @@ func (this_ *Executor) onTxtSourceData(on func(datasource DataSource) (err error
 	datasource.FilePath = this_.From.FilePath
 	datasource.ColumnList = this_.From.ColumnList
 	datasource.FillColumn = this_.From.FillColumn
-	if this_.From.DataSourceTxtParam != nil {
-		datasource.DataSourceTxtParam = this_.From.DataSourceTxtParam
-	}
+	datasource.DataSourceTxtParam = &this_.From.DataSourceTxtParam
 	err = on(datasource)
 	return
 }
@@ -71,9 +69,7 @@ func (this_ *Executor) datasourceToTxt(from DataSource) (err error) {
 	to := NewDataSourceTxt()
 	to.ColumnList = this_.To.ColumnList
 	to.FillColumn = this_.To.FillColumn
-	if this_.To.DataSourceTxtParam != nil {
-		to.DataSourceTxtParam = this_.To.DataSourceTxtParam
-	}
+	to.DataSourceTxtParam = &this_.To.DataSourceTxtParam
 
 	to.FilePath = this_.getFilePath("", this_.To.GetFileName(), this_.To.GetTxtFileType())
 	err = DateMove(this_.Progress, from, to)

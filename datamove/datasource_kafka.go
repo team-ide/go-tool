@@ -19,12 +19,12 @@ func NewDataSourceKafka() *DataSourceKafka {
 }
 
 type DataSourceKafkaParam struct {
-	TopicName        string `json:"topicName"`
-	TopicGroupName   string `json:"topicGroupName"`
-	TopicKey         string `json:"topicKey"`
-	TopicValue       string `json:"topicValue"`
-	TopicValueByData bool   `json:"topicValueByData"`
-	PullWait         int64  `json:"pullWait"`
+	TopicName        string `json:"topicName,omitempty"`
+	TopicGroupName   string `json:"topicGroupName,omitempty"`
+	TopicKey         string `json:"topicKey,omitempty"`
+	TopicValue       string `json:"topicValue,omitempty"`
+	TopicValueByData bool   `json:"topicValueByData,omitempty"`
+	PullWait         int64  `json:"pullWait,omitempty"`
 }
 
 type DataSourceKafka struct {

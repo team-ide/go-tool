@@ -21,10 +21,10 @@ func NewDataSourceTxt() *DataSourceTxt {
 }
 
 type DataSourceTxtParam struct {
-	ColSeparator    string `json:"colSeparator"`    // 列 分隔符 默认 `,`
-	ReplaceCol      string `json:"replaceCol"`      //
-	ReplaceLine     string `json:"replaceLine"`     //
-	ShouldTrimSpace bool   `json:"shouldTrimSpace"` // 是否需要去除空白字符
+	ColSeparator    string `json:"colSeparator,omitempty"`    // 列 分隔符 默认 `,`
+	ReplaceCol      string `json:"replaceCol,omitempty"`      //
+	ReplaceLine     string `json:"replaceLine,omitempty"`     //
+	ShouldTrimSpace bool   `json:"shouldTrimSpace,omitempty"` // 是否需要去除空白字符
 }
 
 type DataSourceTxt struct {

@@ -25,12 +25,8 @@ func (this_ *Executor) datasourceToDb(from DataSource) (err error) {
 
 	to.ColumnList = this_.To.ColumnList
 	to.FillColumn = this_.To.FillColumn
-	if this_.To.DataSourceSqlParam != nil {
-		to.DataSourceSqlParam = this_.To.DataSourceSqlParam
-	}
-	if this_.To.DataSourceDbParam != nil {
-		to.DataSourceDbParam = this_.To.DataSourceDbParam
-	}
+	to.DataSourceSqlParam = &this_.To.DataSourceSqlParam
+	to.DataSourceDbParam = &this_.To.DataSourceDbParam
 	to.ParamModel = this_.To.GetDialectParam()
 	to.Service, err = this_.newDbService(*this_.To.DbConfig, this_.To.Username, this_.To.Password, this_.To.OwnerName)
 	if err != nil {
@@ -141,9 +137,7 @@ func (this_ *Executor) dbToTxt() (err error) {
 		to := NewDataSourceTxt()
 		to.ColumnList = from.ColumnList
 		to.FillColumn = this_.To.FillColumn
-		if this_.To.DataSourceTxtParam != nil {
-			to.DataSourceTxtParam = this_.To.DataSourceTxtParam
-		}
+		to.DataSourceTxtParam = &this_.To.DataSourceTxtParam
 		if this_.From.BySql {
 			to.FilePath = this_.getFilePath("", this_.To.GetFileName(), this_.To.GetTxtFileType())
 		} else {
@@ -171,9 +165,7 @@ func (this_ *Executor) dbToExcel() (err error) {
 		to := NewDataSourceExcel()
 		to.ColumnList = from.ColumnList
 		to.FillColumn = this_.To.FillColumn
-		if this_.To.DataSourceExcelParam != nil {
-			to.DataSourceExcelParam = this_.To.DataSourceExcelParam
-		}
+		to.DataSourceExcelParam = &this_.To.DataSourceExcelParam
 		if this_.From.BySql {
 			to.FilePath = this_.getFilePath("", this_.To.GetFileName(), "xlsx")
 		} else {
@@ -292,12 +284,8 @@ func (this_ *Executor) forEachOwnersTables(on func(owner *DbOwner, table *DbTabl
 		from.ParamModel = this_.From.GetDialectParam()
 		from.ColumnList = this_.From.ColumnList
 		from.FillColumn = this_.From.FillColumn
-		if this_.From.DataSourceSqlParam != nil {
-			from.DataSourceSqlParam = this_.From.DataSourceSqlParam
-		}
-		if this_.From.DataSourceDbParam != nil {
-			from.DataSourceDbParam = this_.From.DataSourceDbParam
-		}
+		from.DataSourceSqlParam = &this_.From.DataSourceSqlParam
+		from.DataSourceDbParam = &this_.From.DataSourceDbParam
 		from.Service = this_.From.dbService
 		err = on(owner, table, from)
 
@@ -586,12 +574,10 @@ func (this_ *Executor) doOwnerTable(owner *DbOwner, table *DbTable, on func(owne
 	datasource := NewDataSourceDb()
 	datasource.ParamModel = this_.From.GetDialectParam()
 	datasource.FillColumn = this_.From.FillColumn
-	if this_.From.DataSourceSqlParam != nil {
-		datasource.DataSourceSqlParam = this_.From.DataSourceSqlParam
-	}
-	if this_.From.DataSourceDbParam != nil {
-		datasource.DataSourceDbParam = this_.From.DataSourceDbParam
-	}
+	datasource.DataSourceSqlParam = &DataSourceSqlParam{}
+	datasource.DataSourceDbParam = &DataSourceDbParam{}
+	datasource.OwnerName = owner.From.OwnerName
+	datasource.TableName = table.From.TableName
 	datasource.Service = owner.fromService
 
 	for _, c := range table.Columns {

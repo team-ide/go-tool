@@ -64,9 +64,7 @@ func (this_ *Executor) onKafkaSourceData(on func(datasource DataSource) (err err
 	}()
 	datasource.ColumnList = this_.From.ColumnList
 	datasource.FillColumn = this_.From.FillColumn
-	if this_.From.DataSourceKafkaParam != nil {
-		datasource.DataSourceKafkaParam = this_.From.DataSourceKafkaParam
-	}
+	datasource.DataSourceKafkaParam = &this_.From.DataSourceKafkaParam
 	datasource.Service, err = kafka.New(this_.From.KafkaConfig)
 	if err != nil {
 		util.Logger.Error("kafka client new error", zap.Error(err))
@@ -86,9 +84,7 @@ func (this_ *Executor) datasourceToKafka(from DataSource) (err error) {
 	}()
 	to.ColumnList = this_.To.ColumnList
 	to.FillColumn = this_.To.FillColumn
-	if this_.To.DataSourceKafkaParam != nil {
-		to.DataSourceKafkaParam = this_.To.DataSourceKafkaParam
-	}
+	to.DataSourceKafkaParam = &this_.To.DataSourceKafkaParam
 	to.Service, err = kafka.New(this_.To.KafkaConfig)
 	if err != nil {
 		util.Logger.Error("kafka client new error", zap.Error(err))

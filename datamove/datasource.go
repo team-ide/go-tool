@@ -16,17 +16,17 @@ type DataSource interface {
 }
 
 type Data struct {
-	Total        int64           `json:"total"`
-	DataType     DataType        `json:"dataType"`
-	ColsList     [][]interface{} `json:"colsList"`
-	SqlList      []string        `json:"sqlList"`
-	SqlAndParams []*SqlAndParam  `json:"sqlAndParams"`
+	Total        int64           `json:"total,omitempty"`
+	DataType     DataType        `json:"dataType,omitempty"`
+	ColsList     [][]interface{} `json:"colsList,omitempty"`
+	SqlList      []string        `json:"sqlList,omitempty"`
+	SqlAndParams []*SqlAndParam  `json:"sqlAndParams,omitempty"`
 	columnList   *[]*Column
 }
 
 type SqlAndParam struct {
-	Sql    string        `json:"sql"`
-	Params []interface{} `json:"params"`
+	Sql    string        `json:"sql,omitempty"`
+	Params []interface{} `json:"params,omitempty"`
 }
 
 type DataType int8
