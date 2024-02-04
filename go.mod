@@ -18,7 +18,7 @@ require (
 	github.com/tealeg/xlsx v1.0.5
 	github.com/team-ide/cron v1.0.1
 	github.com/team-ide/go-dialect v1.9.19
-	github.com/team-ide/go-driver v1.3.3
+	github.com/team-ide/go-driver v1.3.4
 	github.com/team-ide/go-interpreter v0.1.1
 	github.com/team-ide/goja v1.0.2
 	go.uber.org/zap v1.24.0
