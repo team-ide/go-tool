@@ -18,7 +18,7 @@ require (
 	github.com/tealeg/xlsx v1.0.5
 	github.com/team-ide/cron v1.0.1
 	github.com/team-ide/go-dialect v1.9.19
-	github.com/team-ide/go-driver v1.3.2
+	github.com/team-ide/go-driver v1.3.3
 	github.com/team-ide/go-interpreter v0.1.1
 	github.com/team-ide/goja v1.0.2
 	go.uber.org/zap v1.24.0
@@ -27,7 +27,6 @@ require (
 )
 
 require (
-	gitee.com/chunanyong/dm v1.8.10 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
