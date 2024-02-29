@@ -9,8 +9,8 @@ import (
 	"github.com/olivere/elastic/v7"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -67,7 +67,7 @@ func (this_ *V7Service) GetClient() (client *elastic.Client, err error) {
 		if this_.CertPath != "" {
 			certPool := x509.NewCertPool()
 			var pemCerts []byte
-			pemCerts, err = ioutil.ReadFile(this_.CertPath)
+			pemCerts, err = os.ReadFile(this_.CertPath)
 			if err != nil {
 				return
 			}

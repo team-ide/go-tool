@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/olivere/elastic/v7"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 )
 
@@ -24,7 +24,7 @@ func TestHttps(t *testing.T) {
 		TLSClientConfig := &tls.Config{}
 		certPool := x509.NewCertPool()
 		var pemCerts []byte
-		pemCerts, err = ioutil.ReadFile(CertPath)
+		pemCerts, err = os.ReadFile(CertPath)
 		if err != nil {
 			panic(err)
 			return
