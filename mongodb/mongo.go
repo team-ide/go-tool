@@ -159,6 +159,22 @@ func (this_ *Service) Collections(database string) (collections []*Collection, e
 	return
 }
 
+func (this_ *Service) CollectionDelete(database string, collection string) (err error) {
+	err = this_.client.Database(database).Collection(collection).Drop(context.TODO())
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (this_ *Service) CollectionCreate(database string, collection string) (err error) {
+	err = this_.client.Database(database).CreateCollection(context.TODO(), collection)
+	if err != nil {
+		return
+	}
+	return
+}
+
 func (this_ *Service) Indexes(database string, collection string) (indexes []map[string]interface{}, err error) {
 	rows, err := this_.client.Database(database).Collection(collection).Indexes().List(context.TODO())
 	if err != nil {
@@ -174,6 +190,38 @@ func (this_ *Service) Indexes(database string, collection string) (indexes []map
 			return
 		}
 		indexes = append(indexes, one)
+	}
+	return
+}
+
+func (this_ *Service) IndexCreate(database string, collection string, index mongo.IndexModel) (name string, err error) {
+	name, err = this_.client.Database(database).Collection(collection).Indexes().CreateOne(context.TODO(), index)
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (this_ *Service) IndexesCreate(database string, collection string, indexes []mongo.IndexModel) (names []string, err error) {
+	names, err = this_.client.Database(database).Collection(collection).Indexes().CreateMany(context.TODO(), indexes)
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (this_ *Service) IndexDelete(database string, collection string, name string) (err error) {
+	_, err = this_.client.Database(database).Collection(collection).Indexes().DropOne(context.TODO(), name)
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (this_ *Service) IndexDeleteAll(database string, collection string) (err error) {
+	_, err = this_.client.Database(database).Collection(collection).Indexes().DropAll(context.TODO())
+	if err != nil {
+		return
 	}
 	return
 }
@@ -320,6 +368,14 @@ func (this_ *Service) QueryMapPageResult(database string, collection string, fil
 	}
 	for _, one := range list {
 		pageResult.List = append(pageResult.List, one)
+	}
+	return
+}
+
+func (this_ *Service) Count(database string, collection string, filter interface{}) (totalCount int64, err error) {
+	totalCount, err = this_.client.Database(database).Collection(collection).CountDocuments(context.TODO(), filter)
+	if err != nil {
+		return
 	}
 	return
 }

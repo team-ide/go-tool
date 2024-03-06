@@ -25,15 +25,37 @@ func TestMongodb(t *testing.T) {
 
 		var collections []*Collection
 		collections, err = service.Collections(database.Name)
+		if err != nil {
+			panic(err)
+		}
 		for _, collection := range collections {
 			fmt.Println("collection:" + util.GetStringValue(collection))
 
+			var indexes []map[string]interface{}
+			indexes, err = service.Indexes(database.Name, collection.Name)
+			if err != nil {
+				panic(err)
+			}
+			for _, one := range indexes {
+				fmt.Println("index:" + util.GetStringValue(one))
+			}
 			var dataList []map[string]interface{}
 			dataList, err = service.QueryMap(database.Name, collection.Name, bson.M{}, nil)
-			for _, d := range dataList {
-				fmt.Println("data:" + util.GetStringValue(d))
+			if err != nil {
+				panic(err)
+			}
+			for _, one := range dataList {
+				fmt.Println("data:" + util.GetStringValue(one))
 			}
 		}
+	}
+	dataList, err := service.QueryMap("test_db", "test_tb", bson.M{}, nil)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("dataList:", dataList)
+	for _, d := range dataList {
+		fmt.Println("data:" + util.GetStringValue(d))
 	}
 
 }
