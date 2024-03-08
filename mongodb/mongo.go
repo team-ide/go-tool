@@ -132,6 +132,14 @@ func (this_ *Service) Databases() (databases []*Database, totalSize int64, err e
 	return
 }
 
+func (this_ *Service) DatabaseDelete(database string) (err error) {
+	err = this_.client.Database(database).Drop(context.TODO())
+	if err != nil {
+		return
+	}
+	return
+}
+
 type Collection struct {
 	Name    string                 `json:"name"`
 	IdIndex map[string]interface{} `json:"idIndex"`
@@ -167,8 +175,8 @@ func (this_ *Service) CollectionDelete(database string, collection string) (err 
 	return
 }
 
-func (this_ *Service) CollectionCreate(database string, collection string) (err error) {
-	err = this_.client.Database(database).CreateCollection(context.TODO(), collection)
+func (this_ *Service) CollectionCreate(database string, collection string, opts ...*options.CreateCollectionOptions) (err error) {
+	err = this_.client.Database(database).CreateCollection(context.TODO(), collection, opts...)
 	if err != nil {
 		return
 	}
@@ -226,8 +234,8 @@ func (this_ *Service) IndexDeleteAll(database string, collection string) (err er
 	return
 }
 
-func (this_ *Service) Insert(database string, collection string, document interface{}) (insertedId interface{}, err error) {
-	res, err := this_.client.Database(database).Collection(collection).InsertOne(context.TODO(), document)
+func (this_ *Service) Insert(database string, collection string, document interface{}, opts ...*options.InsertOneOptions) (insertedId interface{}, err error) {
+	res, err := this_.client.Database(database).Collection(collection).InsertOne(context.TODO(), document, opts...)
 	if err != nil {
 		return
 	}
@@ -237,8 +245,8 @@ func (this_ *Service) Insert(database string, collection string, document interf
 	return
 }
 
-func (this_ *Service) BatchInsert(database string, collection string, documents []interface{}) (insertedIds []interface{}, err error) {
-	res, err := this_.client.Database(database).Collection(collection).InsertMany(context.TODO(), documents)
+func (this_ *Service) BatchInsert(database string, collection string, documents []interface{}, opts ...*options.InsertManyOptions) (insertedIds []interface{}, err error) {
+	res, err := this_.client.Database(database).Collection(collection).InsertMany(context.TODO(), documents, opts...)
 	if err != nil {
 		return
 	}
@@ -255,8 +263,8 @@ type UpdateResult struct {
 	UpsertedID    interface{} `json:"upsertedID"`
 }
 
-func (this_ *Service) Update(database string, collection string, id interface{}, update interface{}) (updateResult *UpdateResult, err error) {
-	res, err := this_.client.Database(database).Collection(collection).UpdateByID(context.TODO(), id, update)
+func (this_ *Service) Update(database string, collection string, id interface{}, update interface{}, opts ...*options.UpdateOptions) (updateResult *UpdateResult, err error) {
+	res, err := this_.client.Database(database).Collection(collection).UpdateByID(context.TODO(), id, update, opts...)
 	if err != nil {
 		return
 	}
@@ -270,8 +278,8 @@ func (this_ *Service) Update(database string, collection string, id interface{},
 	return
 }
 
-func (this_ *Service) UpdateOne(database string, collection string, filter interface{}, update interface{}) (updateResult *UpdateResult, err error) {
-	res, err := this_.client.Database(database).Collection(collection).UpdateOne(context.TODO(), filter, update)
+func (this_ *Service) UpdateOne(database string, collection string, filter interface{}, update interface{}, opts ...*options.UpdateOptions) (updateResult *UpdateResult, err error) {
+	res, err := this_.client.Database(database).Collection(collection).UpdateOne(context.TODO(), filter, update, opts...)
 	if err != nil {
 		return
 	}
@@ -285,8 +293,8 @@ func (this_ *Service) UpdateOne(database string, collection string, filter inter
 	return
 }
 
-func (this_ *Service) BatchUpdate(database string, collection string, filter interface{}, update interface{}) (updateResult *UpdateResult, err error) {
-	res, err := this_.client.Database(database).Collection(collection).UpdateMany(context.TODO(), filter, update)
+func (this_ *Service) BatchUpdate(database string, collection string, filter interface{}, update interface{}, opts ...*options.UpdateOptions) (updateResult *UpdateResult, err error) {
+	res, err := this_.client.Database(database).Collection(collection).UpdateMany(context.TODO(), filter, update, opts...)
 	if err != nil {
 		return
 	}
@@ -329,10 +337,14 @@ type Page struct {
 
 func (this_ *Service) QueryMapPage(database string, collection string, filter interface{}, page *Page, opts *options.FindOptions) (list []map[string]interface{}, err error) {
 	if opts == nil {
-		opts = &options.FindOptions{}
+		opts = options.Find()
 	}
-	opts.SetLimit(page.PageSize)
-	opts.SetSkip(page.PageSize * (page.PageNo - 1))
+	if opts.Limit == nil {
+		opts.SetLimit(page.PageSize)
+	}
+	if opts.Skip == nil {
+		opts.SetSkip(page.PageSize * (page.PageNo - 1))
+	}
 	rows, err := this_.client.Database(database).Collection(collection).Find(context.TODO(), filter, opts)
 	if err != nil {
 		return
@@ -341,7 +353,7 @@ func (this_ *Service) QueryMapPage(database string, collection string, filter in
 
 	ctx := context.Background()
 	for rows.Next(ctx) {
-		one := map[string]interface{}{}
+		one := bson.M{}
 		err = rows.Decode(one)
 		if err != nil {
 			return
@@ -376,6 +388,28 @@ func (this_ *Service) Count(database string, collection string, filter interface
 	totalCount, err = this_.client.Database(database).Collection(collection).CountDocuments(context.TODO(), filter)
 	if err != nil {
 		return
+	}
+	return
+}
+
+func (this_ *Service) DeleteOne(database string, collection string, filter interface{}) (deletedCount int64, err error) {
+	res, err := this_.client.Database(database).Collection(collection).DeleteOne(context.TODO(), filter)
+	if err != nil {
+		return
+	}
+	if res != nil {
+		deletedCount = res.DeletedCount
+	}
+	return
+}
+
+func (this_ *Service) DeleteMany(database string, collection string, filter interface{}) (deletedCount int64, err error) {
+	res, err := this_.client.Database(database).Collection(collection).DeleteMany(context.TODO(), filter)
+	if err != nil {
+		return
+	}
+	if res != nil {
+		deletedCount = res.DeletedCount
 	}
 	return
 }
