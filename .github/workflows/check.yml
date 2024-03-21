@@ -23,7 +23,6 @@ jobs:
         uses: egor-tensin/setup-mingw@v2
         with:
           version: 8
-          platform: x64
 
       - run: go version
       - run: gcc --version
@@ -45,7 +44,6 @@ jobs:
         uses: egor-tensin/setup-gcc@v1
         with:
           version: 8
-          platform: x64
 
       - run: go version
       - run: gcc --version
@@ -67,7 +65,6 @@ jobs:
         uses: egor-tensin/setup-gcc@v1
         with:
           version: 8
-          platform: x64
 
       - run: go version
       - run: gcc --version
