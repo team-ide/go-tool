@@ -18,6 +18,10 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: "1.19.13"
+      - name: Setup GCC
+        uses: rlalik/setup-cpp-compiler@v1.2
+        with:
+          version: gcc-10.2.0
 
       - run: go version
       - run: gcc --version
