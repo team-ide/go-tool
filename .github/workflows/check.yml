@@ -20,9 +20,7 @@ jobs:
           go-version: "1.19.13"
 
       - name: Setup GCC
-        uses: matt-glauser/setup-gcc@v2
-        with:
-          version: 8.1.0
+        uses: gcc:8.1.0
 
       - run: go version
       - run: gcc --version
@@ -41,9 +39,7 @@ jobs:
           go-version: "1.19.13"
 
       - name: Setup GCC
-        uses: matt-glauser/setup-gcc@v2
-        with:
-          version: 8.1.0
+        uses: gcc:8.1.0
 
       - run: go version
       - run: gcc --version
@@ -62,9 +58,7 @@ jobs:
           go-version: "1.19.13"
 
       - name: Setup GCC
-        uses: matt-glauser/setup-gcc@v2
-        with:
-          version: 8.1.0
+        uses: gcc:8.1.0
 
       - run: go version
       - run: gcc --version
