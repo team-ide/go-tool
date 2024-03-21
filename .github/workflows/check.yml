@@ -1,0 +1,70 @@
+name: release
+on:
+  push:
+    # tags: # 当我们提交代码为tag 是以'v'开头的时候才会触发自动部署到服务端 如 git push tag v0.1.0
+    #   - 'v*'
+    branches:
+      - main
+jobs:
+  buildWindow:
+    runs-on: windows-latest
+    steps:
+      # 下载源码
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # 打包构建 Server
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.19.13"
+
+      - name: Setup GCC
+        uses: matt-glauser/setup-gcc@v2
+        with:
+          version: 8.1.0
+
+      - run: go version
+      - run: gcc --version
+
+  buildLinux:
+    runs-on: ubuntu-latest
+    steps:
+      # 下载源码
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # 打包构建 Server
+      - name: Build Server
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.19.13"
+
+      - name: Setup GCC
+        uses: matt-glauser/setup-gcc@v2
+        with:
+          version: 8.1.0
+
+      - run: go version
+      - run: gcc --version
+
+  buildMAC:
+    runs-on: macos-latest
+    steps:
+      # 下载源码
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # 打包构建 Server
+      - name: Build Server
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.19.13"
+
+      - name: Setup GCC
+        uses: matt-glauser/setup-gcc@v2
+        with:
+          version: 8.1.0
+
+      - run: go version
+      - run: gcc --version
