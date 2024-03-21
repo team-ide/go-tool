@@ -19,11 +19,6 @@ jobs:
         with:
           go-version: "1.19.13"
 
-      - name: Set up GCC
-        uses: egor-tensin/setup-mingw@v2
-        with:
-          version: 8
-
       - run: go version
       - run: gcc --version
 
@@ -40,11 +35,6 @@ jobs:
         with:
           go-version: "1.19.13"
 
-      - name: Set up GCC
-        uses: egor-tensin/setup-gcc@v1
-        with:
-          version: 8
-
       - run: go version
       - run: gcc --version
 
@@ -60,11 +50,6 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: "1.19.13"
-
-      - name: Set up GCC
-        uses: egor-tensin/setup-gcc@v1
-        with:
-          version: 8
 
       - run: go version
       - run: gcc --version
