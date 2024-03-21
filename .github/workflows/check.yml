@@ -19,14 +19,14 @@ jobs:
         with:
           go-version: "1.19.13"
       - name: Setup GCC
-        id: gcc
+        id: setupGCC
         uses: rlalik/setup-cpp-compiler@v1.2
         with:
           compiler: gcc-10.2.0
 
       - run: go version
       - run: gcc --version
-      - run: ${{ steps.gcc.outputs.cc }} --version
+      - run: echo '${{ steps.setupGCC.outputs.cc }}'
 
   buildLinux:
     runs-on: ubuntu-latest
