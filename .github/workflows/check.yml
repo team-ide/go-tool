@@ -21,10 +21,11 @@ jobs:
       - name: Setup GCC
         uses: rlalik/setup-cpp-compiler@v1.2
         with:
-          version: gcc-10.2.0
+          compiler: gcc-10.2.0
 
       - run: go version
       - run: gcc --version
+      - run: ${{ steps.install_cc.outputs.cc }} --version
 
   buildLinux:
     runs-on: ubuntu-latest
