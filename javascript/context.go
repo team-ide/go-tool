@@ -2,9 +2,9 @@ package javascript
 
 import (
 	"errors"
+	"github.com/dop251/goja"
 	"github.com/team-ide/go-tool/javascript/context_map"
 	"github.com/team-ide/go-tool/util"
-	"github.com/team-ide/goja"
 	"go.uber.org/zap"
 )
 
@@ -51,6 +51,22 @@ func (this_ *Script) GetScriptValue(script string) (interface{}, error) {
 	if err != nil {
 		err = errors.New("get script [" + script + "] value error:" + err.Error())
 		util.Logger.Error("表达式执行异常", zap.Error(err))
+		return nil, err
+	}
+	return scriptValue.Export(), nil
+}
+
+func (this_ *Script) RunScript(script string) (interface{}, error) {
+	if script == "" {
+		return nil, nil
+	}
+
+	runScript := `(function (){
+` + script + `
+})()
+`
+	scriptValue, err := this_.vm.RunScript("", runScript)
+	if err != nil {
 		return nil, err
 	}
 	return scriptValue.Export(), nil

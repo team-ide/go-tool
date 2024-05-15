@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	_ "github.com/team-ide/go-dialect/dialect"
 	_ "github.com/team-ide/go-dialect/worker"
 	_ "github.com/team-ide/go-tool/db"
@@ -23,5 +24,37 @@ import (
 )
 
 func main() {
+	a := &A{}
+	a.extend = "aaa"
+	b := &B{}
+	b.extend = "bbb"
+	out(a)
+	out(b)
+}
 
+func out(iFace BaseIFace) {
+	fmt.Println(iFace.GetExtend())
+}
+
+type Base struct {
+	extend interface{}
+}
+
+type BaseIFace interface {
+	GetExtend() interface{}
+}
+
+func (this_ *Base) GetExtend() interface{} {
+	if this_ == nil {
+		return nil
+	}
+	return this_.extend
+}
+
+type A struct {
+	Base
+}
+
+type B struct {
+	Base
 }

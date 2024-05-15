@@ -3,11 +3,11 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"github.com/dop251/goja"
 	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-tool/javascript"
 	"github.com/team-ide/go-tool/task"
 	"github.com/team-ide/go-tool/util"
-	"github.com/team-ide/goja"
 	"go.uber.org/zap"
 	"regexp"
 	"strings"
