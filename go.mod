@@ -8,7 +8,7 @@ require (
 	gitee.com/opengauss/openGauss-connector-go-pq v1.0.4
 	github.com/Shopify/sarama v1.38.1
 	github.com/apache/thrift v0.17.0
-	github.com/dop251/goja v0.0.0-20240220182346-e401ed450204
+	github.com/dop251/goja v0.0.0-20240516125602-ccbae20bcec2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.8.1
@@ -20,7 +20,7 @@ require (
 	github.com/shopspring/decimal v1.4.0
 	github.com/tealeg/xlsx v1.0.5
 	github.com/team-ide/cron v1.0.1
-	github.com/team-ide/go-dialect v1.9.19
+	github.com/team-ide/go-dialect v1.9.20
 	github.com/team-ide/go-driver v1.3.4
 	github.com/team-ide/go-interpreter v0.1.2
 	go.mongodb.org/mongo-driver v1.15.0
@@ -80,7 +80,6 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
-	github.com/team-ide/goja v1.0.2 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
