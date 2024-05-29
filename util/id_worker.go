@@ -27,6 +27,10 @@ var (
 	defaultIdWorker, _ = NewIdWorker(0)
 )
 
+func SetIdWorker(worker *IdWorker) {
+	defaultIdWorker = worker
+}
+
 // NextId 新建一个ID生成器，传入生成器ID
 // NextId() 获取一个 雪花片算法的 ID 其中 workerId 为 默认 0
 func NextId() int64 {

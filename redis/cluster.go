@@ -17,8 +17,10 @@ import (
 // NewClusterService 创建集群客户端
 func NewClusterService(config *Config) (IService, error) {
 	service := &ClusterService{
-		Config:     config,
-		CmdService: &CmdService{},
+		Config: config,
+		CmdService: &CmdService{
+			ThrowNotFoundErr: config.ThrowNotFoundErr,
+		},
 	}
 	service.CmdService.GetClient = service.getClient
 	err := service.init(config.SSHClient)

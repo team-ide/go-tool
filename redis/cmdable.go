@@ -160,7 +160,13 @@ func GetValueInfo(ctx context.Context, client redis.Cmdable, database int, key s
 }
 
 type CmdService struct {
-	GetClient func(param *Param) (client redis.Cmdable, err error) `json:"-"`
+	ThrowNotFoundErr bool
+	GetClient        func(param *Param) (client redis.Cmdable, err error) `json:"-"`
+}
+
+func (this_ *CmdService) SetThrowNotFoundErr(ThrowNotFoundErr bool) {
+	this_.ThrowNotFoundErr = ThrowNotFoundErr
+	return
 }
 
 func (this_ *CmdService) Info(args ...Arg) (res string, err error) {
@@ -192,6 +198,11 @@ func (this_ *CmdService) Exists(key string, args ...Arg) (res int64, err error) 
 	return
 }
 
+func (this_ *CmdService) IsNotFound(err error) (res bool) {
+	res = errors.Is(err, redis.Nil)
+	return
+}
+
 // Expire 让给定键在指定的秒数之后过期
 func (this_ *CmdService) Expire(key string, expire int64, args ...Arg) (res bool, err error) {
 	argCache := getArgCache(args...)
@@ -204,7 +215,7 @@ func (this_ *CmdService) Expire(key string, expire int64, args ...Arg) (res bool
 
 	cmd := client.Expire(param.Ctx, key, time.Duration(expire)*time.Second)
 	res, err = cmd.Result()
-	if err == redis.Nil {
+	if this_.IsNotFound(err) && !this_.ThrowNotFoundErr {
 		err = nil
 		return
 	}
@@ -223,7 +234,7 @@ func (this_ *CmdService) Persist(key string, args ...Arg) (res bool, err error) 
 
 	cmd := client.Persist(param.Ctx, key)
 	res, err = cmd.Result()
-	if err == redis.Nil {
+	if this_.IsNotFound(err) && !this_.ThrowNotFoundErr {
 		err = nil
 		return
 	}
@@ -242,7 +253,7 @@ func (this_ *CmdService) Ttl(key string, args ...Arg) (res int64, err error) {
 
 	cmd := client.TTL(param.Ctx, key)
 	r, err := cmd.Result()
-	if errors.Is(err, redis.Nil) {
+	if this_.IsNotFound(err) && !this_.ThrowNotFoundErr {
 		err = nil
 		return
 	}
@@ -266,9 +277,8 @@ func (this_ *CmdService) Get(key string, args ...Arg) (value string, err error) 
 
 	cmd := client.Get(param.Ctx, key)
 	value, err = cmd.Result()
-	if errors.Is(err, redis.Nil) {
+	if this_.IsNotFound(err) && !this_.ThrowNotFoundErr {
 		err = nil
-		//notFound = true
 		return
 	}
 	return
@@ -411,9 +421,8 @@ func (this_ *CmdService) HashGet(key string, field string, args ...Arg) (value s
 
 	cmd := client.HGet(param.Ctx, key, field)
 	value, err = cmd.Result()
-	if errors.Is(err, redis.Nil) {
+	if this_.IsNotFound(err) && !this_.ThrowNotFoundErr {
 		err = nil
-		//notFound = true
 		return
 	}
 	return
@@ -448,9 +457,8 @@ func (this_ *CmdService) HashGetAll(key string, args ...Arg) (value map[string]s
 
 	cmd := client.HGetAll(param.Ctx, key)
 	value, err = cmd.Result()
-	if errors.Is(err, redis.Nil) {
+	if this_.IsNotFound(err) && !this_.ThrowNotFoundErr {
 		err = nil
-		//notFound = true
 		return
 	}
 	return

@@ -38,8 +38,25 @@ func (this_ *RandForRandom) RandomInt64(min int64, max int64) (res int64) {
 }
 
 var (
-	RandForRandomInt = NewRandForRandom()
+	randForRandomIntList []*RandForRandom
+	randForRandomIntSize int
+	randForRandomIntC    int
 )
+
+func init() {
+	InitRandForRandomIntList(20)
+}
+func InitRandForRandomIntList(size int) {
+	if size < 1 {
+		return
+	}
+	var list []*RandForRandom
+	for i := 0; i < size; i++ {
+		list = append(list, NewRandForRandom())
+	}
+	randForRandomIntList = list
+	randForRandomIntSize = size
+}
 
 // RandomInt 获取随机数
 // @param min int "最小值"
@@ -47,7 +64,12 @@ var (
 // @return int "随机数"
 // RandomInt(1, 10)
 func RandomInt(min int, max int) (res int) {
-	return RandForRandomInt.RandomInt(min, max)
+	randForRandomIntC++
+	if randForRandomIntC > 10000 {
+		randForRandomIntC = 0
+	}
+	randForRandomInt := randForRandomIntList[randForRandomIntC%randForRandomIntSize]
+	return randForRandomInt.RandomInt(min, max)
 }
 
 // RandomInt64 获取随机数
@@ -56,7 +78,12 @@ func RandomInt(min int, max int) (res int) {
 // @return int64 "随机数"
 // RandomInt64(1, 10)
 func RandomInt64(min int64, max int64) (res int64) {
-	return RandForRandomInt.RandomInt64(min, max)
+	randForRandomIntC++
+	if randForRandomIntC > 10000 {
+		randForRandomIntC = 0
+	}
+	randForRandomInt := randForRandomIntList[randForRandomIntC%randForRandomIntSize]
+	return randForRandomInt.RandomInt64(min, max)
 }
 
 // StringToInt 字符串转 int

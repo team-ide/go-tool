@@ -17,8 +17,10 @@ import (
 // NewRedisService 创建客户端
 func NewRedisService(config *Config) (IService, error) {
 	service := &V8Service{
-		Config:     config,
-		CmdService: &CmdService{},
+		Config: config,
+		CmdService: &CmdService{
+			ThrowNotFoundErr: config.ThrowNotFoundErr,
+		},
 	}
 	service.CmdService.GetClient = service.getClient
 	err := service.init(config.SSHClient)

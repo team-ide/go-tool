@@ -65,6 +65,8 @@ type IService interface {
 	// BitCount 在 bitmap 中 统计 所有 值
 	BitCount(key string, args ...Arg) (count int64, err error)
 	ScriptRun(src string, KEYS []string, ARGV interface{}, args ...Arg) (value interface{}, err error)
+	SetThrowNotFoundErr(ThrowNotFoundErr bool)
+	IsNotFound(err error) (res bool)
 }
 
 type Arg interface {
