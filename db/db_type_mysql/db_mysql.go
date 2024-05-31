@@ -17,8 +17,10 @@ import (
 	"sync"
 )
 
+var DatabaseType *db.DatabaseType
+
 func init() {
-	err := db.AddDatabaseType(&db.DatabaseType{
+	DatabaseType = &db.DatabaseType{
 		NewDb: func(config *db.Config) (db *sql.DB, err error) {
 			dsn := db_mysql.GetDSN(config.Username, config.Password, config.Host, config.Port, config.Database)
 			tlsConfig, err := registerTLSConfig(config)
@@ -44,7 +46,9 @@ func init() {
 		},
 		DialectName: db_mysql.GetDialect(),
 		Matches:     []string{"mysql"},
-	})
+	}
+
+	err := db.AddDatabaseType(DatabaseType)
 	if err != nil {
 		util.Logger.Error("init mysql db error", zap.Error(err))
 		panic("init mysql db error:" + err.Error())

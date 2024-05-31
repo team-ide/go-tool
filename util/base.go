@@ -179,3 +179,11 @@ func NewWaitGroup() *sync.WaitGroup {
 func NewLocker() sync.Locker {
 	return &sync.Mutex{}
 }
+
+func To[T any](from any) (res T) {
+	if from == nil {
+		return
+	}
+	res = from.(T)
+	return
+}
