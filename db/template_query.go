@@ -36,7 +36,7 @@ func (this_ *Template[T]) QueryOne(querySql string, queryArgs []interface{}) (re
 			return
 		}
 		find = true
-		one, values, fields := this_.GetStructValues(columnTypes)
+		one, values, fields := this_.getValues(columnTypes)
 		err = rows.Scan(values...)
 		if err != nil {
 			return
@@ -75,7 +75,7 @@ func (this_ *Template[T]) Query(querySql string, queryArgs []interface{}) (res [
 		return
 	}
 	for rows.Next() {
-		one, values, fields := this_.GetStructValues(columnTypes)
+		one, values, fields := this_.getValues(columnTypes)
 		err = rows.Scan(values...)
 		if err != nil {
 			return
@@ -137,26 +137,24 @@ func (this_ *Template[T]) QueryPage(querySql string, queryArgs []interface{}, pa
 	return
 }
 
-func (this_ *Template[T]) GetStructValues(columns []*sql.ColumnType) (res reflect.Value, values []interface{}, fields []*reflect.Value) {
+func (this_ *Template[T]) getValues(columns []*sql.ColumnType) (res reflect.Value, values []interface{}, fields []*reflect.Value) {
 	res = reflect.New(this_.objValueType)
 	objV := res
 	for objV.Kind() == reflect.Ptr {
 		objV = objV.Elem()
 	}
-	structColumns := this_.structColumns
-	structColumnsLower := this_.structColumnsLower
-	if structColumns == nil {
-		structColumnsLower, structColumns = this_.GetStructColumn(this_.objValueType)
-		this_.structColumns = structColumns
-		this_.structColumnsLower = structColumnsLower
+	structInfo := this_.structInfo
+	if structInfo == nil {
+		structInfo = this_.GetStructInfo(this_.objValueType)
+		this_.structInfo = structInfo
 	}
 
 	for _, column := range columns {
 		var fieldColumn *FieldColumn
 		if this_.StrictColumnName {
-			fieldColumn = structColumns[column.Name()]
+			fieldColumn = structInfo.structColumnMap[column.Name()]
 		} else {
-			fieldColumn = structColumnsLower[strings.ToLower(column.Name())]
+			fieldColumn = structInfo.structColumnLower[strings.ToLower(column.Name())]
 		}
 		if fieldColumn != nil {
 			fieldV := objV.Field(fieldColumn.Index)
@@ -168,55 +166,5 @@ func (this_ *Template[T]) GetStructValues(columns []*sql.ColumnType) (res reflec
 			fields = append(fields, nil)
 		}
 	}
-	return
-}
-
-type FieldColumn struct {
-	reflect.StructField
-	Index int
-}
-
-func (this_ *TemplateOptions) GetStructColumn(tOf reflect.Type) (structColumns map[string]*FieldColumn, structColumnsLower map[string]*FieldColumn) {
-	this_.structCacheLock.Lock()
-	defer this_.structCacheLock.Unlock()
-	var ok bool
-	structColumns, ok = this_.structColumnsCache[tOf]
-	structColumnsLower, ok = this_.structColumnsLowerCache[tOf]
-	if ok {
-		//fmt.Println("find from cache")
-		return
-	}
-	structColumns = map[string]*FieldColumn{}
-	structColumnsLower = map[string]*FieldColumn{}
-	for i := 0; i < tOf.NumField(); i++ {
-		field := tOf.Field(i)
-		fieldColumn := &FieldColumn{
-			StructField: field,
-			Index:       i,
-		}
-		var str string
-		var key string
-		var tag = this_.ColumnTagName
-		if tag == "" {
-			tag = "column"
-		}
-		str = field.Tag.Get(tag)
-		if str == "" && this_.UseJsonTagName {
-			str = field.Tag.Get("json")
-		}
-		if str == "" && this_.UseFieldName {
-			str = field.Name
-		}
-		if str != "" && str != "-" {
-			ss := strings.Split(str, ",")
-			key = ss[0]
-		}
-		if key != "" {
-			structColumns[key] = fieldColumn
-			structColumnsLower[strings.ToLower(key)] = fieldColumn
-		}
-	}
-	this_.structColumnsCache[tOf] = structColumns
-	this_.structColumnsLowerCache[tOf] = structColumnsLower
 	return
 }
