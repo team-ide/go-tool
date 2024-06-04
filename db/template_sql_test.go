@@ -25,6 +25,13 @@ func TestSql(t *testing.T) {
 	})
 	fmt.Println("a sql:", insertSqlA)
 	fmt.Println("a args:", util.GetStringValue(insertSqlAArgs))
+
+	insertSqlA, insertSqlAArgs = temp.GetInsertSql("tb_user", map[string]any{
+		"user_id": 1,
+		"name":    "张三",
+	})
+	fmt.Println("a sql:", insertSqlA)
+	fmt.Println("a args:", util.GetStringValue(insertSqlAArgs))
 	insertSqlB, insertSqlBArgs := temp.GetBatchInsertSql("tb_user", []*TestUser{
 		{UserId: 11, AA: "xx"},
 		{UserId: 22, AA: ""},
@@ -33,9 +40,13 @@ func TestSql(t *testing.T) {
 	fmt.Println("a sql:", insertSqlB)
 	fmt.Println("a args:", util.GetStringValue(insertSqlBArgs))
 
-	updateSqlA, updateSqlAArgs := temp.GetUpdateSql("tb_user", &TestUser{
+	var up = &TestUser{
 		UserId: 11, AA: "xx",
-	}, "user_id")
+	}
+	updateSqlA, updateSqlAArgs, err := temp.GetUpdateSql("tb_user", up, temp.SqlParamParser("user_id=${userId}", up), "user_id")
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println("a sql:", updateSqlA)
 	fmt.Println("a args:", util.GetStringValue(updateSqlAArgs))
 }

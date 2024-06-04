@@ -1,7 +1,7 @@
 package util
 
 import (
-	"hash/fnv"
+	"hash/crc32"
 	"sync"
 )
 
@@ -83,9 +83,10 @@ func (this_ *CacheGroup[T]) init() {
 	this_.caches = caches
 }
 func (this_ *CacheGroup[T]) GetStringHashCode(str string) uint32 {
-	h := fnv.New32a()
-	_, _ = h.Write([]byte(str))
-	return h.Sum32()
+	//h := fnv.New32a()
+	//_, _ = h.Write([]byte(str))
+	//return h.Sum32()
+	return crc32.ChecksumIEEE([]byte(str))
 }
 func (this_ *CacheGroup[T]) GetCache(key string) *Cache[T] {
 	hashCode := this_.GetStringHashCode(key)
