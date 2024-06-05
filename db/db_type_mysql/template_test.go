@@ -10,13 +10,13 @@ import (
 )
 
 type TestUser struct {
-	UserId   *int64  `json:"userId" column:"user_id"`
-	Name     *string `json:"name" column:"name"`
-	Account  *string `json:"account" column:"account"`
-	Password *string `json:"password" column:"password"`
-	CreateAt *int64  `json:"createAt" column:"create_at"`
-	DeleteAt *int64  `json:"deleteAt" column:"delete_at"`
-	Status   *int    `json:"status" column:"status"`
+	UserId   int64  `json:"userId" column:"user_id"`
+	Name     string `json:"name" column:"name"`
+	Account  string `json:"account" column:"account"`
+	Password string `json:"password" column:"password"`
+	CreateAt int64  `json:"createAt" column:"create_at"`
+	DeleteAt int64  `json:"deleteAt" column:"delete_at"`
+	Status   int    `json:"status" column:"status"`
 }
 
 func TestSelect(t *testing.T) {
@@ -31,36 +31,60 @@ func TestSelect(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
+
+	ser2, err := db.New(&db.Config{
+		Type:     "mysql",
+		Host:     "127.0.0.1",
+		Port:     3306,
+		Username: "root",
+		Password: "123456",
+		Database: "test_2",
+	})
+	if err != nil {
+		panic(err)
+	}
 	opts := &db.TemplateOptions{
 		Service: ser,
+	}
+	opts2 := &db.TemplateOptions{
+		Service: ser2,
 	}
 
 	var b TestUser
 
-	//template := db.WarpTemplate(&b, opts)
-	//ctx, err := template.OpenTxContext(context.Background())
-	//if err != nil {
-	//	panic(err)
-	//}
-	//defer func() {
-	//	if err != nil {
-	//		_ = template.TxRollback(ctx)
-	//	} else {
-	//		_ = template.TxCommit(ctx)
-	//	}
-	//}()
-	//_, err = template.Insert(ctx, "tb_user", &TestUser{
-	//	UserId: 5,
-	//})
-	//if err != nil {
-	//	panic(err)
-	//}
-	//_, err = template.Insert(ctx, "tb_user", &TestUser{
-	//	UserId: 6,
-	//})
-	//if err != nil {
-	//	panic(err)
-	//}
+	template := db.WarpTemplate(&b, opts)
+	template2 := db.WarpTemplate(&b, opts2)
+	ctx, err := db.OpenTxContext(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		_ = db.EndTxContext(ctx, err != nil)
+	}()
+	_, err = template.Insert(ctx, "tb_user", &TestUser{
+		UserId: util.NextId(), Name: "x", Account: "xx", Password: "xxx", CreateAt: util.GetNowMilli(),
+	})
+	if err != nil {
+		panic(err)
+	}
+	_, err = template.Insert(ctx, "tb_user", &TestUser{
+		UserId: util.NextId(), Name: "x", Account: "xx", Password: "xxx", CreateAt: util.GetNowMilli(),
+	})
+	if err != nil {
+		panic(err)
+	}
+	_, err = template2.Insert(ctx, "tb_user", &TestUser{
+		UserId: util.NextId(), Name: "x", Account: "xx", Password: "xxx", CreateAt: util.GetNowMilli(),
+	})
+	if err != nil {
+		panic(err)
+	}
+	_, err = template2.Insert(ctx, "tb_user", &TestUser{
+		UserId: util.NextId(), Name: "x", Account: "xx", Password: "xxx", CreateAt: util.GetNowMilli(),
+	})
+	if err != nil {
+		panic(err)
+	}
 
 	query(opts, b)
 	query(opts, &b)

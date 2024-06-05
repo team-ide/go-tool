@@ -104,13 +104,6 @@ func (this_ *TemplateOptions) GetColumnValues(obj any, isUpdate bool, ignoreColu
 		if strings.Contains(ignoreStr, strings.ToLower(column.ColumnName)+";") {
 			continue
 		}
-		if len(columnsSql) > 0 {
-			columnsSql += ", "
-		}
-		columnsSql += this_.Dialect.ColumnNamePack(this_.DialectParam, column.ColumnName)
-		if isUpdate {
-			columnsSql += " = ?"
-		}
 		var vV reflect.Value
 		if column.value != nil {
 			vV = *column.value
@@ -118,9 +111,23 @@ func (this_ *TemplateOptions) GetColumnValues(obj any, isUpdate bool, ignoreColu
 			vV = objV.Field(column.Index)
 		}
 		v := vV.Interface()
+		isNull := this_.ValueIsNull(column, vV)
+		if isNull && !isUpdate {
+			continue
+		}
+		if len(columnsSql) > 0 {
+			columnsSql += ", "
+		}
+		columnsSql += this_.Dialect.ColumnNamePack(this_.DialectParam, column.ColumnName)
+
 		if this_.ValueIsNull(column, vV) {
-			values = append(values, nil)
+			if isUpdate {
+				columnsSql += " = NULL"
+			}
 		} else {
+			if isUpdate {
+				columnsSql += " = ?"
+			}
 			values = append(values, v)
 		}
 	}
@@ -192,9 +199,9 @@ func (this_ *TemplateOptions) ValueIsNull(column *FieldColumn, vField reflect.Va
 
 	v := vField.Interface()
 	if v != nil {
-		if this_.StringEmptyUseNull && column.IsString && v == "" {
+		if !this_.StringEmptyNotUseNull && column.IsString && v == "" {
 			return true
-		} else if this_.NumberZeroUseNull && column.IsNumber && vField.IsZero() {
+		} else if !this_.NumberZeroNotUseNull && column.IsNumber && vField.IsZero() {
 			return true
 		} else {
 			return false

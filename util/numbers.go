@@ -138,3 +138,183 @@ func SumToString(nums ...interface{}) string {
 	}
 	return strconv.FormatInt(res, 10)
 }
+
+// ValueToInt64 值 转 int64
+// ValueToInt64("11")
+func ValueToInt64(value any) (res int64, err error) {
+	if value == nil {
+		return
+	}
+	switch tV := value.(type) {
+	case int:
+		res = int64(tV)
+		return
+	case uint:
+		res = int64(tV)
+		return
+	case int8:
+		res = int64(tV)
+		return
+	case uint8:
+		res = int64(tV)
+		return
+	case int16:
+		res = int64(tV)
+		return
+	case uint16:
+		res = int64(tV)
+		return
+	case int32:
+		res = int64(tV)
+		return
+	case uint32:
+		res = int64(tV)
+		return
+	case int64:
+		res = tV
+		return
+	case uint64:
+		res = int64(tV)
+		return
+	case float32:
+		res = int64(tV)
+		return
+	case float64:
+		res = int64(tV)
+		return
+	case bool:
+		if tV {
+			res = 1
+		}
+		return
+	case time.Time:
+		res = tV.UnixMilli()
+		return
+	default:
+		str := GetStringValue(value)
+		if str != "" {
+			res, err = strconv.ParseInt(str, 10, 64)
+		}
+	}
+	return
+}
+
+// ValueToUint64 值 转 uint64
+// ValueToUint64("11")
+func ValueToUint64(value any) (res uint64, err error) {
+	if value == nil {
+		return
+	}
+	switch tV := value.(type) {
+	case int:
+		res = uint64(tV)
+		return
+	case uint:
+		res = uint64(tV)
+		return
+	case int8:
+		res = uint64(tV)
+		return
+	case uint8:
+		res = uint64(tV)
+		return
+	case int16:
+		res = uint64(tV)
+		return
+	case uint16:
+		res = uint64(tV)
+		return
+	case int32:
+		res = uint64(tV)
+		return
+	case uint32:
+		res = uint64(tV)
+		return
+	case int64:
+		res = uint64(tV)
+		return
+	case uint64:
+		res = tV
+		return
+	case float32:
+		res = uint64(tV)
+		return
+	case float64:
+		res = uint64(tV)
+		return
+	case bool:
+		if tV {
+			res = 1
+		}
+		return
+	case time.Time:
+		res = uint64(tV.UnixMilli())
+		return
+	default:
+		str := GetStringValue(value)
+		if str != "" {
+			res, err = strconv.ParseUint(str, 10, 64)
+		}
+	}
+	return
+}
+
+// ValueToFloat64 值 转 float64
+// ValueToFloat64("11")
+func ValueToFloat64(value any) (res float64, err error) {
+	if value == nil {
+		return
+	}
+	switch tV := value.(type) {
+	case int:
+		res = float64(tV)
+		return
+	case uint:
+		res = float64(tV)
+		return
+	case int8:
+		res = float64(tV)
+		return
+	case uint8:
+		res = float64(tV)
+		return
+	case int16:
+		res = float64(tV)
+		return
+	case uint16:
+		res = float64(tV)
+		return
+	case int32:
+		res = float64(tV)
+		return
+	case uint32:
+		res = float64(tV)
+		return
+	case int64:
+		res = float64(tV)
+		return
+	case uint64:
+		res = float64(tV)
+		return
+	case float32:
+		res = float64(tV)
+		return
+	case float64:
+		res = tV
+		return
+	case bool:
+		if tV {
+			res = 1
+		}
+		return
+	case time.Time:
+		res = float64(tV.UnixMilli())
+		return
+	default:
+		str := GetStringValue(value)
+		if str != "" {
+			res, err = strconv.ParseFloat(str, 64)
+		}
+	}
+	return
+}
