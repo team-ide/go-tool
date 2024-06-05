@@ -196,7 +196,7 @@ func (this_ *Service) QueryOne(sql string, args []interface{}, one interface{}) 
 			err = errors.New("QueryOne error sql:" + sql + ",error:" + err.Error())
 		}
 	}()
-	find, err = worker.DoQueryStruct(this_.db, sql, args, one)
+	find, err = DoQueryStruct(this_.db, sql, args, one)
 
 	if err != nil {
 		util.Logger.Error("QueryOne Error", zap.Any("sql", sql), zap.Any("args", args), zap.Error(err))
@@ -216,7 +216,7 @@ func (this_ *Service) Query(sql string, args []interface{}, list interface{}) (e
 			err = errors.New("Query error sql:" + sql + ",error:" + err.Error())
 		}
 	}()
-	err = worker.DoQueryStructs(this_.db, sql, args, list)
+	err = DoQueryStructs(this_.db, sql, args, list)
 
 	if err != nil {
 		util.Logger.Error("Query Error", zap.Any("sql", sql), zap.Any("args", args), zap.Error(err))
@@ -256,7 +256,7 @@ func (this_ *Service) QueryPage(sql string, args []interface{}, list interface{}
 			err = errors.New("QueryPage error sql:" + sql + ",error:" + err.Error())
 		}
 	}()
-	err = worker.DoQueryPageStructs(this_.db, this_.Dialect, sql, args, page, list)
+	err = DoQueryPageStructs(this_.db, this_.Dialect, sql, args, page, list)
 
 	if err != nil {
 		util.Logger.Error("QueryPage Error", zap.Any("sql", sql), zap.Any("args", args), zap.Error(err))
