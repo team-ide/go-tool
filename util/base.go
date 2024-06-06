@@ -181,7 +181,7 @@ func NewLocker() sync.Locker {
 	return &sync.Mutex{}
 }
 
-func To[T any](from any) (res T) {
+func To[T any](from any, to T) (res T) {
 	if from == nil {
 		return
 	}
@@ -189,7 +189,7 @@ func To[T any](from any) (res T) {
 	return
 }
 
-func StringTo[T any](str string, to any) (res T, err error) {
+func StringTo[T any](str string, to T) (res T, err error) {
 	if to == nil {
 		return
 	}
