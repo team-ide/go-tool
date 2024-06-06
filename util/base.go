@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"reflect"
@@ -185,5 +186,28 @@ func To[T any](from any) (res T) {
 		return
 	}
 	res = from.(T)
+	return
+}
+
+func StringTo[T any](str string, to any) (res T, err error) {
+	if to == nil {
+		return
+	}
+	vT := reflect.TypeOf(to)
+	var isPtr = vT.Kind() == reflect.Ptr
+	if isPtr {
+		vT = vT.Elem()
+	}
+	vV := reflect.New(vT)
+	v := vV.Interface()
+	err = json.Unmarshal([]byte(str), v)
+	if err != nil {
+		return
+	}
+	if isPtr {
+		res = v.(T)
+	} else {
+		res = vV.Elem().Interface().(T)
+	}
 	return
 }

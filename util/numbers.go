@@ -3,60 +3,12 @@ package util
 import (
 	"math/rand"
 	"strconv"
-	"sync"
 	"time"
 )
 
-type RandForRandom struct {
-	rand *rand.Rand
-	lock sync.Locker
-}
-
-func NewRandForRandom() *RandForRandom {
-
-	return &RandForRandom{
-		//  设置随机数种子
-		rand: rand.New(rand.NewSource(time.Now().UnixNano())),
-		lock: &sync.Mutex{},
-	}
-}
-
-func (this_ *RandForRandom) RandomInt(min int, max int) (res int) {
-	this_.lock.Lock()
-	defer this_.lock.Unlock()
-
-	res = min + this_.rand.Intn(max-min+1)
-	return
-}
-
-func (this_ *RandForRandom) RandomInt64(min int64, max int64) (res int64) {
-	this_.lock.Lock()
-	defer this_.lock.Unlock()
-
-	res = min + this_.rand.Int63n(max-min+1)
-	return
-}
-
 var (
-	randForRandomIntList []*RandForRandom
-	randForRandomIntSize int
-	randForRandomIntC    int
+	randForInt = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
-
-func init() {
-	InitRandForRandomIntList(20)
-}
-func InitRandForRandomIntList(size int) {
-	if size < 1 {
-		return
-	}
-	var list []*RandForRandom
-	for i := 0; i < size; i++ {
-		list = append(list, NewRandForRandom())
-	}
-	randForRandomIntList = list
-	randForRandomIntSize = size
-}
 
 // RandomInt 获取随机数
 // @param min int "最小值"
@@ -64,12 +16,8 @@ func InitRandForRandomIntList(size int) {
 // @return int "随机数"
 // RandomInt(1, 10)
 func RandomInt(min int, max int) (res int) {
-	randForRandomIntC++
-	if randForRandomIntC > 10000 {
-		randForRandomIntC = 0
-	}
-	randForRandomInt := randForRandomIntList[randForRandomIntC%randForRandomIntSize]
-	return randForRandomInt.RandomInt(min, max)
+	res = min + randForInt.Intn(max-min+1)
+	return
 }
 
 // RandomInt64 获取随机数
@@ -78,12 +26,8 @@ func RandomInt(min int, max int) (res int) {
 // @return int64 "随机数"
 // RandomInt64(1, 10)
 func RandomInt64(min int64, max int64) (res int64) {
-	randForRandomIntC++
-	if randForRandomIntC > 10000 {
-		randForRandomIntC = 0
-	}
-	randForRandomInt := randForRandomIntList[randForRandomIntC%randForRandomIntSize]
-	return randForRandomInt.RandomInt64(min, max)
+	res = min + randForInt.Int63n(max-min+1)
+	return
 }
 
 // StringToInt 字符串转 int

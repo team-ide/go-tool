@@ -7,6 +7,7 @@ import (
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"reflect"
+	"time"
 )
 
 func (this_ *Template[T]) QueryOne(ctx context.Context, querySql string, queryArgs []interface{}) (res T, err error) {
@@ -17,6 +18,8 @@ func (this_ *Template[T]) QueryOne(ctx context.Context, querySql string, queryAr
 	}
 	defer func() { _ = stmt.Close() }()
 
+	util.Logger.Debug("query one start", zap.Any("sql", querySql), zap.Any("args", queryArgs))
+	var startTime = time.Now()
 	rows, err := stmt.Query(queryArgs...)
 	if err != nil {
 		util.Logger.Error("query one error", zap.Any("sql", querySql), zap.Any("args", queryArgs), zap.Error(err))
@@ -64,6 +67,8 @@ func (this_ *Template[T]) QueryOne(ctx context.Context, querySql string, queryAr
 			res = one.Elem().Interface().(T)
 		}
 	}
+	var endTime = time.Now()
+	util.Logger.Debug("query one end", zap.Any("sql", querySql), zap.Any("args", queryArgs), zap.Any("useTime", endTime.UnixMilli()-startTime.UnixMilli()))
 	return
 }
 
@@ -76,6 +81,8 @@ func (this_ *Template[T]) QueryList(ctx context.Context, querySql string, queryA
 	}
 	defer func() { _ = stmt.Close() }()
 
+	util.Logger.Debug("query list start", zap.Any("sql", querySql), zap.Any("args", queryArgs))
+	var startTime = time.Now()
 	rows, err := stmt.Query(queryArgs...)
 	if err != nil {
 		util.Logger.Error("query list error", zap.Any("sql", querySql), zap.Any("args", queryArgs), zap.Error(err))
@@ -114,6 +121,9 @@ func (this_ *Template[T]) QueryList(ctx context.Context, querySql string, queryA
 		}
 
 	}
+	var endTime = time.Now()
+	util.Logger.Debug("query list end", zap.Any("sql", querySql), zap.Any("args", queryArgs), zap.Any("useTime", endTime.UnixMilli()-startTime.UnixMilli()))
+
 	return
 }
 
@@ -134,6 +144,9 @@ func (this_ *Template[T]) QueryCount(ctx context.Context, querySql string, query
 	}
 	defer func() { _ = stmt.Close() }()
 
+	util.Logger.Debug("query count start", zap.Any("sql", querySql), zap.Any("args", queryArgs))
+	var startTime = time.Now()
+
 	rows, err := stmt.Query(queryArgs...)
 	if err != nil {
 		util.Logger.Error("query count error", zap.Any("sql", querySql), zap.Any("args", queryArgs), zap.Error(err))
@@ -147,6 +160,8 @@ func (this_ *Template[T]) QueryCount(ctx context.Context, querySql string, query
 			return
 		}
 	}
+	var endTime = time.Now()
+	util.Logger.Debug("query count end", zap.Any("sql", querySql), zap.Any("args", queryArgs), zap.Any("useTime", endTime.UnixMilli()-startTime.UnixMilli()))
 
 	return
 }
