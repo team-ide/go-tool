@@ -190,9 +190,6 @@ func To[T any](from any, to T) (res T) {
 }
 
 func StringTo[T any](str string, to T) (res T, err error) {
-	if to == nil {
-		return
-	}
 	vT := reflect.TypeOf(to)
 	var isPtr = vT.Kind() == reflect.Ptr
 	if isPtr {
