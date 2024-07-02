@@ -20,7 +20,7 @@ require (
 	github.com/shopspring/decimal v1.4.0
 	github.com/tealeg/xlsx v1.0.5
 	github.com/team-ide/cron v1.0.1
-	github.com/team-ide/go-dialect v1.9.21
+	github.com/team-ide/go-dialect v1.9.22
 	github.com/team-ide/go-driver v1.3.4
 	github.com/team-ide/go-interpreter v0.1.2
 	go.mongodb.org/mongo-driver v1.15.0
