@@ -35,6 +35,7 @@ type V8Service struct {
 	*Config
 	client *redis.Client
 	*CmdService
+	isClosed bool
 }
 
 func (this_ *V8Service) init(sshClient *ssh.Client) (err error) {
@@ -74,11 +75,19 @@ func (this_ *V8Service) init(sshClient *ssh.Client) (err error) {
 
 	client := redis.NewClient(options)
 	this_.client = client
+	this_.isClosed = false
 	return
 }
 
 func (this_ *V8Service) Close() {
-	if this_ != nil && this_.client != nil {
+	if this_ == nil {
+		return
+	}
+	if this_.isClosed {
+		return
+	}
+	this_.isClosed = true
+	if this_.client != nil {
 		_ = this_.client.Close()
 	}
 }

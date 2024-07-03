@@ -134,7 +134,7 @@ func (this_ *watchChildrenCache) doChildrenW() {
 			util.Logger.Error("zk doChildrenW error", zap.Any("path", this_.Path), zap.Any("error", err))
 			finish = this_.listen(this_.getListenData(event, "", err))
 		} else {
-			if this_.isStop {
+			if this_.isClosed {
 				err = errors.New("zk is stopped")
 				util.Logger.Error("zk stopped", zap.Any("path", this_.Path), zap.Any("error", err))
 				finish = this_.listen(this_.getListenData(NodeEventStopped, "", err))
@@ -147,7 +147,7 @@ func (this_ *watchChildrenCache) doChildrenW() {
 	}()
 
 	// 如果已停止 则跳出监听
-	if this_.isStop {
+	if this_.isClosed {
 		return
 	}
 	children, _, event, err := this_.GetConn().ChildrenW(this_.Path)

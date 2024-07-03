@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,8 +16,8 @@ import (
 
 type Service struct {
 	*Config
-	client *mongo.Client
-	isStop bool
+	client   *mongo.Client
+	isClosed bool
 }
 
 func (this_ *Service) init() (err error) {
@@ -71,16 +70,15 @@ func (this_ *Service) init() (err error) {
 
 	this_.client, err = mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
-		fmt.Println(err)
+		return
 	}
 
 	// Check the connection
 	err = this_.client.Ping(context.TODO(), nil)
-
 	if err != nil {
-		fmt.Println(err)
+		return
 	}
-
+	this_.isClosed = false
 	return
 }
 
@@ -100,8 +98,14 @@ func (this_ *Service) GetServers() []string {
 }
 
 func (this_ *Service) Close() {
-	this_.isStop = true
-	if this_ != nil && this_.client != nil {
+	if this_ == nil {
+		return
+	}
+	if this_.isClosed {
+		return
+	}
+	this_.isClosed = true
+	if this_.client != nil {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()

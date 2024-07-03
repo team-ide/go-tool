@@ -21,6 +21,7 @@ type V7Service struct {
 	*Config
 	client     *elastic.Client
 	clientLock sync.Mutex
+	isClosed   bool
 }
 
 func (this_ *V7Service) init() error {
@@ -97,11 +98,19 @@ func (this_ *V7Service) GetClient() (client *elastic.Client, err error) {
 		return
 	}
 	this_.client = client
+	this_.isClosed = false
 	return
 }
 
 func (this_ *V7Service) Close() {
-	if this_ != nil && this_.client != nil {
+	if this_ == nil {
+		return
+	}
+	if this_.isClosed {
+		return
+	}
+	this_.isClosed = true
+	if this_.client != nil {
 		this_.client.Stop()
 		this_.client = nil
 	}

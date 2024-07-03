@@ -34,6 +34,7 @@ type ClusterService struct {
 	*Config
 	redisCluster *redis.ClusterClient
 	*CmdService
+	isClosed bool
 }
 
 func (this_ *ClusterService) init(sshClient *ssh.Client) (err error) {
@@ -73,11 +74,19 @@ func (this_ *ClusterService) init(sshClient *ssh.Client) (err error) {
 
 	redisCluster := redis.NewClusterClient(options)
 	this_.redisCluster = redisCluster
+	this_.isClosed = false
 	return
 }
 
 func (this_ *ClusterService) Close() {
-	if this_ != nil && this_.redisCluster != nil {
+	if this_ == nil {
+		return
+	}
+	if this_.isClosed {
+		return
+	}
+	this_.isClosed = true
+	if this_.redisCluster != nil {
 		_ = this_.redisCluster.Close()
 	}
 }

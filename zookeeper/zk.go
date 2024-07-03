@@ -36,9 +36,9 @@ func (*defaultLogger) Printf(format string, args ...interface{}) {
 // Service 注册处理器在线信息等
 type Service struct {
 	*Config
-	zkConn  *zk.Conn        //zk连接
-	zkEvent <-chan zk.Event // zk事件通知管道
-	isStop  bool
+	zkConn   *zk.Conn        //zk连接
+	zkEvent  <-chan zk.Event // zk事件通知管道
+	isClosed bool
 }
 
 func (this_ *Service) init(sshClient *ssh.Client) (err error) {
@@ -82,7 +82,7 @@ func (this_ *Service) init(sshClient *ssh.Client) (err error) {
 			return
 		}
 	}
-	this_.isStop = false
+	this_.isClosed = false
 	return
 }
 
@@ -102,7 +102,14 @@ func (this_ *Service) GetServers() []string {
 }
 
 func (this_ *Service) Close() {
-	this_.isStop = true
+
+	if this_ == nil {
+		return
+	}
+	if this_.isClosed {
+		return
+	}
+	this_.isClosed = true
 	conn := this_.GetConn()
 	if conn != nil {
 		conn.Close()

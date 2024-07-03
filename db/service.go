@@ -63,6 +63,7 @@ type Service struct {
 	databaseType *DatabaseType
 	db           *sql.DB
 	dialect.Dialect
+	isClosed bool
 }
 
 func (this_ *Service) GetConfig() Config {
@@ -107,6 +108,7 @@ func (this_ *Service) init() (err error) {
 	if err != nil {
 		return
 	}
+	this_.isClosed = false
 	return
 }
 
@@ -118,7 +120,14 @@ func (this_ *Service) GetDb() *sql.DB {
 }
 
 func (this_ *Service) Close() {
-	if this_ != nil && this_.db != nil {
+	if this_ == nil {
+		return
+	}
+	if this_.isClosed {
+		return
+	}
+	this_.isClosed = true
+	if this_.db != nil {
 		_ = this_.db.Close()
 	}
 	if this_ != nil && this_.config != nil && this_.config.SSHClient != nil {
