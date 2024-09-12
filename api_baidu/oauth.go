@@ -1,4 +1,4 @@
-package baidu
+package api_baidu
 
 import "github.com/team-ide/go-tool/util"
 
@@ -11,7 +11,7 @@ type GetAccessTokenResponse struct {
 
 func GetAccessToken(apiKey string, secretKey string) (res *GetAccessTokenResponse, err error) {
 	apiUrl := GetAccessTokenUrl + "?grant_type=client_credentials&client_id=" + apiKey + "&client_secret=" + secretKey
-	res, err = util.GetJson(apiUrl, &GetAccessTokenResponse{})
+	res, _, err = util.GetJson(apiUrl, &GetAccessTokenResponse{})
 	if err != nil {
 		return
 	}

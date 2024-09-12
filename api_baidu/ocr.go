@@ -1,4 +1,4 @@
-package baidu
+package api_baidu
 
 import (
 	"bytes"
