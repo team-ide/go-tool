@@ -18,6 +18,57 @@ func toJSON(v interface{}) (res string) {
 type Struct struct {
 	Name   string   `json:"name"`
 	Fields []*Field `json:"fields"`
+	data   map[string]any
+}
+
+func (this_ *Struct) GetData() map[string]any {
+	if this_ == nil {
+		return nil
+	}
+	return this_.data
+}
+
+func (this_ *Struct) SetData(data map[string]any) {
+	if this_ == nil {
+		return
+	}
+	this_.data = data
+}
+
+func (this_ *Struct) String() string {
+	if this_ == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf(this_.Name+"(%+v)", *this_)
+}
+
+func (this_ *Struct) Read(ctx context.Context, inProtocol thrift.TProtocol) (err error) {
+	this_.data, err = ReadStructFields(ctx, inProtocol, this_.Fields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (this_ *Struct) Write(ctx context.Context, outProtocol thrift.TProtocol) error {
+	err := WriteStructFields(ctx, outProtocol, this_.Name, this_.Fields, this_.data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var (
+	TSerializer   = thrift.NewTSerializer()
+	TDeserializer = thrift.NewTDeserializer()
+)
+
+func Serialize(s *Struct) (bs []byte, err error) {
+	return TSerializer.Write(context.Background(), s)
+}
+func Deserialize(s *Struct, bs []byte) (err error) {
+	return TDeserializer.Read(context.Background(), s, bs)
 }
 
 type Field struct {
@@ -37,6 +88,10 @@ type FieldType struct {
 	MapValueType  *FieldType `json:"mapValueType"`
 }
 
+func GetFieldType(typeId thrift.TType) *FieldType {
+	return &FieldType{TypeId: typeId}
+}
+
 func WriteStructFields(ctx context.Context, protocol thrift.TProtocol, name string, fields []*Field, value map[string]interface{}) error {
 
 	//fmt.Println("WriteStructFields name:", name, ",fields:", toJSON(fields), ",value:", toJSON(value))
@@ -44,7 +99,10 @@ func WriteStructFields(ctx context.Context, protocol thrift.TProtocol, name stri
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", name), err)
 	}
 	for _, filed := range fields {
-		var v = value[filed.Name]
+		v, ok := value[filed.Name]
+		if !ok {
+			continue
+		}
 		if err := WriteStructField(ctx, protocol, filed, v); err != nil {
 			return err
 		}
