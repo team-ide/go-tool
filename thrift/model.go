@@ -279,6 +279,7 @@ func ReadStructFields(ctx context.Context, inProtocol thrift.TProtocol, fields [
 
 	for {
 		_, fieldTypeId, fieldId, err := inProtocol.ReadFieldBegin(ctx)
+		//fmt.Println("read fieldTypeId:", fieldTypeId, ",fieldId:", fieldId)
 		if err != nil {
 			return nil, thrift.PrependError(fmt.Sprintf("%T field %d read error: ", fields, fieldId), err)
 		}
@@ -379,7 +380,7 @@ func ReadMap(ctx context.Context, protocol thrift.TProtocol, keyType *FieldType,
 }
 
 func ReadSet(ctx context.Context, protocol thrift.TProtocol, setType *FieldType) (interface{}, error) {
-	var res []interface{}
+	var res = make([]any, 0)
 	var setTypeId thrift.TType
 	var size int
 	var err error
@@ -400,7 +401,7 @@ func ReadSet(ctx context.Context, protocol thrift.TProtocol, setType *FieldType)
 }
 
 func ReadList(ctx context.Context, protocol thrift.TProtocol, listType *FieldType) (interface{}, error) {
-	var res []interface{}
+	var res = make([]any, 0)
 	var listTypeId thrift.TType
 	var size int
 	var err error
