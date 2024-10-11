@@ -3,7 +3,7 @@ package data_engine
 import (
 	"errors"
 	"fmt"
-	"github.com/tealeg/xlsx"
+	"github.com/tealeg/xlsx/v3"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"time"
@@ -100,17 +100,20 @@ func (this_ *ExcelTask) do() (err error) {
 			if this_.needStop() {
 				return
 			}
-
-			row := sheet.Rows[rowIndex]
+			var row *xlsx.Row
+			row, err = sheet.Row(rowIndex)
+			if err != nil {
+				return
+			}
 
 			var data = map[string]interface{}{}
 
 			hasValue := false
 			for cellIndex, name := range nameList {
-				if cellIndex >= len(row.Cells) {
+				cell := row.GetCell(cellIndex)
+				if cell == nil {
 					break
 				}
-				cell := row.Cells[cellIndex]
 				var value = cell.String()
 				data[name] = value
 				if value != "" {

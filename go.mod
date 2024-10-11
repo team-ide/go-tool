@@ -18,9 +18,9 @@ require (
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/shopspring/decimal v1.4.0
-	github.com/tealeg/xlsx v1.0.5
+	github.com/tealeg/xlsx/v3 v3.3.10
 	github.com/team-ide/cron v1.0.1
-	github.com/team-ide/go-dialect v1.9.22
+	github.com/team-ide/go-dialect v1.9.23
 	github.com/team-ide/go-driver v1.3.4
 	github.com/team-ide/go-interpreter v0.1.2
 	go.mongodb.org/mongo-driver v1.15.0
@@ -43,6 +43,7 @@ require (
 	github.com/eapache/go-resiliency v1.3.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230111030713-bf00bc1b83b6 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
+	github.com/frankban/quicktest v1.14.6 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
@@ -55,6 +56,7 @@ require (
 	github.com/godror/godror v0.37.0 // indirect
 	github.com/godror/knownpb v0.1.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/btree v1.0.0 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/pprof v0.0.0-20230207041349-798e818bf904 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
@@ -70,6 +72,7 @@ require (
 	github.com/klauspost/compress v1.15.14 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -78,9 +81,13 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
+	github.com/peterbourgon/diskv/v3 v3.0.1 // indirect
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
+	github.com/rogpeppe/fastuuid v1.2.0 // indirect
+	github.com/rogpeppe/go-internal v1.12.0 // indirect
+	github.com/shabbyrobe/xmlwriter v0.0.0-20200208144257-9fca06d00ffa // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect

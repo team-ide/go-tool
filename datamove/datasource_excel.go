@@ -3,7 +3,7 @@ package datamove
 import (
 	"errors"
 	"fmt"
-	"github.com/tealeg/xlsx"
+	"github.com/tealeg/xlsx/v3"
 	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
@@ -58,9 +58,22 @@ func (this_ *DataSourceExcel) ReadStart(progress *Progress) (err error) {
 		return
 	}
 	var titles []string
-	if len(this_.readSheet.Cols) > 0 {
-		for _, c := range this_.readSheet.Rows[0].Cells {
-			s := c.String()
+
+	colLen := this_.readSheet.Cols.Len
+	rowLen := this_.readSheet.MaxRow
+	if rowLen > 0 && colLen > 0 {
+		var firstRow *xlsx.Row
+		firstRow, err = this_.readSheet.Row(0)
+		if err != nil {
+			return
+		}
+
+		for colIndex := 0; colIndex < colLen; colIndex++ {
+			cell := firstRow.GetCell(colIndex)
+			if cell == nil {
+				break
+			}
+			s := cell.String()
 			titles = append(titles, s)
 		}
 	}
@@ -172,7 +185,7 @@ func (this_ *DataSourceExcel) CloseWriteFile() {
 }
 
 func (this_ *DataSourceExcel) ReadLineCount() (lineCount int64, err error) {
-	lineCount = int64(len(this_.readSheet.Rows))
+	lineCount = int64(this_.readSheet.MaxRow)
 	util.Logger.Info("excel data source read line count", zap.Any("lineCount", lineCount))
 	return
 }
@@ -183,13 +196,24 @@ func (this_ *DataSourceExcel) Read(progress *Progress, dataChan chan *Data) (err
 		DataType: DataTypeCols,
 	}
 	pageSize := progress.BatchNumber
-	for _, row := range this_.readSheet.Rows {
+	colLen := this_.readSheet.Cols.Len
+	rowLen := this_.readSheet.MaxRow
+	var row *xlsx.Row
+	for rowIndex := 0; rowIndex < rowLen; rowIndex++ {
+		row, err = this_.readSheet.Row(rowIndex)
+		if err != nil {
+			return
+		}
 		if progress.ShouldStop() {
 			return
 		}
 		var cols []interface{}
-		for _, c := range row.Cells {
-			cols = append(cols, c.String())
+		for colIndex := 0; colIndex < colLen; colIndex++ {
+			cell := row.GetCell(colIndex)
+			if cell == nil {
+				break
+			}
+			cols = append(cols, cell.String())
 		}
 
 		if !this_.headerRead {
