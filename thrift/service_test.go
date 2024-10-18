@@ -16,7 +16,8 @@ var (
 )
 
 func TestServiceClient(t *testing.T) {
-	client, err := NewServiceClientByAddress(testServiceAddress)
+	//client, err := NewServiceClientByAddress("192.168.6.152:11209")
+	client, err := NewServiceClientByAddress("172.16.8.158:11209")
 	if err != nil {
 		panic(err)
 	}
@@ -25,12 +26,22 @@ func TestServiceClient(t *testing.T) {
 	}()
 	fmt.Println("service client create success")
 	param := &MethodParam{
-		Name: "send",
+		Name: "queryEmoticonPackListByLabel",
 	}
 	param.ArgFields = append(param.ArgFields, &Field{
-		Name: "res",
+		Name: "label",
 		Num:  1,
 		Type: &FieldType{
+			TypeId: thrift.STRING,
+		},
+	})
+	param.Args = append(param.Args, map[string]interface{}{
+		"label": "111",
+	})
+
+	param.ResultType = &FieldType{
+		TypeId: thrift.LIST,
+		ListType: &FieldType{
 			TypeId: thrift.STRUCT,
 			structObj: &Struct{
 				Fields: []*Field{
@@ -40,39 +51,6 @@ func TestServiceClient(t *testing.T) {
 						Type: &FieldType{
 							TypeId: thrift.I08,
 						},
-					},
-					{
-						Name: "field2",
-						Num:  2,
-						Type: &FieldType{
-							TypeId: thrift.I16,
-						},
-					},
-				},
-			},
-		},
-	})
-	param.Args = append(param.Args, map[string]interface{}{
-		"field1": int8(1),
-		"field2": int16(2),
-	})
-
-	param.ResultType = &FieldType{
-		TypeId: thrift.STRUCT,
-		structObj: &Struct{
-			Fields: []*Field{
-				{
-					Name: "field1",
-					Num:  1,
-					Type: &FieldType{
-						TypeId: thrift.I08,
-					},
-				},
-				{
-					Name: "field2",
-					Num:  2,
-					Type: &FieldType{
-						TypeId: thrift.I16,
 					},
 				},
 			},

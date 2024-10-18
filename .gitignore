@@ -18,3 +18,5 @@
 .idea
 
 /datamove/out
+
+/go-tool*

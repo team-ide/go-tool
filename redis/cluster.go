@@ -115,12 +115,33 @@ func (this_ *ClusterService) Keys(pattern string, args ...Arg) (keysResult *Keys
 		return
 	}
 
-	var size = -1
+	var size int64 = -1
 	if argCache.SizeArg != nil {
 		size = argCache.SizeArg.Size
 	}
 
 	return ClusterKeys(param.Ctx, client.(*redis.ClusterClient), param.Database, pattern, size)
+}
+
+func (this_ *ClusterService) Scan(pattern string, args ...Arg) (keysResult *KeysResult, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	var size int64 = -1
+	if argCache.SizeArg != nil {
+		size = argCache.SizeArg.Size
+	}
+	var count int64 = 10000
+	if argCache.CountArg != nil {
+		count = argCache.CountArg.Count
+	}
+
+	return ClusterScan(param.Ctx, client.(*redis.ClusterClient), param.Database, pattern, size, count)
 }
 
 func (this_ *ClusterService) ValueType(key string, args ...Arg) (valueType string, err error) {
@@ -163,14 +184,14 @@ func (this_ *ClusterService) DelPattern(pattern string, args ...Arg) (count int,
 		return
 	}
 
-	keysResult, err := ClusterKeys(param.Ctx, client.(*redis.ClusterClient), param.Database, pattern, -1)
+	keysResult, err := ClusterScan(param.Ctx, client.(*redis.ClusterClient), param.Database, pattern, -1, 1000)
 	if err != nil {
 		return
 	}
 
 	count = 0
-	for _, keyInfo := range keysResult.KeyList {
-		cmd := client.Del(param.Ctx, keyInfo.Key)
+	for _, key := range keysResult.KeyList {
+		cmd := client.Del(param.Ctx, key)
 		_, err = cmd.Result()
 		if err == nil {
 			count++
@@ -179,37 +200,71 @@ func (this_ *ClusterService) DelPattern(pattern string, args ...Arg) (count int,
 	return
 }
 
-func ClusterKeys(ctx context.Context, client *redis.ClusterClient, database int, pattern string, size int) (keysResult *KeysResult, err error) {
-	keysResult = &KeysResult{}
+func ClusterKeys(ctx context.Context, client *redis.ClusterClient, database int, pattern string, size int64) (keysResult *KeysResult, err error) {
+	keysResult = &KeysResult{
+		Database: database,
+	}
 	var list []string
-	err = client.ForEachMaster(ctx, func(ctx context.Context, client *redis.Client) (err error) {
-
-		var ls []string
-		cmd := client.Keys(ctx, pattern)
-		ls, err = cmd.Result()
-		if err != nil {
+	err = client.ForEachMaster(ctx, func(ctx context.Context, client *redis.Client) (e error) {
+		_, e = client.Do(ctx, "select", database).Result()
+		if e != nil {
 			return
 		}
-		keysResult.Count += len(ls)
+		var ls []string
+		cmd := client.Keys(ctx, pattern)
+		ls, e = cmd.Result()
+		if e != nil {
+			return
+		}
+		keysResult.Count += int64(len(ls))
 		list = append(list, ls...)
 		return
 	})
+	if err != nil {
+		return
+	}
 
 	sort.Slice(list, func(i, j int) bool {
 		return strings.ToLower(list[i]) < strings.ToLower(list[j]) //升序  即前面的值比后面的小 忽略大小写排序
 	})
-	var keys []string
-	if keysResult.Count <= size || size < 0 {
-		keys = list
+	if keysResult.Count <= size || size <= 0 {
+		keysResult.KeyList = list
 	} else {
-		keys = list[0:size]
+		keysResult.KeyList = list[0:size]
 	}
-	for _, key := range keys {
-		info := &KeyInfo{
-			Key:      key,
-			Database: database,
+	return
+}
+
+func ClusterScan(ctx context.Context, client *redis.ClusterClient, database int, match string, size int64, count int64) (keysResult *KeysResult, err error) {
+	keysResult = &KeysResult{
+		Database: database,
+	}
+	err = client.ForEachMaster(ctx, func(ctx context.Context, client *redis.Client) (e error) {
+		if size > 0 && keysResult.Count >= size {
+			return
 		}
-		keysResult.KeyList = append(keysResult.KeyList, info)
+
+		_, e = client.Do(ctx, "select", database).Result()
+		if e != nil {
+			return
+		}
+
+		cmd := client.Scan(ctx, 0, match, count)
+		scanIterator := cmd.Iterator()
+		for scanIterator.Next(ctx) {
+			key := scanIterator.Val()
+			keysResult.KeyList = append(keysResult.KeyList, key)
+			keysResult.Count++
+			if size > 0 && keysResult.Count >= size {
+				break
+			}
+		}
+		e = cmd.Err()
+		return
+	})
+	if err != nil {
+		return
 	}
+
 	return
 }

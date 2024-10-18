@@ -14,6 +14,8 @@ type IService interface {
 	Info(args ...Arg) (res string, err error)
 	// Keys 模糊 搜索 key，如 "xx*" 搜索
 	Keys(pattern string, args ...Arg) (keysResult *KeysResult, err error)
+	// Scan 模糊 搜索 key，如 "xx*" 搜索
+	Scan(pattern string, args ...Arg) (keysResult *KeysResult, err error)
 	// Expire 设置 key 过期时间 让给定键在指定的秒数之后过期
 	Expire(key string, expire int64, args ...Arg) (res bool, err error)
 	// Ttl 查看给定键距离过期还有多少秒
@@ -86,12 +88,9 @@ type ValueInfo struct {
 	TTL         int64       `json:"ttl"`
 }
 type KeysResult struct {
-	Count   int        `json:"count"`
-	KeyList []*KeyInfo `json:"keyList"`
-}
-type KeyInfo struct {
-	Database int    `json:"database"`
-	Key      string `json:"key"`
+	Count    int64    `json:"count"`
+	KeyList  []string `json:"keyList"`
+	Database int      `json:"database"`
 }
 
 type Param struct {
@@ -102,13 +101,23 @@ type Param struct {
 func (this_ *Param) IsArg() {}
 
 type SizeArg struct {
-	Size int
+	Size int64
 }
 
 func (this_ *SizeArg) IsArg() {}
 
-func NewSizeArg(size int) *SizeArg {
+func NewSizeArg(size int64) *SizeArg {
 	return &SizeArg{Size: size}
+}
+
+type CountArg struct {
+	Count int64
+}
+
+func (this_ *CountArg) IsArg() {}
+
+func NewCountArg(count int64) *CountArg {
+	return &CountArg{Count: count}
 }
 
 type StartArg struct {
@@ -124,6 +133,7 @@ func NewStartArg(start int) *StartArg {
 type ArgCache struct {
 	Param    *Param
 	SizeArg  *SizeArg
+	CountArg *CountArg
 	StartArg *StartArg
 }
 
@@ -138,6 +148,8 @@ func getArgCache(args ...Arg) (res *ArgCache) {
 			res.Param = tV
 		case *SizeArg:
 			res.SizeArg = tV
+		case *CountArg:
+			res.CountArg = tV
 		case *StartArg:
 			res.StartArg = tV
 		}

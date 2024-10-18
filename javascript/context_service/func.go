@@ -28,6 +28,10 @@ redisService = redis.newService({address:"127.0.0.1:6379",auth:""})`,
 				Comment: "新建 Redis 参数",
 				Func:    redis.NewSizeArg,
 			}, {
+				Name:    "newCountArg",
+				Comment: "新建 Redis 参数",
+				Func:    redis.NewCountArg,
+			}, {
 				Name:    "newStartArg",
 				Comment: "新建 Redis 参数",
 				Func:    redis.NewStartArg,

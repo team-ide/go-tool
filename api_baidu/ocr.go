@@ -72,7 +72,7 @@ func OcrAccurateBasicImage(accessToken string, imageBase64 string) (res *OcrAccu
 	form.Add("image", imageBase64)
 
 	apiUrl := OcrAccurateBasicUrl + "?access_token=" + accessToken
-	res, err = util.PostForm(apiUrl, form, &OcrAccurateBasicResponse{})
+	res, _, err = util.PostForm(apiUrl, form, &OcrAccurateBasicResponse{})
 	if err != nil {
 		return
 	}

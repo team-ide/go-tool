@@ -63,11 +63,11 @@ func (this_ *DataSourceRedis) Read(progress *Progress, dataChan chan *Data) (err
 		return
 	}
 	if res != nil && res.KeyList != nil {
-		for _, keyInfo := range res.KeyList {
+		for _, key := range res.KeyList {
 			if progress.ShouldStop() {
 				return
 			}
-			err = this_.ReadKey(progress, dataChan, keyInfo, param)
+			err = this_.ReadKey(progress, dataChan, res.Database, key, param)
 			if err != nil {
 				return
 			}
@@ -84,7 +84,7 @@ func (this_ *DataSourceRedis) Read(progress *Progress, dataChan chan *Data) (err
 
 	return
 }
-func (this_ *DataSourceRedis) ReadKey(progress *Progress, dataChan chan *Data, keyInfo *redis.KeyInfo, param *redis.Param) (err error) {
+func (this_ *DataSourceRedis) ReadKey(progress *Progress, dataChan chan *Data, database int, key string, param *redis.Param) (err error) {
 
 	var valuesList [][]interface{}
 	defer func() {
@@ -111,8 +111,8 @@ func (this_ *DataSourceRedis) ReadKey(progress *Progress, dataChan chan *Data, k
 		}
 
 	}()
-	param.Database = keyInfo.Database
-	valueInfo, err := this_.Service.GetValueInfo(keyInfo.Key, param)
+	param.Database = database
+	valueInfo, err := this_.Service.GetValueInfo(key, param)
 	if err != nil {
 		return
 	}
@@ -125,7 +125,7 @@ func (this_ *DataSourceRedis) ReadKey(progress *Progress, dataChan chan *Data, k
 		keyValue := valueInfo.Value.(map[string]string)
 		for k, v := range keyValue {
 			data := map[string]interface{}{}
-			data[this_.RedisKeyName] = keyInfo.Key
+			data[this_.RedisKeyName] = key
 			data[this_.RedisValueTypeName] = valueInfo.ValueType
 			data[this_.RedisFieldName] = k
 			data[this_.RedisValueName] = v
@@ -145,7 +145,7 @@ func (this_ *DataSourceRedis) ReadKey(progress *Progress, dataChan chan *Data, k
 		vs := valueInfo.Value.([]string)
 		for k, v := range vs {
 			data := map[string]interface{}{}
-			data[this_.RedisKeyName] = keyInfo.Key
+			data[this_.RedisKeyName] = key
 			data[this_.RedisValueTypeName] = valueInfo.ValueType
 			data[this_.RedisFieldName] = k
 			data[this_.RedisValueName] = v
@@ -163,7 +163,7 @@ func (this_ *DataSourceRedis) ReadKey(progress *Progress, dataChan chan *Data, k
 		}
 	} else {
 		data := map[string]interface{}{}
-		data[this_.RedisKeyName] = keyInfo.Key
+		data[this_.RedisKeyName] = key
 		data[this_.RedisValueTypeName] = valueInfo.ValueType
 		data[this_.RedisValueName] = valueInfo.Value
 		if this_.RedisValueByData {

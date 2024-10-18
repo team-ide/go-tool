@@ -127,11 +127,31 @@ func (this_ *V8Service) Keys(pattern string, args ...Arg) (keysResult *KeysResul
 		return
 	}
 
-	var size = -1
+	var size int64 = -1
 	if argCache.SizeArg != nil {
 		size = argCache.SizeArg.Size
 	}
 	return Keys(param.Ctx, client, param.Database, pattern, size)
+}
+
+func (this_ *V8Service) Scan(pattern string, args ...Arg) (keysResult *KeysResult, err error) {
+	argCache := getArgCache(args...)
+	param := formatParam(argCache.Param)
+
+	client, err := this_.GetClient(param)
+	if err != nil {
+		return
+	}
+
+	var size int64 = -1
+	if argCache.SizeArg != nil {
+		size = argCache.SizeArg.Size
+	}
+	var count int64 = 10000
+	if argCache.CountArg != nil {
+		count = argCache.CountArg.Count
+	}
+	return Scan(param.Ctx, client, param.Database, pattern, size, count)
 }
 
 func (this_ *V8Service) ValueType(key string, args ...Arg) (valueType string, err error) {
@@ -176,12 +196,12 @@ func (this_ *V8Service) DelPattern(pattern string, args ...Arg) (count int, err 
 	}
 
 	count = 0
-	keysResult, err := Keys(param.Ctx, client, param.Database, pattern, -1)
+	keysResult, err := Scan(param.Ctx, client, param.Database, pattern, -1, 1000)
 	if err != nil {
 		return
 	}
-	for _, keyInfo := range keysResult.KeyList {
-		cmd := client.Del(param.Ctx, keyInfo.Key)
+	for _, key := range keysResult.KeyList {
+		cmd := client.Del(param.Ctx, key)
 		_, err = cmd.Result()
 		if err == nil {
 			count++
@@ -192,32 +212,47 @@ func (this_ *V8Service) DelPattern(pattern string, args ...Arg) (count int, err 
 	return
 }
 
-func Keys(ctx context.Context, client redis.Cmdable, database int, pattern string, size int) (keysResult *KeysResult, err error) {
-	keysResult = &KeysResult{}
+func Keys(ctx context.Context, client redis.Cmdable, database int, pattern string, size int64) (keysResult *KeysResult, err error) {
+	keysResult = &KeysResult{
+		Database: database,
+	}
 	var list []string
 	cmdKeys := client.Keys(ctx, pattern)
 	list, err = cmdKeys.Result()
 	if err != nil {
 		return
 	}
-	keysResult.Count = len(list)
+	keysResult.Count = int64(len(list))
 
 	sort.Slice(list, func(i, j int) bool {
 		return strings.ToLower(list[i]) < strings.ToLower(list[j]) //升序  即前面的值比后面的小 忽略大小写排序
 	})
 
-	var keys []string
-	if keysResult.Count <= size || size < 0 {
-		keys = list
+	if keysResult.Count <= size || size <= 0 {
+		keysResult.KeyList = list
 	} else {
-		keys = list[0:size]
+		keysResult.KeyList = list[0:size]
 	}
-	for _, key := range keys {
-		info := &KeyInfo{
-			Key:      key,
-			Database: database,
+	return
+}
+
+func Scan(ctx context.Context, client redis.Cmdable, database int, match string, size int64, count int64) (keysResult *KeysResult, err error) {
+
+	keysResult = &KeysResult{
+		Database: database,
+	}
+	cmd := client.Scan(ctx, 0, match, count)
+	scanIterator := cmd.Iterator()
+	for scanIterator.Next(ctx) {
+		keysResult.KeyList = append(keysResult.KeyList, scanIterator.Val())
+		keysResult.Count++
+		if size > 0 && keysResult.Count >= size {
+			break
 		}
-		keysResult.KeyList = append(keysResult.KeyList, info)
+	}
+	err = cmd.Err()
+	if err != nil {
+		return
 	}
 	return
 }
