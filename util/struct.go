@@ -23,21 +23,21 @@ type StructInfo struct {
 	IsList   bool         `json:"isList,omitempty"`
 	IsStruct bool         `json:"isStruct,omitempty"`
 	Type     reflect.Type `json:"type,omitempty"`
-	Fields   []*Field     `json:"fields,omitempty"`
+	Fields   []*FieldInfo `json:"fields,omitempty"`
 
-	NameMap   map[string]*Field `json:"nameMap,omitempty"`
-	ColumnMap map[string]*Field `json:"columnMap,omitempty"`
-	JsonMap   map[string]*Field `json:"jsonMap,omitempty"`
-	BsonMap   map[string]*Field `json:"bsonMap,omitempty"`
-	YamlMap   map[string]*Field `json:"yamlMap,omitempty"`
-	XmlMap    map[string]*Field `json:"xmlMap,omitempty"`
-	TomlMap   map[string]*Field `json:"tomlMap,omitempty"`
-	KeyMap    map[string]*Field `json:"keyMap,omitempty"`
+	NameMap   map[string]*FieldInfo `json:"nameMap,omitempty"`
+	ColumnMap map[string]*FieldInfo `json:"columnMap,omitempty"`
+	JsonMap   map[string]*FieldInfo `json:"jsonMap,omitempty"`
+	BsonMap   map[string]*FieldInfo `json:"bsonMap,omitempty"`
+	YamlMap   map[string]*FieldInfo `json:"yamlMap,omitempty"`
+	XmlMap    map[string]*FieldInfo `json:"xmlMap,omitempty"`
+	TomlMap   map[string]*FieldInfo `json:"tomlMap,omitempty"`
+	KeyMap    map[string]*FieldInfo `json:"keyMap,omitempty"`
 
 	Extend any `json:"extend,omitempty"`
 }
 
-func (this_ *StructInfo) Get(key string) *Field {
+func (this_ *StructInfo) Get(key string) *FieldInfo {
 
 	findKey := "," + strings.ToLower(key) + ","
 	for k, v := range this_.KeyMap {
@@ -48,18 +48,24 @@ func (this_ *StructInfo) Get(key string) *Field {
 	return nil
 }
 
-type Field struct {
-	Name     string `json:"name,omitempty"`
-	Index    int    `json:"index,omitempty"`
-	Column   string `json:"column,omitempty"`
-	Json     string `json:"json,omitempty"`
-	Bson     string `json:"bson,omitempty"`
-	Xml      string `json:"xml,omitempty"`
-	Yaml     string `json:"yaml,omitempty"`
-	Toml     string `json:"toml,omitempty"`
-	IsString bool   `json:"isString,omitempty"`
-	IsNumber bool   `json:"isNumber,omitempty"`
-	IsBool   bool   `json:"isBool,omitempty"`
+type FieldInfo struct {
+	Name   string `json:"name,omitempty"`
+	Index  int    `json:"index,omitempty"`
+	Column string `json:"column,omitempty"`
+	Json   string `json:"json,omitempty"`
+	Bson   string `json:"bson,omitempty"`
+	Xml    string `json:"xml,omitempty"`
+	Yaml   string `json:"yaml,omitempty"`
+	Toml   string `json:"toml,omitempty"`
+
+	IsString bool `json:"isString,omitempty"`
+	IsNumber bool `json:"isNumber,omitempty"`
+	IsBool   bool `json:"isBool,omitempty"`
+	IsStruct bool `json:"isStruct,omitempty"`
+	IsMap    bool `json:"isMap,omitempty"`
+	IsList   bool `json:"isList,omitempty"`
+
+	StructType reflect.Type `json:"structType,omitempty"`
 
 	Extend any `json:"extend,omitempty"`
 
@@ -67,15 +73,15 @@ type Field struct {
 	value       reflect.Value
 }
 
-func (this_ *Field) GetStructField() reflect.StructField {
+func (this_ *FieldInfo) GetStructField() reflect.StructField {
 	return this_.structField
 }
 
-func (this_ *Field) GetValue() reflect.Value {
+func (this_ *FieldInfo) GetValue() reflect.Value {
 	return this_.value
 }
 
-func (this_ *StructInfo) GetFieldValue(data any, key string) (field *Field, fV reflect.Value, find bool) {
+func (this_ *StructInfo) GetFieldValue(data any, key string) (field *FieldInfo, fV reflect.Value, find bool) {
 	field = this_.Get(key)
 	if field == nil {
 		return
@@ -257,16 +263,16 @@ func CreateStructInfo(structType reflect.Type) (info *StructInfo) {
 	}
 
 	info.IsStruct = true
-	info.NameMap = make(map[string]*Field)
-	info.ColumnMap = make(map[string]*Field)
-	info.JsonMap = make(map[string]*Field)
-	info.BsonMap = make(map[string]*Field)
-	info.XmlMap = make(map[string]*Field)
-	info.YamlMap = make(map[string]*Field)
-	info.TomlMap = make(map[string]*Field)
-	info.KeyMap = make(map[string]*Field)
+	info.NameMap = make(map[string]*FieldInfo)
+	info.ColumnMap = make(map[string]*FieldInfo)
+	info.JsonMap = make(map[string]*FieldInfo)
+	info.BsonMap = make(map[string]*FieldInfo)
+	info.XmlMap = make(map[string]*FieldInfo)
+	info.YamlMap = make(map[string]*FieldInfo)
+	info.TomlMap = make(map[string]*FieldInfo)
+	info.KeyMap = make(map[string]*FieldInfo)
 	for i := 0; i < structType.NumField(); i++ {
-		field := &Field{
+		field := &FieldInfo{
 			structField: structType.Field(i),
 			Index:       i,
 		}
@@ -317,7 +323,7 @@ func CreateStructInfo(structType reflect.Type) (info *StructInfo) {
 	return
 }
 
-func GetMapFields(v any) (fields []*Field) {
+func GetMapFields(v any) (fields []*FieldInfo) {
 	objV := reflect.ValueOf(v)
 	for objV.Kind() == reflect.Ptr {
 		objV = objV.Elem()
@@ -330,7 +336,7 @@ func GetMapFields(v any) (fields []*Field) {
 		k := kV.String()
 		vV := objV.MapIndex(kV)
 
-		field := &Field{
+		field := &FieldInfo{
 			Name: k,
 			structField: reflect.StructField{
 				Name: k,
@@ -344,7 +350,7 @@ func GetMapFields(v any) (fields []*Field) {
 	return
 }
 
-func fullFieldValue(field *Field) {
+func fullFieldValue(field *FieldInfo) {
 	fT := field.structField.Type
 	fTKind := fT.Kind()
 	for fTKind == reflect.Ptr {
@@ -354,5 +360,17 @@ func fullFieldValue(field *Field) {
 	field.IsString = fTKind == reflect.String
 	field.IsNumber = fTKind >= reflect.Int && fTKind <= reflect.Uint64
 	field.IsBool = fTKind == reflect.Bool
+	field.IsMap = fTKind == reflect.Map
+	field.IsList = fTKind == reflect.Slice
+	field.IsStruct = fTKind == reflect.Struct
+	if field.IsMap || field.IsList {
+		sT := fT.Elem()
+		for sT.Kind() == reflect.Ptr {
+			sT = sT.Elem()
+		}
+		field.StructType = sT
+	} else if field.IsStruct {
+		field.StructType = fT
+	}
 
 }

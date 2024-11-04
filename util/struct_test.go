@@ -7,6 +7,13 @@ import (
 )
 
 type TestS struct {
+	Name       string `json:"name,omitempty" yaml:"name,omitempty" column:"xx" bson:"name"`
+	TestSS     *TestSS
+	TestSSList []*TestSS
+	TestSSMap  map[string]*TestSS
+}
+
+type TestSS struct {
 	Name string `json:"name,omitempty" yaml:"name,omitempty" column:"xx" bson:"name"`
 }
 
