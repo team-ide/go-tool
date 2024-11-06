@@ -9,18 +9,33 @@ import (
 	"strings"
 )
 
+var (
+	SqlParamParserDefaultParamBefore = "\\${"
+	SqlParamParserDefaultParamAfter  = "}"
+)
+
 type SqlParamParser struct {
-	*TemplateOptions
-	sqlBuilder   string
 	appends      []string
 	appendParams []any
+	NotParseArg  bool // 不是 不解析参数值 只解析SQL
+	ParamBefore  string
+	ParamAfter   string
+}
+
+type SqlParamParserInfo struct {
+	Sql        string
+	Args       []any
+	ParamNames []string
+}
+
+func NewSqlParamParser(sql string, param any) (res *SqlParamParser) {
+	res = &SqlParamParser{}
+	res.Append(sql, param)
+	return
 }
 
 func (this_ *TemplateOptions) SqlParamParser(sql string, param any) (res *SqlParamParser) {
-	res = &SqlParamParser{
-		TemplateOptions: this_,
-	}
-	res.Append(sql, param)
+	res = NewSqlParamParser(sql, param)
 	return
 }
 
@@ -31,6 +46,23 @@ func (this_ *SqlParamParser) Append(sql string, param any) *SqlParamParser {
 }
 
 func (this_ *SqlParamParser) Parse() (res string, args []any, err error) {
+	info, err := this_.ParseInfo()
+	if err != nil {
+		return
+	}
+	res = info.Sql
+	args = info.Args
+	return
+}
+
+func (this_ *SqlParamParser) ParseInfo() (info *SqlParamParserInfo, err error) {
+	if this_.ParamBefore == "" {
+		this_.ParamBefore = SqlParamParserDefaultParamBefore
+	}
+	if this_.ParamAfter == "" {
+		this_.ParamAfter = SqlParamParserDefaultParamAfter
+	}
+	info = &SqlParamParserInfo{}
 	var parseSql string
 	var parseArgs []any
 	for i := 0; i < len(this_.appends); i++ {
@@ -38,31 +70,34 @@ func (this_ *SqlParamParser) Parse() (res string, args []any, err error) {
 		param := this_.appendParams[i]
 
 		var paramValues []any
-		util.Logger.Debug("parse sql", zap.Any("sql", sql), zap.Any("param", param))
-		paramMap := this_.GetParamData(param)
-		if paramMap == nil {
-			paramValues = []any{param}
+		var paramMap map[string]any
+		if !this_.NotParseArg {
+			paramMap = this_.GetParamData(param)
+			if paramMap == nil {
+				paramValues = []any{param}
+			}
 		}
 
-		parseSql, parseArgs, err = this_.parse(sql, paramValues, paramMap)
+		parseSql, parseArgs, err = this_.parse(info, sql, paramValues, paramMap)
 		if err != nil {
 			err = errors.New("SQL[" + sql + "]解析异常，" + err.Error())
 			return
 		}
-		res += parseSql
-		args = append(args, parseArgs...)
+		info.Sql += parseSql
+		info.Args = append(info.Args, parseArgs...)
 
 	}
 	return
 }
 
-func (this_ *SqlParamParser) parse(sql string, paramValues []any, paramMap map[string]any) (res string, args []any, err error) {
+func (this_ *SqlParamParser) parse(info *SqlParamParserInfo, sql string, paramValues []any, paramMap map[string]any) (res string, args []any, err error) {
 	if sql == "" {
 		return
 	}
 	text := ""
 	var re *regexp.Regexp
-	re, _ = regexp.Compile(`[$]+{(.+?)}`)
+	expr := `(` + this_.ParamBefore + `)(.+?)(` + this_.ParamAfter + `)`
+	re, _ = regexp.Compile(expr)
 	indexList := re.FindAllIndex([]byte(sql), -1)
 	var lastIndex = 0
 	var paramIndex int
@@ -71,14 +106,22 @@ func (this_ *SqlParamParser) parse(sql string, paramValues []any, paramMap map[s
 
 		lastIndex = indexes[1]
 
-		paramName := sql[indexes[0]+2 : indexes[1]-1]
+		paramStr := sql[indexes[0]:indexes[1]]
+		subMatch := re.FindStringSubmatch(paramStr)
 
-		arg, find := this_.parseArg(paramName, paramIndex, paramValues, paramMap)
-		if !find {
-			err = errors.New("参数[" + paramName + "]不存在")
-			return
+		paramName := subMatch[len(subMatch)-2]
+		paramName = strings.TrimSpace(paramName)
+		info.ParamNames = append(info.ParamNames, paramName)
+		if this_.NotParseArg {
+			args = append(args, nil)
+		} else {
+			arg, find := this_.parseArg(paramName, paramIndex, paramValues, paramMap)
+			if !find {
+				err = errors.New("参数[" + paramName + "]不存在")
+				return
+			}
+			args = append(args, arg)
 		}
-		args = append(args, arg)
 		text += "?"
 		paramIndex++
 	}
@@ -90,7 +133,7 @@ func (this_ *SqlParamParser) parse(sql string, paramValues []any, paramMap map[s
 
 func (this_ *SqlParamParser) parseArg(paramName string, paramIndex int, paramValues []any, paramMap map[string]any) (arg any, find bool) {
 	if paramMap != nil {
-		arg, find = paramMap[strings.ToLower(strings.TrimSpace(paramName))]
+		arg, find = paramMap[strings.ToLower(paramName)]
 	} else {
 		if paramIndex < len(paramValues)-1 {
 			arg = paramValues[paramIndex]
@@ -101,6 +144,9 @@ func (this_ *SqlParamParser) parseArg(paramName string, paramIndex int, paramVal
 }
 
 func (this_ *SqlParamParser) GetParamData(param any) (data map[string]any) {
+	if param == nil {
+		return
+	}
 	data = map[string]any{}
 	ok := this_.appendData(data, "", param)
 	if !ok {
@@ -110,7 +156,9 @@ func (this_ *SqlParamParser) GetParamData(param any) (data map[string]any) {
 	return
 }
 func (this_ *SqlParamParser) appendData(data map[string]any, fieldName string, v any) (append bool) {
-
+	if v == nil {
+		return
+	}
 	objV := reflect.ValueOf(v)
 	for objV.Kind() == reflect.Ptr {
 		objV = objV.Elem()
