@@ -272,3 +272,18 @@ func StrPadRight(input string, padLength int, padString string) string {
 	}
 	return input + output
 }
+
+// TrimSpace 去除 前后空格
+func TrimSpace(arg string) string {
+	return strings.TrimSpace(arg)
+}
+
+// TrimPrefix 去除 匹配的 前缀
+func TrimPrefix(arg string, trim string) string {
+	return strings.TrimPrefix(arg, trim)
+}
+
+// TrimSuffix 去除 匹配的 后缀
+func TrimSuffix(arg string, trim string) string {
+	return strings.TrimSuffix(arg, trim)
+}

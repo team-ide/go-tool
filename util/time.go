@@ -94,7 +94,7 @@ var (
 	}
 )
 
-// MilliToTimeText 将 毫秒 转为 `xx天xx时xx分xx秒xx毫秒`
+// MilliToTimeText 将 毫秒 转为 'xx天xx时xx分xx秒xx毫秒'
 func MilliToTimeText(milli int64) (v string) {
 
 	var timeV = milli
