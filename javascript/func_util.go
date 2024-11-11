@@ -397,6 +397,12 @@ Marshal("abc_def")`,
 				Func: util.Marshal,
 			},
 			{
+				Name: "hump",
+				Comment: `转换为驼峰命名法则 “_”后的字母大写
+Hump("abc_def")`,
+				Func: util.Hump,
+			},
+			{
 				Name: "getStringValue",
 				Comment: `将传入的值转为字符串
 @param value interface{} "任意值"
