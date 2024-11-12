@@ -307,7 +307,27 @@ func TrimPrefix(arg string, trim string) string {
 	return strings.TrimPrefix(arg, trim)
 }
 
+// HasPrefix 匹配的 前缀
+func HasPrefix(arg string, trim string) bool {
+	return strings.HasPrefix(arg, trim)
+}
+
 // TrimSuffix 去除 匹配的 后缀
 func TrimSuffix(arg string, trim string) string {
 	return strings.TrimSuffix(arg, trim)
+}
+
+// HasSuffix 匹配的 后缀
+func HasSuffix(arg string, trim string) bool {
+	return strings.HasSuffix(arg, trim)
+}
+
+// TrimLeft 去除 所有 匹配的 前缀
+func TrimLeft(arg string, trim string) string {
+	return strings.TrimLeft(arg, trim)
+}
+
+// TrimRight 去除 所有 匹配的 后缀
+func TrimRight(arg string, trim string) string {
+	return strings.TrimRight(arg, trim)
 }
