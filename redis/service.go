@@ -6,13 +6,13 @@ import (
 )
 
 type Config struct {
-	Address          string      `json:"address"`
-	Auth             string      `json:"auth"`
-	Username         string      `json:"username"`
-	CertPath         string      `json:"certPath"`
-	Servers          []string    `json:"servers"`
+	Address          string      `json:"address" yaml:"address"`
+	Auth             string      `json:"auth" yaml:"auth"`
+	Username         string      `json:"username" yaml:"username"`
+	CertPath         string      `json:"certPath" yaml:"certPath"`
+	Servers          []string    `json:"servers" yaml:"servers"`
 	SSHClient        *ssh.Client `json:"-"`
-	ThrowNotFoundErr bool        `json:"throwNotFoundErr"` // 是否 抛出 值 不存在异常
+	ThrowNotFoundErr bool        `json:"throwNotFoundErr" yaml:"throwNotFoundErr"` // 是否 抛出 值 不存在异常
 }
 
 // New 创建Redis服务

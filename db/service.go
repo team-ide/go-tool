@@ -17,28 +17,28 @@ import (
 )
 
 type Config struct {
-	Type            string `json:"type,omitempty"`
-	Host            string `json:"host,omitempty"`
-	Port            int    `json:"port,omitempty"`
-	Database        string `json:"database,omitempty"`
-	DbName          string `json:"dbName,omitempty"`
-	Username        string `json:"username,omitempty"`
-	Password        string `json:"password,omitempty"`
-	OdbcDsn         string `json:"odbcDsn,omitempty"`
-	OdbcDialectName string `json:"odbcDialectName,omitempty"`
+	Type            string `json:"type,omitempty" yaml:"type,omitempty"`
+	Host            string `json:"host,omitempty" yaml:"host,omitempty"`
+	Port            int    `json:"port,omitempty" yaml:"port,omitempty"`
+	Database        string `json:"database,omitempty" yaml:"database,omitempty"`
+	DbName          string `json:"dbName,omitempty" yaml:"dbName,omitempty"`
+	Username        string `json:"username,omitempty" yaml:"username,omitempty"`
+	Password        string `json:"password,omitempty" yaml:"password,omitempty"`
+	OdbcDsn         string `json:"odbcDsn,omitempty" yaml:"odbcDsn,omitempty"`
+	OdbcDialectName string `json:"odbcDialectName,omitempty" yaml:"odbcDialectName,omitempty"`
 
-	Schema       string      `json:"schema,omitempty"`
-	Sid          string      `json:"sid,omitempty"`
-	MaxIdleConn  int         `json:"maxIdleConn,omitempty"`
-	MaxOpenConn  int         `json:"maxOpenConn,omitempty"`
-	DatabasePath string      `json:"databasePath,omitempty"`
+	Schema       string      `json:"schema,omitempty" yaml:"schema,omitempty"`
+	Sid          string      `json:"sid,omitempty" yaml:"sid,omitempty"`
+	MaxIdleConn  int         `json:"maxIdleConn,omitempty" yaml:"maxIdleConn,omitempty"`
+	MaxOpenConn  int         `json:"maxOpenConn,omitempty" yaml:"maxOpenConn,omitempty"`
+	DatabasePath string      `json:"databasePath,omitempty" yaml:"databasePath,omitempty"`
 	SSHClient    *ssh.Client `json:"-"`
-	Dsn          string      `json:"dsn,omitempty"`
+	Dsn          string      `json:"dsn,omitempty" yaml:"dsn,omitempty"`
 
-	TlsConfig     string `json:"tlsConfig,omitempty"`
-	TlsRootCert   string `json:"tlsRootCert,omitempty"`
-	TlsClientCert string `json:"tlsClientCert,omitempty"`
-	TlsClientKey  string `json:"tlsClientKey,omitempty"`
+	TlsConfig     string `json:"tlsConfig,omitempty" yaml:"tlsConfig,omitempty"`
+	TlsRootCert   string `json:"tlsRootCert,omitempty" yaml:"tlsRootCert,omitempty"`
+	TlsClientCert string `json:"tlsClientCert,omitempty" yaml:"tlsClientCert,omitempty"`
+	TlsClientKey  string `json:"tlsClientKey,omitempty" yaml:"tlsClientKey,omitempty"`
 }
 
 // New 创建 db客户端

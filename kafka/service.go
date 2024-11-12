@@ -2,10 +2,10 @@ package kafka
 
 // Config kafka配置
 type Config struct {
-	Address  string `json:"address"`
-	Username string `json:"username,omitempty"`
-	Password string `json:"password,omitempty"`
-	CertPath string `json:"certPath,omitempty"`
+	Address  string `json:"address" yaml:"address"`
+	Username string `json:"username,omitempty" yaml:"username,omitempty"`
+	Password string `json:"password,omitempty" yaml:"password,omitempty"`
+	CertPath string `json:"certPath,omitempty" yaml:"certPath,omitempty"`
 }
 
 // New 创建kafka服务
