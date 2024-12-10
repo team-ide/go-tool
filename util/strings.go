@@ -350,3 +350,31 @@ func AnyJoin(sep string, es ...any) (res string) {
 	}
 	return
 }
+
+// IntJoin int 拼接
+func IntJoin(es []int, sep string) (res string) {
+	if len(es) == 0 {
+		return
+	}
+	for i, e := range es {
+		if i > 0 {
+			res += sep
+		}
+		res += fmt.Sprintf("%d", e)
+	}
+	return
+}
+
+// Int64Join int64 拼接
+func Int64Join(es []int64, sep string) (res string) {
+	if len(es) == 0 {
+		return
+	}
+	for i, e := range es {
+		if i > 0 {
+			res += sep
+		}
+		res += fmt.Sprintf("%d", e)
+	}
+	return
+}

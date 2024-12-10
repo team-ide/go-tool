@@ -491,6 +491,16 @@ StrPadRight("xx", 5, "0") 右侧补”0“达到5位长度`,
 			Func:    util.AnyJoin,
 		},
 		{
+			Name:    "intJoin",
+			Comment: `int 拼接`,
+			Func:    util.IntJoin,
+		},
+		{
+			Name:    "int64Join",
+			Comment: `int64 拼接`,
+			Func:    util.Int64Join,
+		},
+		{
 			Name:    "getNow",
 			Comment: `获取当前时间
 GetNow()`,
