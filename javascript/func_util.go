@@ -481,6 +481,16 @@ StrPadRight("xx", 5, "0") 右侧补”0“达到5位长度`,
 			Func:    util.TrimRight,
 		},
 		{
+			Name:    "stringJoin",
+			Comment: `字符串拼接`,
+			Func:    util.StringJoin,
+		},
+		{
+			Name:    "anyJoin",
+			Comment: `任意切片拼接`,
+			Func:    util.AnyJoin,
+		},
+		{
 			Name:    "getNow",
 			Comment: `获取当前时间
 GetNow()`,

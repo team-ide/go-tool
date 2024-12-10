@@ -331,3 +331,22 @@ func TrimLeft(arg string, trim string) string {
 func TrimRight(arg string, trim string) string {
 	return strings.TrimRight(arg, trim)
 }
+
+// StringJoin 字符串拼接
+func StringJoin(es []string, sep string) string {
+	return strings.Join(es, sep)
+}
+
+// AnyJoin 任意切片拼接
+func AnyJoin(sep string, es ...any) (res string) {
+	if len(es) == 0 {
+		return
+	}
+	for i, e := range es {
+		if i > 0 {
+			res += sep
+		}
+		res += GetStringValue(e)
+	}
+	return
+}
