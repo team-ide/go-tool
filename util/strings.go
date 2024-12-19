@@ -378,3 +378,18 @@ func Int64Join(es []int64, sep string) (res string) {
 	}
 	return
 }
+
+// GenStringJoin 生成 字符串 拼接
+// GenStringJoin(5, "xx", ",") 表示 生成 xx,xx,xx,xx,xx
+func GenStringJoin(len int, str string, sep string) (res string) {
+	if len <= 0 {
+		return
+	}
+	for i := 0; i < len; i++ {
+		if i > 0 {
+			res += sep
+		}
+		res += str
+	}
+	return
+}

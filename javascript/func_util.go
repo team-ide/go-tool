@@ -501,6 +501,12 @@ StrPadRight("xx", 5, "0") 右侧补”0“达到5位长度`,
 			Func:    util.Int64Join,
 		},
 		{
+			Name:    "genStringJoin",
+			Comment: `生成 字符串 拼接
+GenStringJoin(5, "xx", ",") 表示 生成 xx,xx,xx,xx,xx`,
+			Func:    util.GenStringJoin,
+		},
+		{
 			Name:    "getNow",
 			Comment: `获取当前时间
 GetNow()`,

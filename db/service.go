@@ -158,9 +158,9 @@ func (this_ *Service) Execs(sqlList []string, argsList [][]interface{}) (rowsAff
 	defer func() {
 		if e := recover(); e != nil {
 			err = errors.New(fmt.Sprint(e))
+			util.Logger.Error("Execs Error", zap.Any("sqlList", sqlList), zap.Any("argsList", argsList), zap.Error(err))
 		}
 		if err != nil {
-			util.Logger.Error("Execs Error", zap.Any("sqlList", sqlList), zap.Any("argsList", argsList), zap.Error(err))
 			err = errors.New("Execs error sql:" + strings.Join(sqlList, ";") + ",error:" + err.Error())
 		}
 	}()
@@ -180,9 +180,9 @@ func (this_ *Service) Count(sql string, args []interface{}) (count int64, err er
 	defer func() {
 		if e := recover(); e != nil {
 			err = errors.New(fmt.Sprint(e))
+			util.Logger.Error("Count Error", zap.Any("sql", sql), zap.Any("args", args), zap.Error(err))
 		}
 		if err != nil {
-			util.Logger.Error("Count Error", zap.Any("sql", sql), zap.Any("args", args), zap.Error(err))
 			err = errors.New("Count error sql:" + sql + ",error:" + err.Error())
 		}
 	}()
@@ -199,9 +199,9 @@ func (this_ *Service) QueryOne(sql string, args []interface{}, one interface{}) 
 	defer func() {
 		if e := recover(); e != nil {
 			err = errors.New(fmt.Sprint(e))
+			util.Logger.Error("QueryOne Error", zap.Any("sql", sql), zap.Any("args", args), zap.Error(err))
 		}
 		if err != nil {
-			util.Logger.Error("QueryOne Error", zap.Any("sql", sql), zap.Any("args", args), zap.Error(err))
 			err = errors.New("QueryOne error sql:" + sql + ",error:" + err.Error())
 		}
 	}()
@@ -219,9 +219,9 @@ func (this_ *Service) Query(sql string, args []interface{}, list interface{}) (e
 	defer func() {
 		if e := recover(); e != nil {
 			err = errors.New(fmt.Sprint(e))
+			util.Logger.Error("Query Error", zap.Any("sql", sql), zap.Any("args", args), zap.Error(err))
 		}
 		if err != nil {
-			util.Logger.Error("Query Error", zap.Any("sql", sql), zap.Any("args", args), zap.Error(err))
 			err = errors.New("Query error sql:" + sql + ",error:" + err.Error())
 		}
 	}()
@@ -239,9 +239,9 @@ func (this_ *Service) QueryMap(sql string, args []interface{}) (list []map[strin
 	defer func() {
 		if e := recover(); e != nil {
 			err = errors.New(fmt.Sprint(e))
+			util.Logger.Error("QueryMap Error", zap.Any("sql", sql), zap.Any("args", args), zap.Error(err))
 		}
 		if err != nil {
-			util.Logger.Error("QueryMap Error", zap.Any("sql", sql), zap.Any("args", args), zap.Error(err))
 			err = errors.New("QueryMap error sql:" + sql + ",error:" + err.Error())
 		}
 	}()
@@ -259,9 +259,9 @@ func (this_ *Service) QueryPage(sql string, args []interface{}, list interface{}
 	defer func() {
 		if e := recover(); e != nil {
 			err = errors.New(fmt.Sprint(e))
+			util.Logger.Error("QueryPage Error", zap.Any("sql", sql), zap.Any("args", args), zap.Error(err))
 		}
 		if err != nil {
-			util.Logger.Error("QueryPage Error", zap.Any("sql", sql), zap.Any("args", args), zap.Error(err))
 			err = errors.New("QueryPage error sql:" + sql + ",error:" + err.Error())
 		}
 	}()
@@ -279,9 +279,9 @@ func (this_ *Service) QueryMapPage(sql string, args []interface{}, page *worker.
 	defer func() {
 		if e := recover(); e != nil {
 			err = errors.New(fmt.Sprint(e))
+			util.Logger.Error("QueryMapPage Error", zap.Any("sql", sql), zap.Any("args", args), zap.Error(err))
 		}
 		if err != nil {
-			util.Logger.Error("QueryMapPage Error", zap.Any("sql", sql), zap.Any("args", args), zap.Error(err))
 			err = errors.New("QueryMapPage error sql:" + sql + ",error:" + err.Error())
 		}
 	}()
