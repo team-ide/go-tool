@@ -663,7 +663,9 @@ func (this_ *Service) DataListExec(param *Param, ownerName string, tableName str
 	insertDataList []map[string]interface{},
 	updateDataList []map[string]interface{}, updateWhereDataList []map[string]interface{},
 	deleteDataList []map[string]interface{},
-) (err error) {
+) (info *ExecuteInfo, err error) {
+	info = &ExecuteInfo{}
+
 	var appendOwnerName = ownerName
 
 	dia := this_.GetTargetDialect(param)
@@ -679,6 +681,8 @@ func (this_ *Service) DataListExec(param *Param, ownerName string, tableName str
 		}
 		sqlList = append(sqlList, sqlList_...)
 		valuesList = append(valuesList, valuesList_...)
+		info.InsertCount = len(sqlList_)
+
 	}
 	if len(updateDataList) > 0 {
 		sqlList_, valuesList_, err = dia.DataListUpdateSql(param.ParamModel, appendOwnerName, tableName, columnList, updateDataList, updateWhereDataList)
@@ -687,6 +691,7 @@ func (this_ *Service) DataListExec(param *Param, ownerName string, tableName str
 		}
 		sqlList = append(sqlList, sqlList_...)
 		valuesList = append(valuesList, valuesList_...)
+		info.UpdateCount = len(sqlList_)
 	}
 	if len(deleteDataList) > 0 {
 		sqlList_, valuesList_, err = dia.DataListDeleteSql(param.ParamModel, appendOwnerName, tableName, columnList, deleteDataList)
@@ -695,11 +700,19 @@ func (this_ *Service) DataListExec(param *Param, ownerName string, tableName str
 		}
 		sqlList = append(sqlList, sqlList_...)
 		valuesList = append(valuesList, valuesList_...)
+		info.DeleteCount = len(sqlList_)
 	}
-	_, errSql, errArgs, err := worker.DoOwnerExecs(this_.Dialect, this_.db, appendOwnerName, sqlList, valuesList)
+
+	startTime := time.Now().UnixMilli()
+	resultList, errSql, errArgs, err := worker.DoOwnerExecs(this_.Dialect, this_.db, appendOwnerName, sqlList, valuesList)
+	info.Use = time.Now().UnixMilli() - startTime
 	if err != nil {
 		util.Logger.Error("DataListExec error", zap.Any("errSql", errSql), zap.Any("errArgs", errArgs), zap.Error(err))
 		return
+	}
+	for _, r := range resultList {
+		s, _ := r.RowsAffected()
+		info.Success += s
 	}
 
 	return
@@ -1085,6 +1098,14 @@ type Param struct {
 	Charset              string  `json:"charset"`
 
 	FormatIndexName bool `json:"formatIndexName"`
+}
+
+type ExecuteInfo struct {
+	InsertCount int   `json:"insertCount"`
+	UpdateCount int   `json:"updateCount"`
+	DeleteCount int   `json:"deleteCount"`
+	Success     int64 `json:"success"`
+	Use         int64 `json:"use"`
 }
 
 func sortName(name string, size int) (res string) {

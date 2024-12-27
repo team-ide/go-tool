@@ -82,7 +82,7 @@ type IService interface {
 		insertDataList []map[string]interface{},
 		updateDataList []map[string]interface{}, updateWhereDataList []map[string]interface{},
 		deleteDataList []map[string]interface{},
-	) (err error)
+	) (info *ExecuteInfo, err error)
 
 	// TableData 根据 一些 条件 查询 表数据
 	TableData(param *Param, ownerName string, tableName string, columnList []*dialect.ColumnModel, whereList []*dialect.Where, orderList []*dialect.Order, pageSize int, pageNo int) (dataListResult DataListResult, err error)
