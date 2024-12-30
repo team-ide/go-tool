@@ -3,6 +3,7 @@ package metric
 import (
 	"fmt"
 	"github.com/team-ide/go-tool/util"
+	"strconv"
 	"time"
 )
 
@@ -132,6 +133,104 @@ var (
 		Label: "T99",
 		GetCol: func(count *Count, options *Options) (res string) {
 			res = GetTableTimeOut(util.StringToFloat64(count.T99), count.T99, options)
+			return
+		},
+	}
+	TableColumnUse100 = &TableColumn{
+		Label: "100ms",
+		GetCol: func(count *Count, options *Options) (res string) {
+			if options.AddHtmlFormat {
+				res = "%d <br> %d"
+			} else {
+				res = "%d / %d"
+			}
+			v := count.Use4000 + count.Use3000 + count.Use2000 + count.Use1000 + count.Use500 + count.Use200 + count.Use100
+			p := strconv.FormatFloat(float64(v)*100/float64(count.Count), 'f', 2, 64)
+			res = fmt.Sprintf(res, p+"%", v)
+			return
+		},
+	}
+	TableColumnUse200 = &TableColumn{
+		Label: "200ms",
+		GetCol: func(count *Count, options *Options) (res string) {
+			if options.AddHtmlFormat {
+				res = "%d <br> %d"
+			} else {
+				res = "%d / %d"
+			}
+			v := count.Use4000 + count.Use3000 + count.Use2000 + count.Use1000 + count.Use500 + count.Use200
+			p := strconv.FormatFloat(float64(v)*100/float64(count.Count), 'f', 2, 64)
+			res = fmt.Sprintf(res, p+"%", v)
+			return
+		},
+	}
+	TableColumnUse500 = &TableColumn{
+		Label: "500ms",
+		GetCol: func(count *Count, options *Options) (res string) {
+			if options.AddHtmlFormat {
+				res = "%d <br> %d"
+			} else {
+				res = "%d / %d"
+			}
+			v := count.Use4000 + count.Use3000 + count.Use2000 + count.Use1000 + count.Use500
+			p := strconv.FormatFloat(float64(v)*100/float64(count.Count), 'f', 2, 64)
+			res = fmt.Sprintf(res, p+"%", v)
+			return
+		},
+	}
+	TableColumnUse1000 = &TableColumn{
+		Label: "1000ms",
+		GetCol: func(count *Count, options *Options) (res string) {
+			if options.AddHtmlFormat {
+				res = "%d <br> %d"
+			} else {
+				res = "%d / %d"
+			}
+			v := count.Use4000 + count.Use3000 + count.Use2000 + count.Use1000
+			p := strconv.FormatFloat(float64(v)*100/float64(count.Count), 'f', 2, 64)
+			res = fmt.Sprintf(res, p+"%", v)
+			return
+		},
+	}
+	TableColumnUse2000 = &TableColumn{
+		Label: "2000ms",
+		GetCol: func(count *Count, options *Options) (res string) {
+			if options.AddHtmlFormat {
+				res = "%d <br> %d"
+			} else {
+				res = "%d / %d"
+			}
+			v := count.Use4000 + count.Use3000 + count.Use2000
+			p := strconv.FormatFloat(float64(v)*100/float64(count.Count), 'f', 2, 64)
+			res = fmt.Sprintf(res, p+"%", v)
+			return
+		},
+	}
+	TableColumnUse3000 = &TableColumn{
+		Label: "3000ms",
+		GetCol: func(count *Count, options *Options) (res string) {
+			if options.AddHtmlFormat {
+				res = "%d <br> %d"
+			} else {
+				res = "%d / %d"
+			}
+			v := count.Use4000 + count.Use3000
+			p := strconv.FormatFloat(float64(v)*100/float64(count.Count), 'f', 2, 64)
+			res = fmt.Sprintf(res, p+"%", v)
+			return
+		},
+	}
+	TableColumnUse4000 = &TableColumn{
+		Label: "4000ms",
+		GetCol: func(count *Count, options *Options) (res string) {
+			if options.AddHtmlFormat {
+				res = "%d <br> %d"
+			} else {
+				res = "%d / %d"
+			}
+			v := count.Use4000
+			p := strconv.FormatFloat(float64(v)*100/float64(count.Count), 'f', 2, 64)
+			res = fmt.Sprintf(res, p+"%", v)
 			return
 		},
 	}

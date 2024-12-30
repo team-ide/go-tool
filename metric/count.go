@@ -9,6 +9,13 @@ import (
 var (
 	defaultTime         = -99999
 	defaultTime64 int64 = -99999
+	Use4000             = 1000000 * 4000
+	Use3000             = 1000000 * 3000
+	Use2000             = 1000000 * 2000
+	Use1000             = 1000000 * 1000
+	Use500              = 1000000 * 500
+	Use200              = 1000000 * 200
+	Use100              = 1000000 * 100
 )
 
 func CountItems(itemList *[]*Item, countTop bool) (count *Count) {
@@ -28,6 +35,21 @@ func CountItems(itemList *[]*Item, countTop bool) (count *Count) {
 			}
 			if count.MaxUseTime == defaultTime || one.UseTime > count.MaxUseTime {
 				count.MaxUseTime = one.UseTime
+			}
+			if one.UseTime > Use4000 {
+				count.Use4000++
+			} else if one.UseTime > Use3000 {
+				count.Use3000++
+			} else if one.UseTime > Use2000 {
+				count.Use2000++
+			} else if one.UseTime > Use1000 {
+				count.Use1000++
+			} else if one.UseTime > Use500 {
+				count.Use500++
+			} else if one.UseTime > Use200 {
+				count.Use200++
+			} else if one.UseTime > Use100 {
+				count.Use100++
 			}
 		}
 
@@ -109,6 +131,14 @@ func CountCounts(countList []*Count, countTop bool) (count *Count) {
 
 		count.SuccessCount += one.SuccessCount
 		count.ErrorCount += one.ErrorCount
+
+		count.Use4000 += one.Use4000
+		count.Use3000 += one.Use3000
+		count.Use2000 += one.Use2000
+		count.Use1000 += one.Use1000
+		count.Use500 += one.Use500
+		count.Use200 += one.Use200
+		count.Use100 += one.Use100
 	}
 	if count.MinUseTime == defaultTime {
 		count.MinUseTime = 0
@@ -173,6 +203,14 @@ func WorkersCount(countList []*Count, countTop bool) (count *Count) {
 
 		count.SuccessCount += one.SuccessCount
 		count.ErrorCount += one.ErrorCount
+
+		count.Use4000 += one.Use4000
+		count.Use3000 += one.Use3000
+		count.Use2000 += one.Use2000
+		count.Use1000 += one.Use1000
+		count.Use500 += one.Use500
+		count.Use200 += one.Use200
+		count.Use100 += one.Use100
 	}
 	if count.MinUseTime == defaultTime {
 		count.MinUseTime = 0
@@ -220,6 +258,13 @@ type Count struct {
 	T80          string  `json:"t80"`         // TOP 80 表示 百分之 80 的调用超过这个时间 毫秒 保留 2位小数
 	T90          string  `json:"t90"`         // TOP 90 表示 百分之 90 的调用超过这个时间 毫秒 保留 2位小数
 	T99          string  `json:"t99"`         // TOP 99 表示 百分之 99 的调用超过这个时间 毫秒 保留 2位小数
+	Use100       int64   `json:"use100"`      // 大于 等于 100 毫秒
+	Use200       int64   `json:"use200"`      // 大于 等于 200 毫秒
+	Use500       int64   `json:"use500"`      // 大于 等于 500 毫秒
+	Use1000      int64   `json:"use1000"`     // 大于 等于 1000 毫秒
+	Use2000      int64   `json:"use2000"`     // 大于 等于 2000 毫秒
+	Use3000      int64   `json:"use3000"`     // 大于 等于 3000 毫秒
+	Use4000      int64   `json:"use4000"`     // 大于 等于 4000 毫秒
 	useTimes     *[]int
 }
 
