@@ -140,9 +140,9 @@ var (
 		Label: "100ms",
 		GetCol: func(count *Count, options *Options) (res string) {
 			if options.AddHtmlFormat {
-				res = "%d <br> %d"
+				res = "%s <br> %d"
 			} else {
-				res = "%d / %d"
+				res = "%s / %d"
 			}
 			v := count.Use4000 + count.Use3000 + count.Use2000 + count.Use1000 + count.Use500 + count.Use200 + count.Use100
 			p := strconv.FormatFloat(float64(v)*100/float64(count.Count), 'f', 2, 64)
@@ -154,9 +154,9 @@ var (
 		Label: "200ms",
 		GetCol: func(count *Count, options *Options) (res string) {
 			if options.AddHtmlFormat {
-				res = "%d <br> %d"
+				res = "%s <br> %d"
 			} else {
-				res = "%d / %d"
+				res = "%s / %d"
 			}
 			v := count.Use4000 + count.Use3000 + count.Use2000 + count.Use1000 + count.Use500 + count.Use200
 			p := strconv.FormatFloat(float64(v)*100/float64(count.Count), 'f', 2, 64)
@@ -168,9 +168,9 @@ var (
 		Label: "500ms",
 		GetCol: func(count *Count, options *Options) (res string) {
 			if options.AddHtmlFormat {
-				res = "%d <br> %d"
+				res = "%s <br> %d"
 			} else {
-				res = "%d / %d"
+				res = "%s / %d"
 			}
 			v := count.Use4000 + count.Use3000 + count.Use2000 + count.Use1000 + count.Use500
 			p := strconv.FormatFloat(float64(v)*100/float64(count.Count), 'f', 2, 64)
@@ -182,9 +182,9 @@ var (
 		Label: "1000ms",
 		GetCol: func(count *Count, options *Options) (res string) {
 			if options.AddHtmlFormat {
-				res = "%d <br> %d"
+				res = "%s <br> %d"
 			} else {
-				res = "%d / %d"
+				res = "%s / %d"
 			}
 			v := count.Use4000 + count.Use3000 + count.Use2000 + count.Use1000
 			p := strconv.FormatFloat(float64(v)*100/float64(count.Count), 'f', 2, 64)
@@ -196,9 +196,9 @@ var (
 		Label: "2000ms",
 		GetCol: func(count *Count, options *Options) (res string) {
 			if options.AddHtmlFormat {
-				res = "%d <br> %d"
+				res = "%s <br> %d"
 			} else {
-				res = "%d / %d"
+				res = "%s / %d"
 			}
 			v := count.Use4000 + count.Use3000 + count.Use2000
 			p := strconv.FormatFloat(float64(v)*100/float64(count.Count), 'f', 2, 64)
@@ -210,9 +210,9 @@ var (
 		Label: "3000ms",
 		GetCol: func(count *Count, options *Options) (res string) {
 			if options.AddHtmlFormat {
-				res = "%d <br> %d"
+				res = "%s <br> %d"
 			} else {
-				res = "%d / %d"
+				res = "%s / %d"
 			}
 			v := count.Use4000 + count.Use3000
 			p := strconv.FormatFloat(float64(v)*100/float64(count.Count), 'f', 2, 64)
@@ -224,9 +224,9 @@ var (
 		Label: "4000ms",
 		GetCol: func(count *Count, options *Options) (res string) {
 			if options.AddHtmlFormat {
-				res = "%d <br> %d"
+				res = "%s <br> %d"
 			} else {
-				res = "%d / %d"
+				res = "%s / %d"
 			}
 			v := count.Use4000
 			p := strconv.FormatFloat(float64(v)*100/float64(count.Count), 'f', 2, 64)
