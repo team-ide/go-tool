@@ -5,7 +5,7 @@ go 1.18
 replace github.com/dop251/goja => github.com/team-ide/goja v1.0.5
 
 require (
-	gitee.com/opengauss/openGauss-connector-go-pq v1.0.4
+	gitee.com/opengauss/openGauss-connector-go-pq v1.0.7
 	github.com/Shopify/sarama v1.38.1
 	github.com/apache/thrift v0.17.0
 	github.com/dop251/goja v0.0.0-20240516125602-ccbae20bcec2
@@ -20,7 +20,7 @@ require (
 	github.com/shopspring/decimal v1.4.0
 	github.com/tealeg/xlsx/v3 v3.3.12
 	github.com/team-ide/cron v1.0.1
-	github.com/team-ide/go-dialect v1.9.28
+	github.com/team-ide/go-dialect v1.9.29
 	github.com/team-ide/go-driver v1.3.6
 	github.com/team-ide/go-interpreter v0.1.2
 	go.mongodb.org/mongo-driver v1.17.1
