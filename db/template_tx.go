@@ -6,14 +6,17 @@ import (
 	"errors"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 	"strings"
 	"sync"
 )
 
 var (
-	contextDbTxName = proto.String("db:template:tx")
+	contextDbTxName = new(string)
 )
+
+func init() {
+	*contextDbTxName = "db:template:tx"
+}
 
 func OpenTxContext(ctx context.Context) (res context.Context, err error) {
 	res = ctx
