@@ -18,16 +18,16 @@ require (
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/shopspring/decimal v1.4.0
-	github.com/tealeg/xlsx/v3 v3.3.10
+	github.com/tealeg/xlsx/v3 v3.3.12
 	github.com/team-ide/cron v1.0.1
-	github.com/team-ide/go-dialect v1.9.27
+	github.com/team-ide/go-dialect v1.9.28
 	github.com/team-ide/go-driver v1.3.6
 	github.com/team-ide/go-interpreter v0.1.2
 	go.mongodb.org/mongo-driver v1.17.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.28.0
 	golang.org/x/text v0.19.0
-	google.golang.org/protobuf v1.34.1
+	google.golang.org/protobuf v1.36.5
 )
 
 require (
