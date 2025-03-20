@@ -12,13 +12,15 @@ import (
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
+	"net/url"
 )
 
 func init() {
 
 	err := db.AddDatabaseType(&db.DatabaseType{
 		NewDb: func(config *db.Config) (db *sql.DB, err error) {
-			dsn := fmt.Sprintf("kingbase://%s:%s@%s:%d/%s?sslmode=disable", config.Username, config.Password, config.Host, config.Port, config.DbName)
+			password := url.PathEscape(config.Password)
+			dsn := fmt.Sprintf("kingbase://%s:%s@%s:%d/%s?sslmode=disable", config.Username, password, config.Host, config.Port, config.DbName)
 			if config.Schema != "" {
 				dsn += "&search_path=" + config.Schema
 			}

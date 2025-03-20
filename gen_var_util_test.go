@@ -137,7 +137,7 @@ import (
 )
 
 func (this_ *Context) initUtilVar() {
-	utilSpace := this_.NewVarFuncSpace()
+	utilSpace := this_.NewVarSpace()
 	utilSpace.PackImpl = "github.com/team-ide/go-tool/util"
 	utilSpace.PackAsName = "util"
 	this_.AddVar("util", utilSpace)
@@ -175,13 +175,17 @@ func (this_ *Context) initUtilVar() {
 		HasError: true,`
 		}
 		genContent += `
-	utilSpace.AddVar("` + name + `", &VarFunc{
-		VarFuncSpace: utilSpace,
+	this_.AddVar("` + name + `", &VarFunc{
+		VarBase:    utilSpace.VarBase,
 		ScriptName:  "` + name + `",
 		Args: []*parser_tm.FuncArgNode{` + argStr + `
 		},` + returnStr + `
 	})
-	this_.AddVar("` + name + `", utilSpace.getVar("` + name + `"))
+	utilSpace.AddVar("` + name + `", &VarFunc{
+		ScriptName:  "` + name + `",
+		Args: []*parser_tm.FuncArgNode{` + argStr + `
+		},` + returnStr + `
+	})
 `
 	}
 	genContent += `

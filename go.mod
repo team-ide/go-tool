@@ -2,7 +2,7 @@ module github.com/team-ide/go-tool
 
 go 1.18
 
-replace github.com/dop251/goja => github.com/team-ide/goja v1.0.3
+replace github.com/dop251/goja => github.com/team-ide/goja v1.0.5
 
 require (
 	gitee.com/opengauss/openGauss-connector-go-pq v1.0.4
@@ -20,8 +20,8 @@ require (
 	github.com/shopspring/decimal v1.4.0
 	github.com/tealeg/xlsx/v3 v3.3.10
 	github.com/team-ide/cron v1.0.1
-	github.com/team-ide/go-dialect v1.9.24
-	github.com/team-ide/go-driver v1.3.4
+	github.com/team-ide/go-dialect v1.9.27
+	github.com/team-ide/go-driver v1.3.6
 	github.com/team-ide/go-interpreter v0.1.2
 	go.mongodb.org/mongo-driver v1.17.1
 	go.uber.org/zap v1.27.0
@@ -39,7 +39,7 @@ require (
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/dlclark/regexp2 v1.7.0 // indirect
+	github.com/dlclark/regexp2 v1.11.4 // indirect
 	github.com/eapache/go-resiliency v1.3.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230111030713-bf00bc1b83b6 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
