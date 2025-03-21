@@ -217,6 +217,12 @@ func (this_ *Service) Pull(groupId string, topics []string, PullSize int, PullTi
 	if err != nil {
 		return
 	}
+	defer func() {
+		e := group.Close()
+		if e != nil {
+			util.Logger.Error("group close error", zap.Error(e))
+		}
+	}()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(PullTimeout))
 	handler := &consumerGroupHandler{
 		size:   PullSize,
@@ -224,22 +230,15 @@ func (this_ *Service) Pull(groupId string, topics []string, PullSize int, PullTi
 	}
 	util.Logger.Info("kafka pull start", zap.Any("topics", topics), zap.Any("groupId", groupId), zap.Any("timeout", PullTimeout))
 	err = group.Consume(ctx, topics, handler)
-
 	util.Logger.Info("kafka pull end", zap.Any("topics", topics), zap.Any("groupId", groupId), zap.Any("timeout", PullTimeout))
 	if err != nil {
 		util.Logger.Error("group consume error", zap.Error(err))
+		return
 	}
 
-	err = group.Close()
-	if err != nil {
-		util.Logger.Error("group close error", zap.Error(err))
-	}
 	for _, one := range handler.messages {
 		var msg *Message
-		msg, err = ConsumerMessageToMessage(keyType, valueType, one)
-		if err != nil {
-			return
-		}
+		msg = ConsumerMessageToMessage(keyType, valueType, one)
 		msgList = append(msgList, msg)
 	}
 	return
@@ -901,7 +900,7 @@ func MessageToProducerMessage(msg *Message) (producerMessage *sarama.ProducerMes
 	return
 }
 
-func ConsumerMessageToMessage(keyType string, valueType string, consumerMessage *sarama.ConsumerMessage) (msg *Message, err error) {
+func ConsumerMessageToMessage(keyType string, valueType string, consumerMessage *sarama.ConsumerMessage) (msg *Message) {
 	var key string
 	var value string
 
