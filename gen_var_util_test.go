@@ -130,16 +130,16 @@ func TestGenVarUtil(t *testing.T) {
 
 	fmt.Println("--------------------", "func info list", "----------")
 
-	genContent := `package builder_golang
+	genContent := `package compiler
 
 import (
+	"github.com/team-ide/go-tool/util"
 	"maker/parser_tm"
 )
 
 func (this_ *Context) initUtilVar() {
 	utilSpace := this_.NewVarSpace()
-	utilSpace.PackImpl = "github.com/team-ide/go-tool/util"
-	utilSpace.PackAsName = "util"
+	utilSpace.PackType = "util"
 	this_.AddVar("util", utilSpace)
 
 `
@@ -168,7 +168,7 @@ func (this_ *Context) initUtilVar() {
 			}
 
 			returnStr += `
-		Return: &parser_tm.FuncReturnNode{Name: "` + funcInfo.Return.Name + `", Type: ` + ret + `},`
+		Result: &FuncResult{Name: "` + funcInfo.Return.Name + `", Type: ` + ret + `},`
 		}
 		if funcInfo.HasError {
 			returnStr += `
@@ -178,13 +178,15 @@ func (this_ *Context) initUtilVar() {
 	this_.AddVar("` + name + `", &VarFunc{
 		VarBase:    utilSpace.VarBase,
 		ScriptName:  "` + name + `",
-		Args: []*parser_tm.FuncArgNode{` + argStr + `
+		Args: []*FuncArg{` + argStr + `
 		},` + returnStr + `
+		callFunc:  util.` + name + `,
 	})
 	utilSpace.AddVar("` + name + `", &VarFunc{
 		ScriptName:  "` + name + `",
-		Args: []*parser_tm.FuncArgNode{` + argStr + `
+		Args: []*FuncArg{` + argStr + `
 		},` + returnStr + `
+		callFunc:  util.` + name + `,
 	})
 `
 	}
@@ -192,9 +194,10 @@ func (this_ *Context) initUtilVar() {
 	return
 }`
 
-	f, err := os.Create(rootDir + "/builder_golang/var_util.go")
+	f, err := os.Create(rootDir + "/compiler/var_util.go")
 	if err != nil {
 		panic("os.Create error:" + err.Error())
 	}
+	
 	_, _ = f.WriteString(genContent)
 }
