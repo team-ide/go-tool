@@ -406,10 +406,7 @@ func (this_ *V7Service) Search(indexName string, pageIndex int, pageSize int, wh
 				Version: one.Version,
 			}
 			if one.Source != nil {
-				bs, _ := json.Marshal(one.Source)
-				if bs != nil {
-					data.Source = string(bs)
-				}
+				data.Source, _ = util.ObjToJson(one.Source)
 
 			}
 			res.Hits = append(res.Hits, data)
@@ -649,10 +646,7 @@ func (this_ *V7Service) Scroll(indexName string, scrollId string, pageSize int, 
 				Version: one.Version,
 			}
 			if one.Source != nil {
-				bs, _ := json.Marshal(one.Source)
-				if bs != nil {
-					data.Source = string(bs)
-				}
+				data.Source, _ = util.ObjToJson(one.Source)
 
 			}
 			res.Hits = append(res.Hits, data)

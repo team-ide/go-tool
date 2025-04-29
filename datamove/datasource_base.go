@@ -1,7 +1,6 @@
 package datamove
 
 import (
-	"encoding/json"
 	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-tool/javascript"
 	"github.com/team-ide/go-tool/util"
@@ -179,9 +178,8 @@ func (this_ *DataSourceBase) DataToValues(progress *Progress, data map[string]in
 					v = find[ss[1]]
 				} else {
 					if find, ok := data[ss[0]]; ok && find != nil {
-						bs, _ := json.Marshal(find)
 						sub := map[string]interface{}{}
-						_ = json.Unmarshal(bs, &sub)
+						_ = util.ObjToObjByJson(find, &sub)
 						subData[ss[0]] = sub
 						v = sub[ss[1]]
 					}

@@ -2,7 +2,6 @@ package thrift
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/team-ide/go-tool/thrift/test/service"
@@ -62,8 +61,8 @@ func TestServiceClient(t *testing.T) {
 		panic(err)
 	}
 	fmt.Println("Send result:", res)
-	bs, _ := json.Marshal(res)
-	fmt.Println("Send result JSON:", string(bs))
+	s, _ := util.ObjToJson(res)
+	fmt.Println("Send result JSON:", s)
 	time.Sleep(time.Second * 10)
 
 }
@@ -119,8 +118,8 @@ func TestServiceClientSetUserKey(t *testing.T) {
 		panic(err)
 	}
 	fmt.Println("Send result:", res)
-	bs, _ := json.Marshal(res)
-	fmt.Println("Send result JSON:", string(bs))
+	s, _ := util.ObjToJson(res)
+	fmt.Println("Send result JSON:", s)
 	time.Sleep(time.Second * 10)
 
 }

@@ -2,7 +2,6 @@ package redis
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
@@ -30,17 +29,10 @@ func NewServiceScript(config interface{}) (res map[string]interface{}, err error
 				return
 			}
 		} else {
-			var bs []byte
-			bs, err = json.Marshal(config)
-			if err != nil {
-				err = errors.New("config to json error:" + err.Error())
-				util.Logger.Error("NewServiceScript error", zap.Error(err))
-				return
-			}
 			var c3 = &Config{}
-			err = json.Unmarshal(bs, c3)
+			err = util.ObjToObjByJson(config, c3)
 			if err != nil {
-				err = errors.New("config to json error:" + err.Error())
+				err = errors.New("config to config by json error:" + err.Error())
 				util.Logger.Error("NewServiceScript error", zap.Error(err))
 				return
 			}

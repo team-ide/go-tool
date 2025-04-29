@@ -2,9 +2,9 @@ package db
 
 import (
 	"database/sql"
-	"encoding/json"
 	"github.com/team-ide/go-dialect/dialect"
 	"github.com/team-ide/go-dialect/worker"
+	"github.com/team-ide/go-tool/util"
 )
 
 type IService interface {
@@ -119,9 +119,10 @@ func ToOwnerModel(data interface{}) (res *dialect.OwnerModel) {
 	case []byte:
 		bs = tV
 	default:
-		bs, _ = json.Marshal(data)
+		_ = util.ObjToObjByJson(data, res)
+		return
 	}
-	_ = json.Unmarshal(bs, res)
+	_ = util.JSONDecodeUseNumber(bs, res)
 	return
 }
 
@@ -140,9 +141,10 @@ func ToTableModel(data interface{}) (res *dialect.TableModel) {
 	case []byte:
 		bs = tV
 	default:
-		bs, _ = json.Marshal(data)
+		_ = util.ObjToObjByJson(data, res)
+		return
 	}
-	_ = json.Unmarshal(bs, res)
+	_ = util.JSONDecodeUseNumber(bs, res)
 	return
 }
 
@@ -161,9 +163,10 @@ func ToColumnModel(data interface{}) (res *dialect.ColumnModel) {
 	case []byte:
 		bs = tV
 	default:
-		bs, _ = json.Marshal(data)
+		_ = util.ObjToObjByJson(data, res)
+		return
 	}
-	_ = json.Unmarshal(bs, res)
+	_ = util.JSONDecodeUseNumber(bs, res)
 	return
 }
 
@@ -182,9 +185,10 @@ func ToIndexModel(data interface{}) (res *dialect.IndexModel) {
 	case []byte:
 		bs = tV
 	default:
-		bs, _ = json.Marshal(data)
+		_ = util.ObjToObjByJson(data, res)
+		return
 	}
-	_ = json.Unmarshal(bs, res)
+	_ = util.JSONDecodeUseNumber(bs, res)
 	return
 }
 
@@ -203,9 +207,10 @@ func ToPrimaryKeyModel(data interface{}) (res *dialect.PrimaryKeyModel) {
 	case []byte:
 		bs = tV
 	default:
-		bs, _ = json.Marshal(data)
+		_ = util.ObjToObjByJson(data, res)
+		return
 	}
-	_ = json.Unmarshal(bs, res)
+	_ = util.JSONDecodeUseNumber(bs, res)
 	return
 }
 
@@ -224,9 +229,10 @@ func ToPage(data interface{}) (res *worker.Page) {
 	case []byte:
 		bs = tV
 	default:
-		bs, _ = json.Marshal(data)
+		_ = util.ObjToObjByJson(data, res)
+		return
 	}
-	_ = json.Unmarshal(bs, res)
+	_ = util.JSONDecodeUseNumber(bs, res)
 	return
 }
 
@@ -245,9 +251,10 @@ func ToTaskExportParam(data interface{}) (res *worker.TaskExportParam) {
 	case []byte:
 		bs = tV
 	default:
-		bs, _ = json.Marshal(data)
+		_ = util.ObjToObjByJson(data, res)
+		return
 	}
-	_ = json.Unmarshal(bs, res)
+	_ = util.JSONDecodeUseNumber(bs, res)
 	return
 }
 func ToTaskImportParam(data interface{}) (res *worker.TaskImportParam) {
@@ -265,9 +272,10 @@ func ToTaskImportParam(data interface{}) (res *worker.TaskImportParam) {
 	case []byte:
 		bs = tV
 	default:
-		bs, _ = json.Marshal(data)
+		_ = util.ObjToObjByJson(data, res)
+		return
 	}
-	_ = json.Unmarshal(bs, res)
+	_ = util.JSONDecodeUseNumber(bs, res)
 	return
 }
 
@@ -286,9 +294,10 @@ func ToTaskSyncParam(data interface{}) (res *worker.TaskSyncParam) {
 	case []byte:
 		bs = tV
 	default:
-		bs, _ = json.Marshal(data)
+		_ = util.ObjToObjByJson(data, res)
+		return
 	}
-	_ = json.Unmarshal(bs, res)
+	_ = util.JSONDecodeUseNumber(bs, res)
 	return
 }
 
@@ -307,9 +316,10 @@ func ToConfig(data interface{}) (res *Config) {
 	case []byte:
 		bs = tV
 	default:
-		bs, _ = json.Marshal(data)
+		_ = util.ObjToObjByJson(data, res)
+		return
 	}
-	_ = json.Unmarshal(bs, res)
+	_ = util.JSONDecodeUseNumber(bs, res)
 	return
 }
 
@@ -328,8 +338,9 @@ func ToParam(data interface{}) (res *Param) {
 	case []byte:
 		bs = tV
 	default:
-		bs, _ = json.Marshal(data)
+		_ = util.ObjToObjByJson(data, res)
+		return
 	}
-	_ = json.Unmarshal(bs, res)
+	_ = util.JSONDecodeUseNumber(bs, res)
 	return
 }

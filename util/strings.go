@@ -124,12 +124,11 @@ func GetStringValue(value interface{}) (valueString string) {
 	case *json.Number:
 		valueString = v.String()
 	default:
-		var bs []byte
-		bs, err := json.Marshal(value)
+		s, err := ObjToJson(value)
 		if err != nil {
 			valueString = fmt.Sprint(value)
 		} else {
-			valueString = string(bs)
+			valueString = s
 		}
 		break
 	}

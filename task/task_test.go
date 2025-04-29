@@ -1,7 +1,6 @@
 package task
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/team-ide/go-tool/metric"
 	"github.com/team-ide/go-tool/util"
@@ -28,15 +27,15 @@ func TestTask(t *testing.T) {
 	util.Logger.Info("task run end", zap.Any("task", task))
 
 	fmt.Println("-----总统计------")
-	bs, _ := json.Marshal(task.Metric.GetCount())
-	fmt.Println(string(bs))
+	s, _ := util.ObjToJson(task.Metric.GetCount())
+	fmt.Println(s)
 
 	fmt.Println("-----秒统计 开始------")
 	cs := task.Metric.GetSecondCounts()
 	for _, c := range cs {
 		fmt.Println("秒时间：", util.TimeFormat(time.UnixMilli(c.StartTime/int64(time.Millisecond)), "2006-01-02 15:04:05"))
-		bs, _ := json.Marshal(c)
-		fmt.Println(string(bs))
+		s, _ = util.ObjToJson(c)
+		fmt.Println(s)
 	}
 }
 

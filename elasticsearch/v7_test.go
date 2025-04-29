@@ -3,9 +3,9 @@ package elasticsearch
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"errors"
 	"github.com/olivere/elastic/v7"
+	"github.com/team-ide/go-tool/util"
 	"net/http"
 	"os"
 	"testing"
@@ -59,6 +59,6 @@ func TestHttps(t *testing.T) {
 		panic(err)
 		return
 	}
-	bs, _ := json.Marshal(res)
-	println("IndexNames:", string(bs))
+	s, _ := util.ObjToJson(res)
+	println("IndexNames:", s)
 }

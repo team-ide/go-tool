@@ -49,9 +49,9 @@ func (this_ *MethodParam) Read(ctx context.Context, inProtocol thrift.TProtocol)
 	}
 	//fmt.Println("MethodParam Read ResultType:", toJSON(this_.ResultType))
 	resultMap, err := ReadStructFields(ctx, inProtocol, fields)
-	//bs_, err := json.Marshal(resultMap)
+	//s, err := util.ObjToJson(resultMap)
 	//fmt.Println("MethodParam Read resultMap err:", err)
-	//fmt.Println("MethodParam Read resultMap:", string(bs_))
+	//fmt.Println("MethodParam Read resultMap:", s)
 	//fmt.Println("MethodParam Read resultMap:", toJSON(resultMap))
 	if resultMap != nil {
 		this_.Result = resultMap["success"]

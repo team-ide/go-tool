@@ -39,8 +39,8 @@ func TestWorkspace(t *testing.T) {
 	}
 
 	fmt.Println("Send result:", res)
-	bs, _ := json.Marshal(res)
-	fmt.Println("Send result JSON:", string(bs))
+	s, _ := util.ObjToJson(res)
+	fmt.Println("Send result JSON:", s)
 
 	ws2 := NewWorkspace(dir)
 
