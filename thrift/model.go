@@ -217,24 +217,24 @@ func WriteByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Fiel
 		data, ok := value.(map[string]any)
 		if !ok {
 			data = map[string]any{}
-			b, _ := util.ObjToJsonBuffer(value)
-			_ = util.JSONDecodeUseNumber(b.Bytes(), &data)
+			bs, _ := util.ObjToJsonBytes(value)
+			_ = util.JSONDecodeUseNumber(bs, &data)
 		}
 		err = WriteStructFields(ctx, protocol, fieldType.structObj.Name, fieldType.structObj.Fields, data)
 	case thrift.MAP:
 		data, ok := value.(map[any]any)
 		if !ok {
 			data = map[any]any{}
-			b, _ := util.ObjToJsonBuffer(value)
+			bs, _ := util.ObjToJsonBytes(value)
 
 			strMap := map[string]any{}
-			if e := util.JSONDecodeUseNumber(b.Bytes(), &strMap); e == nil {
+			if e := util.JSONDecodeUseNumber(bs, &strMap); e == nil {
 				for k, v := range strMap {
 					data[k] = v
 				}
 			} else {
 				intMap := map[int64]any{}
-				if e = util.JSONDecodeUseNumber(b.Bytes(), &intMap); e == nil {
+				if e = util.JSONDecodeUseNumber(bs, &intMap); e == nil {
 					for k, v := range intMap {
 						data[k] = v
 					}
@@ -247,16 +247,16 @@ func WriteByType(ctx context.Context, protocol thrift.TProtocol, fieldType *Fiel
 		data, ok := value.([]any)
 		if !ok {
 			data = []any{}
-			b, _ := util.ObjToJsonBuffer(value)
-			_ = util.JSONDecodeUseNumber(b.Bytes(), &data)
+			bs, _ := util.ObjToJsonBytes(value)
+			_ = util.JSONDecodeUseNumber(bs, &data)
 		}
 		err = WriteSet(ctx, protocol, fieldType.SetType, data)
 	case thrift.LIST:
 		data, ok := value.([]any)
 		if !ok {
 			data = []any{}
-			b, _ := util.ObjToJsonBuffer(value)
-			_ = util.JSONDecodeUseNumber(b.Bytes(), &data)
+			bs, _ := util.ObjToJsonBytes(value)
+			_ = util.JSONDecodeUseNumber(bs, &data)
 		}
 		err = WriteList(ctx, protocol, fieldType.ListType, data)
 	default:

@@ -109,12 +109,12 @@ func GetJsonHeader[T any](url string, header http.Header, response T) (res T, bo
 }
 
 func PostJson[T any](url string, data any, response T) (res T, body string, err error) {
-	b, err := ObjToJsonBuffer(data)
+	bs, err := ObjToJsonBytes(data)
 	if err != nil {
 		return
 	}
 
-	cR, err := HttpClient.Post(url, ContentTypeJson, bytes.NewReader(b.Bytes()))
+	cR, err := HttpClient.Post(url, ContentTypeJson, bytes.NewReader(bs))
 	if err != nil {
 		return
 	}
@@ -127,12 +127,12 @@ func PostJson[T any](url string, data any, response T) (res T, body string, err 
 }
 
 func PostJsonHeader[T any](url string, header http.Header, data any, response T) (res T, body string, err error) {
-	b, err := ObjToJsonBuffer(data)
+	bs, err := ObjToJsonBytes(data)
 	if err != nil {
 		return
 	}
 
-	r, err := http.NewRequest("POST", url, bytes.NewReader(b.Bytes()))
+	r, err := http.NewRequest("POST", url, bytes.NewReader(bs))
 	if err != nil {
 		return
 	}
