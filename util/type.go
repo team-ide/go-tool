@@ -1,7 +1,6 @@
 package util
 
 import (
-	"encoding/json"
 	"reflect"
 	"strconv"
 )
@@ -53,13 +52,13 @@ func GetValueByType(valueType reflect.Type, data interface{}) (res interface{}, 
 	case int, uint, int8, uint8, int16, uint16, int32, uint32, int64, uint64, float32, float64:
 		sV := GetStringValue(data)
 		if sV != "" {
-			err = json.Unmarshal([]byte(sV), &res)
+			err = JsonToObj(sV, &res)
 		}
 		break
 	default:
 		sV := GetStringValue(data)
 		if sV != "" {
-			err = json.Unmarshal([]byte(sV), &res)
+			err = JsonToObj(sV, &res)
 		}
 		break
 	}

@@ -1,7 +1,6 @@
 package util
 
 import (
-	"encoding/json"
 	"errors"
 	"os"
 	"reflect"
@@ -197,7 +196,7 @@ func StringTo[T any](str string, to T) (res T, err error) {
 	}
 	vV := reflect.New(vT)
 	v := vV.Interface()
-	err = json.Unmarshal([]byte(str), v)
+	err = JsonToObj(str, v)
 	if err != nil {
 		return
 	}

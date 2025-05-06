@@ -3,7 +3,6 @@ package util
 import (
 	"bytes"
 	"crypto/tls"
-	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"io"
@@ -50,7 +49,7 @@ func BindJsonBody(body io.ReadCloser, obj interface{}) (str string, err error) {
 	}
 	str = string(bs)
 	//fmt.Println("response body:", str)
-	err = json.Unmarshal(bs, obj)
+	err = JsonBytesToObj(bs, obj)
 	if err != nil {
 		err = errors.New("json [" + str + "] to object error:" + err.Error())
 		return

@@ -46,4 +46,18 @@ func TestJson(t *testing.T) {
 	for k, v := range data {
 		fmt.Println("key:", k, ",value:", v, ",type:", reflect.TypeOf(v))
 	}
+
+	var i int
+	err = JsonToObj("55", &i)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("string to int:", i)
+
+	var b byte
+	err = JsonToObj("55", &b)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("string to byte:", b)
 }

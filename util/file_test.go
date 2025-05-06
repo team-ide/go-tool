@@ -1,7 +1,6 @@
 package util
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -14,7 +13,7 @@ func TestLoadDirInfo(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	bs, _ := json.MarshalIndent(dirInfo, "", "  ")
+	bs, _ := ObjToMarshalIndent(dirInfo, "", "  ")
 	fmt.Println(string(bs))
 }
 

@@ -77,8 +77,7 @@ func TestSendMessageByServer(t *testing.T) {
 	})
 	args = append(args, 2)
 	w := bytes.NewBufferString("")
-	d := json.NewEncoder(w)
-	_ = d.Encode(args)
+	_ = util.JSONEncoderByWriter(w, args)
 	fmt.Println(w.String())
 
 	str := `{"message":"这是测试消息","messageType":2,"msgProperties":{},"targetID":4611686027042922242.1,"userID":4611686029164805890}`
@@ -90,7 +89,7 @@ func TestSendMessageByServer(t *testing.T) {
 	fmt.Println(reflect.TypeOf(data["targetID"]).String())
 	fmt.Println(data["targetID"].(json.Number).String())
 
-	bs, _ := json.MarshalIndent(data, "", "  ")
+	bs, _ := util.ObjToMarshalIndent(data, "", "  ")
 	fmt.Println(string(bs))
 
 	res, err := workspace.InvokeByServerAddress(`192.168.0.85:11203`, filename, "ChatService", "sendMessageByServer", args...)
@@ -100,7 +99,7 @@ func TestSendMessageByServer(t *testing.T) {
 
 	fmt.Println("Send result:", res)
 
-	bs, _ = json.MarshalIndent(res, "", "  ")
+	bs, _ = util.ObjToMarshalIndent(res, "", "  ")
 	fmt.Println("Send result JSON:", string(bs))
 }
 
@@ -130,6 +129,6 @@ func TestListIds(t *testing.T) {
 
 	fmt.Println("Send result:", res)
 
-	bs, _ := json.MarshalIndent(res, "", "  ")
+	bs, _ := util.ObjToMarshalIndent(res, "", "  ")
 	fmt.Println("Send result JSON:", string(bs))
 }

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/team-ide/go-tool/util"
 	"strconv"
 )
@@ -506,6 +507,10 @@ func toInt64(v any) (res int64, ok bool) {
 		return int64(f), true
 	}
 	if f, ok := v.(json.Number); ok {
+		res, _ = f.Int64()
+		return res, true
+	}
+	if f, ok := v.(jsoniter.Number); ok {
 		res, _ = f.Int64()
 		return res, true
 	}

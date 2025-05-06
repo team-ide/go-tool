@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"errors"
 	"github.com/olivere/elastic/v7"
 	"github.com/team-ide/go-tool/util"
@@ -183,9 +182,7 @@ func (this_ *V7Service) QuerySql(query string) (res *QuerySqlResult, err error) 
 	}
 
 	res = new(QuerySqlResult)
-	d := json.NewDecoder(r.BodyReader)
-	d.UseNumber()
-	err = d.Decode(res)
+	err = util.JSONDecodeByReader(r.BodyReader, res)
 	return
 }
 

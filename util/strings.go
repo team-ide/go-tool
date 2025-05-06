@@ -3,6 +3,7 @@ package util
 import (
 	"encoding/json"
 	"fmt"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/shopspring/decimal"
 	"strings"
 	"time"
@@ -122,6 +123,10 @@ func GetStringValue(value interface{}) (valueString string) {
 	case json.Number:
 		valueString = v.String()
 	case *json.Number:
+		valueString = v.String()
+	case jsoniter.Number:
+		valueString = v.String()
+	case *jsoniter.Number:
 		valueString = v.String()
 	default:
 		s, err := ObjToJson(value)
