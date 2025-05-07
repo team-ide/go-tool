@@ -116,6 +116,10 @@ func ToOwnerModel(data interface{}) (res *dialect.OwnerModel) {
 		return
 	case string:
 		bs = []byte(tV)
+	case *string:
+		if tV != nil {
+			bs = []byte(*tV)
+		}
 	case []byte:
 		bs = tV
 	default:
@@ -138,6 +142,10 @@ func ToTableModel(data interface{}) (res *dialect.TableModel) {
 		return
 	case string:
 		bs = []byte(tV)
+	case *string:
+		if tV != nil {
+			bs = []byte(*tV)
+		}
 	case []byte:
 		bs = tV
 	default:
@@ -160,6 +168,10 @@ func ToColumnModel(data interface{}) (res *dialect.ColumnModel) {
 		return
 	case string:
 		bs = []byte(tV)
+	case *string:
+		if tV != nil {
+			bs = []byte(*tV)
+		}
 	case []byte:
 		bs = tV
 	default:
@@ -182,6 +194,10 @@ func ToIndexModel(data interface{}) (res *dialect.IndexModel) {
 		return
 	case string:
 		bs = []byte(tV)
+	case *string:
+		if tV != nil {
+			bs = []byte(*tV)
+		}
 	case []byte:
 		bs = tV
 	default:
@@ -204,6 +220,10 @@ func ToPrimaryKeyModel(data interface{}) (res *dialect.PrimaryKeyModel) {
 		return
 	case string:
 		bs = []byte(tV)
+	case *string:
+		if tV != nil {
+			bs = []byte(*tV)
+		}
 	case []byte:
 		bs = tV
 	default:
@@ -226,6 +246,10 @@ func ToPage(data interface{}) (res *worker.Page) {
 		return
 	case string:
 		bs = []byte(tV)
+	case *string:
+		if tV != nil {
+			bs = []byte(*tV)
+		}
 	case []byte:
 		bs = tV
 	default:
@@ -248,6 +272,10 @@ func ToTaskExportParam(data interface{}) (res *worker.TaskExportParam) {
 		return
 	case string:
 		bs = []byte(tV)
+	case *string:
+		if tV != nil {
+			bs = []byte(*tV)
+		}
 	case []byte:
 		bs = tV
 	default:
@@ -269,6 +297,10 @@ func ToTaskImportParam(data interface{}) (res *worker.TaskImportParam) {
 		return
 	case string:
 		bs = []byte(tV)
+	case *string:
+		if tV != nil {
+			bs = []byte(*tV)
+		}
 	case []byte:
 		bs = tV
 	default:
@@ -291,6 +323,10 @@ func ToTaskSyncParam(data interface{}) (res *worker.TaskSyncParam) {
 		return
 	case string:
 		bs = []byte(tV)
+	case *string:
+		if tV != nil {
+			bs = []byte(*tV)
+		}
 	case []byte:
 		bs = tV
 	default:
@@ -313,6 +349,10 @@ func ToConfig(data interface{}) (res *Config) {
 		return
 	case string:
 		bs = []byte(tV)
+	case *string:
+		if tV != nil {
+			bs = []byte(*tV)
+		}
 	case []byte:
 		bs = tV
 	default:
@@ -335,6 +375,10 @@ func ToParam(data interface{}) (res *Param) {
 		return
 	case string:
 		bs = []byte(tV)
+	case *string:
+		if tV != nil {
+			bs = []byte(*tV)
+		}
 	case []byte:
 		bs = tV
 	default:

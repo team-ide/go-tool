@@ -296,6 +296,9 @@ func (this_ *DataSourceExcel) Write(progress *Progress, data *Data) (err error) 
 						case string:
 							c.SetString(t)
 							break
+						case *string:
+							c.SetString(*t)
+							break
 						default:
 							c.SetString(util.GetStringValue(v))
 							break

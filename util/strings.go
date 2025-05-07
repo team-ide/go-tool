@@ -94,6 +94,9 @@ func GetStringValue(value interface{}) (valueString string) {
 	case string:
 		valueString = v
 		break
+	case *string:
+		valueString = *v
+		break
 	case int, uint, int8, uint8, int16, uint16, int32, uint32, int64, uint64:
 		valueString = fmt.Sprintf("%d", v)
 		break
@@ -131,7 +134,7 @@ func GetStringValue(value interface{}) (valueString string) {
 	default:
 		s, err := ObjToJson(value)
 		if err != nil {
-			valueString = fmt.Sprint(value)
+			valueString = fmt.Sprintf("%v", value)
 		} else {
 			valueString = s
 		}
