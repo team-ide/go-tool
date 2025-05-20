@@ -3,11 +3,15 @@ package util
 import (
 	"math/rand"
 	"strconv"
+	"sync"
 	"time"
 )
 
 var (
-	randForInt = rand.New(rand.NewSource(time.Now().UnixNano()))
+	randForInt       = rand.New(rand.NewSource(time.Now().UnixNano()))
+	randForIntLock   sync.Mutex
+	randForInt64     = rand.New(rand.NewSource(time.Now().UnixNano()))
+	randForInt64Lock sync.Mutex
 )
 
 // RandomInt 获取随机数
@@ -16,6 +20,9 @@ var (
 // @return int "随机数"
 // RandomInt(1, 10)
 func RandomInt(min int, max int) (res int) {
+	randForIntLock.Lock()
+	defer randForIntLock.Unlock()
+
 	res = min + randForInt.Intn(max-min+1)
 	return
 }
@@ -26,7 +33,10 @@ func RandomInt(min int, max int) (res int) {
 // @return int64 "随机数"
 // RandomInt64(1, 10)
 func RandomInt64(min int64, max int64) (res int64) {
-	res = min + randForInt.Int63n(max-min+1)
+	randForInt64Lock.Lock()
+	defer randForInt64Lock.Unlock()
+	
+	res = min + randForInt64.Int63n(max-min+1)
 	return
 }
 
