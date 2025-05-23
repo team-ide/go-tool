@@ -180,7 +180,7 @@ func NewLocker() sync.Locker {
 	return &sync.Mutex{}
 }
 
-func To[T any](from any, to T) (res T) {
+func To[T any](from any) (res T) {
 	if from == nil {
 		return
 	}
@@ -188,7 +188,8 @@ func To[T any](from any, to T) (res T) {
 	return
 }
 
-func StringTo[T any](str string, to T) (res T, err error) {
+func StringTo[T any](str string) (res T, err error) {
+	var to T
 	vT := reflect.TypeOf(to)
 	var isPtr = vT.Kind() == reflect.Ptr
 	if isPtr {

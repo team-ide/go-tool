@@ -47,6 +47,9 @@ func New(config *Config) (IService, error) {
 }
 
 func createService(config *Config) (*Service, error) {
+	if config == nil {
+		return nil, errors.New("config is nil")
+	}
 	service := &Service{
 		config: config,
 	}

@@ -51,9 +51,8 @@ func TestSelect(t *testing.T) {
 	}
 
 	var b TestUser
-
-	template := db.WarpTemplate(&b, opts)
-	template2 := db.WarpTemplate(&b, opts2)
+	template := db.WarpTemplate[*TestUser](opts)
+	template2 := db.WarpTemplate[*TestUser](opts2)
 	ctx, err := db.OpenTxContext(context.Background())
 	if err != nil {
 		panic(err)

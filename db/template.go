@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func WarpTemplate[T any](t T, opts *TemplateOptions) (res *Template[T]) {
+func WarpTemplate[T any](opts *TemplateOptions) (res *Template[T]) {
 	if opts.DialectParam == nil {
 		opts.DialectParam = &dialect.ParamModel{}
 	}
@@ -25,7 +25,7 @@ func WarpTemplate[T any](t T, opts *TemplateOptions) (res *Template[T]) {
 	}
 	res = &Template[T]{}
 	res.TemplateOptions = opts
-	res.t = t
+	var t T
 	res.objType = reflect.TypeOf(t)
 
 	res.objValueType = res.objType
