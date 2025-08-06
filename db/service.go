@@ -39,6 +39,7 @@ type Config struct {
 	TlsRootCert   string `json:"tlsRootCert,omitempty" yaml:"tlsRootCert,omitempty"`
 	TlsClientCert string `json:"tlsClientCert,omitempty" yaml:"tlsClientCert,omitempty"`
 	TlsClientKey  string `json:"tlsClientKey,omitempty" yaml:"tlsClientKey,omitempty"`
+	DsnAppend     string `json:"dsnAppend,omitempty" yaml:"dsnAppend,omitempty"`
 }
 
 // New 创建 db客户端

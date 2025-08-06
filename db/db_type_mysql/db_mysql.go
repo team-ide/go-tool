@@ -14,6 +14,7 @@ import (
 	"go.uber.org/zap"
 	"net"
 	"os"
+	"strings"
 	"sync"
 )
 
@@ -40,6 +41,12 @@ func init() {
 			if tlsConfig != "" {
 				dsn += "&tls=" + tlsConfig
 				util.Logger.Info("mysql use TLS Config", zap.Any("tls", tlsConfig))
+			}
+			if config.DsnAppend != "" {
+				if !strings.HasPrefix(config.DsnAppend, "&") {
+					dsn += "&"
+				}
+				dsn += config.DsnAppend
 			}
 			db, err = db_mysql.Open(dsn)
 			return

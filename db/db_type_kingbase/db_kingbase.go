@@ -13,6 +13,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
 	"net/url"
+	"strings"
 )
 
 func init() {
@@ -23,6 +24,12 @@ func init() {
 			dsn := fmt.Sprintf("kingbase://%s:%s@%s:%d/%s?sslmode=disable", config.Username, password, config.Host, config.Port, config.DbName)
 			if config.Schema != "" {
 				dsn += "&search_path=" + config.Schema
+			}
+			if config.DsnAppend != "" {
+				if !strings.HasPrefix(config.DsnAppend, "&") {
+					dsn += "&"
+				}
+				dsn += config.DsnAppend
 			}
 			if config.SSHClient != nil {
 				db = sql.OpenDB(NewDialerConnector(config.SSHClient, dsn))

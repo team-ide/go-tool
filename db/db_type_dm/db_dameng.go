@@ -6,12 +6,19 @@ import (
 	"github.com/team-ide/go-tool/db"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
+	"strings"
 )
 
 func init() {
 	err := db.AddDatabaseType(&db.DatabaseType{
 		NewDb: func(config *db.Config) (db *sql.DB, err error) {
 			dsn := db_dm.GetDSN(config.Username, config.Password, config.Host, config.Port, config.Schema)
+			if config.DsnAppend != "" {
+				if !strings.HasPrefix(config.DsnAppend, "&") {
+					dsn += "&"
+				}
+				dsn += config.DsnAppend
+			}
 			db, err = db_dm.Open(dsn)
 			return
 		},

@@ -6,6 +6,7 @@ import (
 	"github.com/team-ide/go-tool/db"
 	"github.com/team-ide/go-tool/util"
 	"go.uber.org/zap"
+	"strings"
 )
 
 func init() {
@@ -23,6 +24,12 @@ func init() {
 				if config.Username != "" && config.Password != "" {
 					dsn += "&_auth=true"
 				}
+			}
+			if config.DsnAppend != "" {
+				if !strings.HasPrefix(config.DsnAppend, "&") {
+					dsn += "&"
+				}
+				dsn += config.DsnAppend
 			}
 			db, err = db_sqlite3.Open(dsn)
 			return
