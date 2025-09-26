@@ -5,13 +5,14 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
-	"github.com/go-redis/redis/v8"
-	"github.com/team-ide/go-tool/util"
-	"golang.org/x/crypto/ssh"
 	"net"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/go-redis/redis/v8"
+	"github.com/team-ide/go-tool/util"
+	"golang.org/x/crypto/ssh"
 )
 
 // NewRedisService 创建客户端
@@ -47,6 +48,10 @@ func (this_ *V8Service) init(sshClient *ssh.Client) (err error) {
 		Password:     this_.Auth,
 		Username:     this_.Username,
 	}
+	TLSClientConfig := &tls.Config{}
+	if this_.InsecureSkipVerify {
+		TLSClientConfig.InsecureSkipVerify = true
+	}
 
 	if this_.CertPath != "" {
 		certPool := x509.NewCertPool()
@@ -60,12 +65,12 @@ func (this_ *V8Service) init(sshClient *ssh.Client) (err error) {
 			err = errors.New("证书[" + this_.CertPath + "]解析失败")
 			return
 		}
-		TLSClientConfig := &tls.Config{
-			InsecureSkipVerify: true,
-		}
 		TLSClientConfig.RootCAs = certPool
+	}
+	if this_.InsecureSkipVerify || this_.CertPath != "" {
 		options.TLSConfig = TLSClientConfig
 	}
+
 	if sshClient != nil {
 		options.Dialer = func(ctx context.Context, network, addr string) (net.Conn, error) {
 			conn, e := sshClient.Dial("tcp", addr)

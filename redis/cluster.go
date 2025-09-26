@@ -5,13 +5,14 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
-	"github.com/go-redis/redis/v8"
-	"github.com/team-ide/go-tool/util"
-	"golang.org/x/crypto/ssh"
 	"net"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/go-redis/redis/v8"
+	"github.com/team-ide/go-tool/util"
+	"golang.org/x/crypto/ssh"
 )
 
 // NewClusterService 创建集群客户端
@@ -46,6 +47,10 @@ func (this_ *ClusterService) init(sshClient *ssh.Client) (err error) {
 		Username:     this_.Username,
 		Password:     this_.Auth,
 	}
+	TLSClientConfig := &tls.Config{}
+	if this_.InsecureSkipVerify {
+		TLSClientConfig.InsecureSkipVerify = true
+	}
 	if this_.CertPath != "" {
 		certPool := x509.NewCertPool()
 		var pemCerts []byte
@@ -58,10 +63,9 @@ func (this_ *ClusterService) init(sshClient *ssh.Client) (err error) {
 			err = errors.New("证书[" + this_.CertPath + "]解析失败")
 			return
 		}
-		TLSClientConfig := &tls.Config{
-			InsecureSkipVerify: true,
-		}
 		TLSClientConfig.RootCAs = certPool
+	}
+	if this_.InsecureSkipVerify || this_.CertPath != "" {
 		options.TLSConfig = TLSClientConfig
 	}
 
